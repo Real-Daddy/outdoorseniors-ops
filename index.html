@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OutdoorSeniors Ops</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: #F4F4F4; min-height: 100vh; color: #111; }
+
+    /* Login */
+    #view-login { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; }
+    .brand { font-size: 22px; font-weight: 800; color: #111; margin-bottom: 28px; letter-spacing: -0.5px; }
+    .login-card { background: #fff; border-radius: 12px; border: 1px solid #E0E0E0; padding: 40px; width: 100%; max-width: 380px; box-shadow: 0 2px 16px rgba(0,0,0,0.06); transition: opacity 0.2s; }
+    .card-title { font-size: 18px; font-weight: 700; color: #111; margin-bottom: 4px; }
+    .card-sub { font-size: 14px; color: #888; margin-bottom: 28px; }
+    .hint { margin-top: 20px; font-size: 12px; color: #BBB; text-align: center; }
+
+    /* Nav */
+    .topnav { background: #111; color: #fff; padding: 0 24px; height: 52px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+    .topnav-brand { font-size: 16px; font-weight: 800; letter-spacing: -0.5px; }
+    .topnav-right { display: flex; align-items: center; gap: 14px; }
+    .role-badge { background: #333; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 4px; letter-spacing: 0.5px; text-transform: uppercase; }
+    .role-badge.admin { background: #2563EB; }
+    .user-name { font-size: 13px; color: #ccc; }
+    .logout-btn { font-size: 13px; color: #aaa; background: none; border: none; cursor: pointer; font-family: inherit; padding: 4px 8px; border-radius: 4px; }
+    .logout-btn:hover { color: #fff; background: #333; }
+
+    /* Tabs */
+    .tabs { background: #fff; border-bottom: 1px solid #E0E0E0; padding: 0 24px; display: flex; }
+    .tab-btn { padding: 14px 20px; font-size: 14px; font-weight: 600; color: #888; background: none; border: none; cursor: pointer; font-family: inherit; border-bottom: 2px solid transparent; transition: all 0.15s; }
+    .tab-btn:hover { color: #111; }
+    .tab-btn.active { color: #111; border-bottom-color: #111; }
+
+    /* Layout */
+    .main { padding: 28px 24px; max-width: 1100px; margin: 0 auto; }
+
+    /* Stat Cards */
+    .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 16px; margin-bottom: 28px; }
+    .stat-card { background: #fff; border-radius: 10px; border: 1px solid #E8E8E8; padding: 20px 22px; }
+    .stat-label { font-size: 12px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 8px; }
+    .stat-value { font-size: 32px; font-weight: 800; color: #111; line-height: 1; }
+
+    /* Period Buttons */
+    .period-btns { display: flex; gap: 6px; }
+    .period-btn { padding: 6px 14px; font-size: 13px; font-weight: 600; border: 1.5px solid #DDD; border-radius: 6px; background: none; cursor: pointer; font-family: inherit; color: #666; transition: all 0.15s; }
+    .period-btn.active { background: #111; color: #fff; border-color: #111; }
+
+    /* Tables */
+    .table-card { background: #fff; border-radius: 10px; border: 1px solid #E8E8E8; overflow: hidden; margin-bottom: 24px; }
+    .table-hdr { padding: 16px 16px 0; display: flex; align-items: center; justify-content: space-between; }
+    .section-title { font-size: 15px; font-weight: 700; color: #111; }
+    .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .data-table th { background: #F8F8F8; font-weight: 600; color: #555; padding: 10px 12px; text-align: left; border-bottom: 1px solid #E8E8E8; }
+    .data-table td { padding: 10px 12px; border-bottom: 1px solid #F0F0F0; vertical-align: middle; }
+    .data-table tr:last-child td { border-bottom: none; }
+    .bar-wrap { background: #F0F0F0; border-radius: 3px; height: 6px; width: 120px; }
+    .bar-fill { height: 6px; border-radius: 3px; background: #111; transition: width 0.4s; }
+    .bar-fill.blue { background: #2563EB; }
+
+    /* Agent List */
+    .agent-row { display: flex; align-items: center; padding: 14px 16px; border-bottom: 1px solid #F0F0F0; gap: 12px; }
+    .agent-row:last-child { border-bottom: none; }
+    .agent-avatar { width: 36px; height: 36px; border-radius: 50%; background: #111; color: #fff; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .agent-info { flex: 1; }
+    .agent-name { font-size: 14px; font-weight: 600; }
+    .agent-email { font-size: 12px; color: #888; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .status-dot.on { background: #22C55E; }
+    .status-dot.off { background: #D1D5DB; }
+
+    /* Forms */
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .form-full { grid-column: 1 / -1; }
+    .field { display: flex; flex-direction: column; gap: 5px; }
+    label, .field > span { font-size: 13px; font-weight: 600; color: #444; }
+    input[type=text], input[type=email], input[type=password], input[type=number], input[type=tel], select, textarea {
+      width: 100%; padding: 10px 12px; border: 1.5px solid #DDD; border-radius: 7px;
+      font-size: 14px; font-family: inherit; outline: none; color: #111; background: #fff;
+      transition: border-color 0.15s; resize: vertical;
+    }
+    input:focus, select:focus, textarea:focus { border-color: #111; }
+
+    /* Pill Checkboxes */
+    .check-group { display: flex; flex-wrap: wrap; gap: 8px; }
+    .check-pill { display: inline-flex; align-items: center; gap: 5px; background: #F5F5F5; border: 1.5px solid #E0E0E0; border-radius: 20px; padding: 5px 12px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s; user-select: none; }
+    .check-pill input[type=checkbox] { display: none; }
+    .check-pill.on { background: #111; border-color: #111; color: #fff; }
+
+    /* Buttons */
+    .btn { padding: 10px 20px; font-size: 14px; font-weight: 700; border: none; border-radius: 8px; cursor: pointer; font-family: inherit; transition: background 0.15s; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
+    .btn-primary { background: #111; color: #fff; }
+    .btn-primary:hover { background: #333; }
+    .btn-primary:disabled { background: #999; cursor: not-allowed; }
+    .btn-outline { background: #fff; color: #111; border: 1.5px solid #CCC; }
+    .btn-outline:hover { border-color: #111; }
+    .btn-sm { padding: 6px 14px; font-size: 13px; }
+    .btn-danger { background: #fff; color: #CC0000; border: 1.5px solid #FFB3B3; }
+    .btn-danger:hover { background: #FFF2F2; }
+    .btn-success { background: #22C55E; color: #fff; border: none; }
+    .btn-success:hover { background: #16A34A; }
+
+    /* Messages */
+    .err { background: #FFF2F2; border: 1px solid #FFB3B3; color: #CC0000; font-size: 13px; padding: 10px 14px; border-radius: 8px; margin-top: 12px; display: none; }
+    .ok  { background: #F0FFF4; border: 1px solid #86EFAC; color: #166534; font-size: 13px; padding: 10px 14px; border-radius: 8px; margin-top: 12px; display: none; }
+
+    /* Boxes */
+    .box { background: #fff; border-radius: 10px; border: 1px solid #E8E8E8; padding: 22px; margin-bottom: 20px; }
+    .box-title { font-size: 14px; font-weight: 700; margin-bottom: 16px; }
+
+    /* Results */
+    .results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 16px; margin-top: 16px; }
+    .result-card { background: #fff; border: 1px solid #E8E8E8; border-radius: 10px; padding: 16px; display: flex; gap: 14px; }
+    .score-ring { width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 800; flex-shrink: 0; }
+    .ring-green { background: #DCFCE7; color: #166534; border: 3px solid #22C55E; }
+    .ring-amber { background: #FEF9C3; color: #854D0E; border: 3px solid #EAB308; }
+    .ring-grey  { background: #F3F4F6; color: #6B7280; border: 3px solid #D1D5DB; }
+    .result-info { flex: 1; min-width: 0; }
+    .result-name { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
+    .result-meta { font-size: 12px; color: #888; margin-bottom: 6px; }
+    .result-reason { font-size: 12px; color: #555; background: #F8F8F8; border-radius: 6px; padding: 7px 9px; margin-bottom: 8px; line-height: 1.4; }
+    .tags { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
+    .tag { font-size: 11px; background: #F0F0F0; color: #555; padding: 2px 8px; border-radius: 10px; }
+    .result-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+
+    /* Modal */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .modal-box { background: #fff; border-radius: 12px; max-width: 600px; width: 100%; max-height: 85vh; overflow-y: auto; padding: 28px; }
+    .modal-hdr { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .modal-title { font-size: 18px; font-weight: 700; }
+    .modal-close { background: none; border: none; font-size: 24px; cursor: pointer; color: #888; line-height: 1; padding: 0 4px; }
+    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .detail-item label { font-size: 11px; font-weight: 600; color: #888; text-transform: uppercase; display: block; margin-bottom: 3px; }
+    .detail-item p { font-size: 14px; color: #111; }
+
+    /* Import Preview */
+    .import-preview { overflow-x: auto; max-height: 280px; overflow-y: auto; border: 1px solid #E0E0E0; border-radius: 8px; margin-top: 14px; }
+    .import-preview table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .import-preview th { background: #F5F5F5; padding: 8px 10px; border-bottom: 1px solid #E0E0E0; font-weight: 600; white-space: nowrap; position: sticky; top: 0; }
+    .import-preview td { padding: 7px 10px; border-bottom: 1px solid #F5F5F5; white-space: nowrap; }
+
+    @media (max-width: 640px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .detail-grid { grid-template-columns: 1fr; }
+      .stat-grid { grid-template-columns: 1fr 1fr; }
+      .main { padding: 16px; }
+      .tabs { overflow-x: auto; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN VIEW -->
+<div id="view-login">
+  <div class="brand">OutdoorSeniors</div>
+  <div class="login-card" id="loginCard" style="opacity:0">
+    <div class="card-title">Staff Login</div>
+    <div class="card-sub">Sign in to continue</div>
+    <div class="field">
+      <label>Email address</label>
+      <input type="email" id="loginEmail" placeholder="you@outdoorseniors.com" autocomplete="email">
+    </div>
+    <div class="field" style="margin-top:12px">
+      <label>Password</label>
+      <input type="password" id="loginPw" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="btn btn-primary" id="loginBtn" style="width:100%;margin-top:16px;justify-content:center" onclick="doLogin()">Sign In</button>
+    <div class="err" id="loginErr"></div>
+  </div>
+  <p class="hint">Don't have access? Contact your admin.</p>
+</div>
+
+<!-- ADMIN VIEW -->
+<div id="view-admin" style="display:none">
+  <nav class="topnav">
+    <span class="topnav-brand">OutdoorSeniors</span>
+    <div class="topnav-right">
+      <span class="role-badge admin">Admin</span>
+      <span class="user-name" id="adminUserName"></span>
+      <button class="logout-btn" onclick="doLogout()">Sign out</button>
+    </div>
+  </nav>
+  <div class="tabs">
+    <button class="tab-btn active" id="atab-dashboard" onclick="switchAdminTab('dashboard',this)">Dashboard</button>
+    <button class="tab-btn" id="atab-agents" onclick="switchAdminTab('agents',this)">Agents</button>
+    <button class="tab-btn" id="atab-database" onclick="switchAdminTab('database',this)">Database</button>
+  </div>
+
+  <!-- Dashboard -->
+  <div id="admin-dashboard" class="main">
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-label">Total Caretakers</div><div class="stat-value" id="dTotal">—</div></div>
+      <div class="stat-card"><div class="stat-label">Added Today</div><div class="stat-value" id="dToday">—</div></div>
+      <div class="stat-card"><div class="stat-label">This Week</div><div class="stat-value" id="dWeek">—</div></div>
+      <div class="stat-card"><div class="stat-label">This Month</div><div class="stat-value" id="dMonth">—</div></div>
+    </div>
+
+    <div class="table-card">
+      <div class="table-hdr">
+        <div class="section-title">Caretaker Additions</div>
+        <div class="period-btns">
+          <button class="period-btn active" onclick="setPeriod('daily',this)">Daily</button>
+          <button class="period-btn" onclick="setPeriod('weekly',this)">Weekly</button>
+          <button class="period-btn" onclick="setPeriod('monthly',this)">Monthly</button>
+        </div>
+      </div>
+      <div style="padding:12px 16px 16px">
+        <table class="data-table">
+          <thead><tr><th>Period</th><th>Count</th><th>Trend</th></tr></thead>
+          <tbody id="trendBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="table-card">
+      <div class="table-hdr" style="padding-bottom:12px"><div class="section-title">Leaderboard — Most Caretakers Added</div></div>
+      <div style="padding:0 16px 16px">
+        <table class="data-table">
+          <thead><tr><th>#</th><th>Agent</th><th>Added</th><th></th></tr></thead>
+          <tbody id="leaderBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Agents -->
+  <div id="admin-agents" class="main" style="display:none">
+    <div class="stat-grid" style="grid-template-columns:repeat(3,1fr)">
+      <div class="stat-card"><div class="stat-label">Total Agents</div><div class="stat-value" id="agTotal">—</div></div>
+      <div class="stat-card"><div class="stat-label">Active</div><div class="stat-value" id="agActive">—</div></div>
+      <div class="stat-card"><div class="stat-label">Inactive</div><div class="stat-value" id="agInactive">—</div></div>
+    </div>
+
+    <div class="box">
+      <div class="box-title">Add New Agent</div>
+      <div class="form-grid">
+        <div class="field"><label>Name</label><input type="text" id="newName" placeholder="Full name"></div>
+        <div class="field"><label>Email</label><input type="email" id="newEmail" placeholder="agent@outdoorseniors.com"></div>
+        <div class="field"><label>Password</label><input type="password" id="newPw" placeholder="Temporary password"></div>
+        <div class="field" style="align-self:end">
+          <button class="btn btn-primary" id="addAgentBtn" onclick="addAgent()" style="width:100%;justify-content:center">Add Agent</button>
+        </div>
+      </div>
+      <div class="err" id="agentErr"></div>
+      <div class="ok"  id="agentOk"></div>
+    </div>
+
+    <div class="box" style="padding:0;overflow:hidden">
+      <div style="padding:18px 22px 10px"><div class="box-title" style="margin:0">All Agents</div></div>
+      <div id="agentList"><div style="padding:16px 22px;color:#888;font-size:13px">Loading…</div></div>
+    </div>
+  </div>
+
+  <!-- Database -->
+  <div id="admin-database" class="main" style="display:none">
+    <div class="box">
+      <div class="box-title">Export Database</div>
+      <p style="font-size:13px;color:#666;margin-bottom:16px">Download the entire caretaker database as a CSV file.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="exportCSV()">Export All as CSV</button>
+        <button class="btn btn-outline" onclick="downloadTemplate()">Download CSV Template</button>
+      </div>
+    </div>
+
+    <div class="box">
+      <div class="box-title">Import from CSV</div>
+      <p style="font-size:13px;color:#666;margin-bottom:16px">Upload a CSV to bulk-add caretakers. Use the template above for the correct column format.</p>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <button class="btn btn-outline" onclick="document.getElementById('csvFile').click()">Choose CSV File</button>
+        <span id="csvFileName" style="font-size:13px;color:#666"></span>
+      </div>
+      <input type="file" id="csvFile" accept=".csv" onchange="handleImportFile(this)" style="display:none">
+      <div id="importPreviewWrap" style="display:none">
+        <div class="import-preview" id="importPreview"></div>
+        <div style="margin-top:14px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+          <button class="btn btn-success" id="confirmImportBtn" onclick="importCSV()">Import Records</button>
+          <span id="importCount" style="font-size:13px;color:#666"></span>
+        </div>
+      </div>
+      <div class="err" id="importErr"></div>
+      <div class="ok"  id="importOk"></div>
+    </div>
+  </div>
+</div>
+
+<!-- AGENT VIEW -->
+<div id="view-agent" style="display:none">
+  <nav class="topnav">
+    <span class="topnav-brand">OutdoorSeniors</span>
+    <div class="topnav-right">
+      <span class="role-badge">Agent</span>
+      <span class="user-name" id="agentUserName"></span>
+      <button class="logout-btn" onclick="doLogout()">Sign out</button>
+    </div>
+  </nav>
+  <div class="tabs">
+    <button class="tab-btn active" id="agtab-add"    onclick="switchAgentTab('add',this)">Add Caretaker</button>
+    <button class="tab-btn"        id="agtab-search" onclick="switchAgentTab('search',this)">Search &amp; Match</button>
+  </div>
+
+  <!-- Add Caretaker -->
+  <div id="agent-add" class="main">
+    <div class="box">
+      <div class="box-title">New Caretaker Profile</div>
+      <div class="form-grid">
+        <div class="field"><label>Full Name *</label><input type="text" id="ctName" placeholder="e.g. Sunita Devi"></div>
+        <div class="field"><label>Phone *</label><input type="tel" id="ctPhone" placeholder="+91 9876543210"></div>
+        <div class="field"><label>Email</label><input type="email" id="ctEmail" placeholder="optional"></div>
+        <div class="field"><label>Sex *</label>
+          <select id="ctSex"><option value="">Select…</option><option>Male</option><option>Female</option><option>Other</option></select>
+        </div>
+        <div class="field"><label>Age</label><input type="number" id="ctAge" placeholder="e.g. 35" min="18" max="70"></div>
+        <div class="field form-full"><label>Address</label><input type="text" id="ctAddress" placeholder="Street address"></div>
+        <div class="field"><label>Pincode</label><input type="text" id="ctPincode" placeholder="e.g. 560001"></div>
+        <div class="field"><label>Area / Locality</label><input type="text" id="ctArea" placeholder="e.g. Indiranagar, Bangalore"></div>
+
+        <div class="field form-full">
+          <label>Languages Known</label>
+          <div class="check-group" id="langGroup">
+            <label class="check-pill"><input type="checkbox" value="Kannada"   onchange="syncPill(this)">Kannada</label>
+            <label class="check-pill"><input type="checkbox" value="Hindi"     onchange="syncPill(this)">Hindi</label>
+            <label class="check-pill"><input type="checkbox" value="English"   onchange="syncPill(this)">English</label>
+            <label class="check-pill"><input type="checkbox" value="Tamil"     onchange="syncPill(this)">Tamil</label>
+            <label class="check-pill"><input type="checkbox" value="Telugu"    onchange="syncPill(this)">Telugu</label>
+            <label class="check-pill"><input type="checkbox" value="Malayalam" onchange="syncPill(this)">Malayalam</label>
+            <label class="check-pill"><input type="checkbox" value="Marathi"   onchange="syncPill(this)">Marathi</label>
+            <label class="check-pill"><input type="checkbox" value="Bengali"   onchange="syncPill(this)">Bengali</label>
+          </div>
+        </div>
+
+        <div class="field form-full">
+          <label>Work Preferences</label>
+          <div class="check-group" id="prefGroup">
+            <label class="check-pill"><input type="checkbox" value="Live-in"      onchange="syncPill(this)">Live-in</label>
+            <label class="check-pill"><input type="checkbox" value="Day Shift"    onchange="syncPill(this)">Day Shift</label>
+            <label class="check-pill"><input type="checkbox" value="Night Shift"  onchange="syncPill(this)">Night Shift</label>
+            <label class="check-pill"><input type="checkbox" value="Part Time"    onchange="syncPill(this)">Part Time</label>
+            <label class="check-pill"><input type="checkbox" value="Elder Care"   onchange="syncPill(this)">Elder Care</label>
+            <label class="check-pill"><input type="checkbox" value="Child Care"   onchange="syncPill(this)">Child Care</label>
+            <label class="check-pill"><input type="checkbox" value="Patient Care" onchange="syncPill(this)">Patient Care</label>
+            <label class="check-pill"><input type="checkbox" value="Cooking"      onchange="syncPill(this)">Cooking</label>
+            <label class="check-pill"><input type="checkbox" value="Cleaning"     onchange="syncPill(this)">Cleaning</label>
+            <label class="check-pill"><input type="checkbox" value="Companion"    onchange="syncPill(this)">Companion</label>
+          </div>
+        </div>
+
+        <div class="field"><label>Experience (years)</label><input type="number" id="ctExp" placeholder="e.g. 3" min="0"></div>
+        <div class="field"><label>Salary Expectation (₹/month)</label><input type="text" id="ctSalary" placeholder="e.g. 18000"></div>
+        <div class="field form-full"><label>Experience Details</label><textarea id="ctExpDetails" rows="3" placeholder="Describe previous work, duties, employers…"></textarea></div>
+
+        <div class="field"><label>Photo URL</label><input type="url" id="ctPhotoURL" placeholder="Paste Google Drive / direct image link (optional)"></div>
+        <div class="field"><label>ID Type</label>
+          <select id="ctIdType"><option value="">Select ID…</option><option>Aadhar Card</option><option>PAN Card</option><option>Voter ID</option><option>Passport</option><option>Driving License</option></select>
+        </div>
+        <div class="field form-full"><label>ID Document URL</label><input type="url" id="ctIdURL" placeholder="Paste Google Drive link to ID scan (optional)"></div>
+
+        <div class="field"><label>Referral Name</label><input type="text" id="ctRefName" placeholder="Who referred?"></div>
+        <div class="field"><label>Referral Phone</label><input type="tel" id="ctRefPhone" placeholder="+91…"></div>
+        <div class="field form-full"><label>Additional Notes</label><textarea id="ctNotes" rows="3" placeholder="Any other information…"></textarea></div>
+      </div>
+
+      <div style="margin-top:20px;display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-primary" id="saveCtBtn" onclick="saveCaretaker()">Save Caretaker</button>
+        <button class="btn btn-outline" onclick="resetForm()">Clear Form</button>
+      </div>
+      <div class="err" id="ctErr"></div>
+      <div class="ok"  id="ctOk"></div>
+    </div>
+  </div>
+
+  <!-- Search & Match -->
+  <div id="agent-search" class="main" style="display:none">
+    <div class="box">
+      <div class="box-title">AI Match — Describe the Requirement</div>
+      <textarea id="aiReq" rows="4" style="width:100%;margin-bottom:12px"
+        placeholder="e.g. Female caretaker needed for 78-year-old male patient in Whitefield, Bangalore. Live-in preferred. Must speak Kannada and Hindi. Budget ₹20,000/month."></textarea>
+      <button class="btn btn-primary" id="aiSearchBtn" onclick="doAiSearch()">Find Best Matches (AI)</button>
+    </div>
+
+    <div class="box">
+      <div class="box-title" style="cursor:pointer;margin-bottom:0" onclick="toggleFilters()">
+        Filter Search &nbsp;<span id="filterIcon" style="font-size:12px;color:#888;font-weight:400">▼ show filters</span>
+      </div>
+      <div id="filterBody" style="display:none;margin-top:16px">
+        <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr">
+          <div class="field"><label>Sex</label><select id="fSex"><option value="">Any</option><option>Male</option><option>Female</option></select></div>
+          <div class="field"><label>Pincode starts with</label><input type="text" id="fPin" placeholder="e.g. 560"></div>
+          <div class="field"><label>Min Experience (yrs)</label><input type="number" id="fExp" min="0" placeholder="0"></div>
+          <div class="field"><label>Language</label>
+            <select id="fLang"><option value="">Any</option><option>Kannada</option><option>Hindi</option><option>English</option><option>Tamil</option><option>Telugu</option><option>Malayalam</option><option>Marathi</option><option>Bengali</option></select>
+          </div>
+          <div class="field"><label>Work Preference</label>
+            <select id="fPref"><option value="">Any</option><option>Live-in</option><option>Day Shift</option><option>Night Shift</option><option>Part Time</option><option>Elder Care</option><option>Child Care</option><option>Patient Care</option><option>Cooking</option><option>Cleaning</option><option>Companion</option></select>
+          </div>
+        </div>
+        <button class="btn btn-outline btn-sm" style="margin-top:12px" onclick="doFilterSearch()">Apply Filters</button>
+      </div>
+    </div>
+
+    <div id="searchResults"></div>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="modal-overlay" id="detailModal" style="display:none" onclick="closeModalOnBg(event)">
+  <div class="modal-box">
+    <div class="modal-hdr">
+      <div class="modal-title" id="modalName">Caretaker Details</div>
+      <button class="modal-close" onclick="document.getElementById('detailModal').style.display='none'">&times;</button>
+    </div>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script>
+firebase.initializeApp(FIREBASE_CONFIG);
+const auth = firebase.auth();
+const db   = firebase.firestore();
+
+let currentUser       = null;
+let currentProfile    = null;
+let allCaretakers     = [];
+let importRows        = [];
+let periodMode        = 'daily';
+let lastSearchResults = [];
+let modalCaretaker    = null;
+
+// ── Auth ──────────────────────────────────────────────────────────
+auth.onAuthStateChanged(async user => {
+  if (!user) { showView('login'); return; }
+  try {
+    const doc = await db.collection('users').doc(user.uid).get();
+    if (doc.exists) {
+      const d = doc.data();
+      if (!d.active) { await auth.signOut(); showLoginErr('Account deactivated. Contact admin.'); return; }
+      currentUser    = user;
+      currentProfile = d;
+      if (d.role === 'admin') {
+        document.getElementById('adminUserName').textContent = d.name || user.email;
+        showView('admin');
+        loadDashboard();
+      } else {
+        document.getElementById('agentUserName').textContent = d.name || user.email;
+        showView('agent');
+      }
+      return;
+    }
+    // First login ever — bootstrap admin
+    const snap = await db.collection('users').limit(1).get();
+    if (snap.empty) {
+      await db.collection('users').doc(user.uid).set({
+        name: user.email.split('@')[0], email: user.email,
+        role: 'admin', active: true,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      location.reload();
+    } else {
+      await auth.signOut();
+      showLoginErr('Account not set up. Contact admin.');
+    }
+  } catch(e) { showLoginErr(e.message); }
+});
+
+// ── View Control ──────────────────────────────────────────────────
+function showView(name) {
+  document.getElementById('view-login').style.display  = name === 'login'  ? 'flex'  : 'none';
+  document.getElementById('view-admin').style.display  = name === 'admin'  ? 'block' : 'none';
+  document.getElementById('view-agent').style.display  = name === 'agent'  ? 'block' : 'none';
+  if (name === 'login') document.getElementById('loginCard').style.opacity = '1';
+}
+
+// ── Login ─────────────────────────────────────────────────────────
+async function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pw    = document.getElementById('loginPw').value;
+  if (!email || !pw) { showLoginErr('Please enter email and password.'); return; }
+  const btn = document.getElementById('loginBtn');
+  btn.disabled = true; btn.textContent = 'Signing in…';
+  document.getElementById('loginErr').style.display = 'none';
+  try {
+    await auth.signInWithEmailAndPassword(email, pw);
+  } catch(e) {
+    showLoginErr('Incorrect email or password.');
+    btn.disabled = false; btn.textContent = 'Sign In';
+  }
+}
+function doLogout() { auth.signOut(); }
+function showLoginErr(msg) {
+  const el = document.getElementById('loginErr');
+  el.textContent = msg; el.style.display = 'block';
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.getElementById('view-login').style.display !== 'none') doLogin();
+});
+
+// ── Admin Tab Switching ───────────────────────────────────────────
+function switchAdminTab(name, btn) {
+  ['dashboard','agents','database'].forEach(t => {
+    document.getElementById('admin-' + t).style.display    = t === name ? 'block' : 'none';
+    document.getElementById('atab-' + t).classList.toggle('active', t === name);
+  });
+  if (name === 'agents')   loadAgents();
+  if (name === 'dashboard') loadDashboard();
+}
+
+// ── Agent Tab Switching ───────────────────────────────────────────
+function switchAgentTab(name, btn) {
+  ['add','search'].forEach(t => {
+    document.getElementById('agent-' + t).style.display    = t === name ? 'block' : 'none';
+    document.getElementById('agtab-' + t).classList.toggle('active', t === name);
+  });
+}
+
+// ── Dashboard ─────────────────────────────────────────────────────
+async function loadDashboard() {
+  try {
+    const snap = await db.collection('caretakers').get();
+    allCaretakers = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderDashboard();
+  } catch(e) { console.error(e); }
+}
+
+function renderDashboard() {
+  const now   = new Date();
+  const today = dateStr(now);
+  const wkStart = new Date(now); wkStart.setDate(now.getDate() - now.getDay());
+  const moStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  document.getElementById('dTotal').textContent = allCaretakers.length;
+  document.getElementById('dToday').textContent = allCaretakers.filter(c => dateStr(toDate(c.createdAt)) === today).length;
+  document.getElementById('dWeek').textContent  = allCaretakers.filter(c => toDate(c.createdAt) >= wkStart).length;
+  document.getElementById('dMonth').textContent = allCaretakers.filter(c => toDate(c.createdAt) >= moStart).length;
+
+  renderTrend();
+  renderLeaderboard();
+}
+
+function setPeriod(mode, btn) {
+  periodMode = mode;
+  document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTrend();
+}
+
+function renderTrend() {
+  const now = new Date();
+  let buckets = [];
+
+  if (periodMode === 'daily') {
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(now); d.setDate(now.getDate() - i);
+      buckets.push({
+        label: d.toLocaleDateString('en-IN', { weekday:'short', day:'numeric', month:'short' }),
+        count: allCaretakers.filter(c => dateStr(toDate(c.createdAt)) === dateStr(d)).length
+      });
+    }
+  } else if (periodMode === 'weekly') {
+    for (let i = 7; i >= 0; i--) {
+      const wEnd   = new Date(now); wEnd.setDate(now.getDate() - i * 7);
+      const wStart = new Date(wEnd); wStart.setDate(wEnd.getDate() - 6);
+      wStart.setHours(0,0,0,0); wEnd.setHours(23,59,59,999);
+      buckets.push({
+        label: `${wStart.getDate()}/${wStart.getMonth()+1} – ${wEnd.getDate()}/${wEnd.getMonth()+1}`,
+        count: allCaretakers.filter(c => { const d = toDate(c.createdAt); return d >= wStart && d <= wEnd; }).length
+      });
+    }
+  } else {
+    for (let i = 5; i >= 0; i--) {
+      const mStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const mEnd   = new Date(now.getFullYear(), now.getMonth() - i + 1, 0, 23, 59, 59);
+      buckets.push({
+        label: mStart.toLocaleDateString('en-IN', { month:'short', year:'2-digit' }),
+        count: allCaretakers.filter(c => { const d = toDate(c.createdAt); return d >= mStart && d <= mEnd; }).length
+      });
+    }
+  }
+
+  const max = Math.max(...buckets.map(b => b.count), 1);
+  document.getElementById('trendBody').innerHTML = buckets.map(b => `
+    <tr>
+      <td style="color:#555">${b.label}</td>
+      <td style="font-weight:700">${b.count}</td>
+      <td><div class="bar-wrap"><div class="bar-fill" style="width:${Math.round(b.count/max*100)}%"></div></div></td>
+    </tr>`).join('');
+}
+
+function renderLeaderboard() {
+  const counts = {};
+  allCaretakers.forEach(c => {
+    const by = c.addedBy || 'Unknown';
+    counts[by] = (counts[by] || 0) + 1;
+  });
+  const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  const max = sorted[0] ? sorted[0][1] : 1;
+  document.getElementById('leaderBody').innerHTML = sorted.length
+    ? sorted.map(([name, cnt], i) => `
+        <tr>
+          <td style="font-weight:700;color:#888">${i + 1}</td>
+          <td style="font-weight:600">${name}</td>
+          <td style="font-weight:700">${cnt}</td>
+          <td><div class="bar-wrap"><div class="bar-fill blue" style="width:${Math.round(cnt/max*100)}%"></div></div></td>
+        </tr>`).join('')
+    : '<tr><td colspan="4" style="color:#aaa;text-align:center;padding:20px">No data yet</td></tr>';
+}
+
+// ── Agents ────────────────────────────────────────────────────────
+function loadAgents() {
+  db.collection('users').where('role', '==', 'agent').onSnapshot(snap => {
+    const agents  = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const active  = agents.filter(a => a.active).length;
+    document.getElementById('agTotal').textContent   = agents.length;
+    document.getElementById('agActive').textContent  = active;
+    document.getElementById('agInactive').textContent = agents.length - active;
+
+    document.getElementById('agentList').innerHTML = agents.length
+      ? agents.map(a => `
+          <div class="agent-row">
+            <div class="agent-avatar">${(a.name || '?')[0].toUpperCase()}</div>
+            <div class="agent-info">
+              <div class="agent-name">${a.name}</div>
+              <div class="agent-email">${a.email}</div>
+            </div>
+            <div class="status-dot ${a.active ? 'on' : 'off'}"></div>
+            <button class="btn btn-sm ${a.active ? 'btn-danger' : 'btn-success'}"
+              onclick="toggleAgent('${a.id}',${a.active})">${a.active ? 'Deactivate' : 'Activate'}</button>
+          </div>`).join('')
+      : '<div style="padding:16px 22px;color:#888;font-size:13px">No agents yet.</div>';
+  });
+}
+
+async function addAgent() {
+  const name  = document.getElementById('newName').value.trim();
+  const email = document.getElementById('newEmail').value.trim();
+  const pw    = document.getElementById('newPw').value;
+  const err   = document.getElementById('agentErr');
+  const ok    = document.getElementById('agentOk');
+  err.style.display = 'none'; ok.style.display = 'none';
+  if (!name || !email || !pw) { err.textContent = 'All fields required.'; err.style.display = 'block'; return; }
+  const btn = document.getElementById('addAgentBtn');
+  btn.disabled = true; btn.textContent = 'Adding…';
+  try {
+    const secondaryApp  = firebase.initializeApp(FIREBASE_CONFIG, 'sec-' + Date.now());
+    const secAuth       = secondaryApp.auth();
+    const cred          = await secAuth.createUserWithEmailAndPassword(email, pw);
+    await db.collection('users').doc(cred.user.uid).set({
+      name, email, role: 'agent', active: true,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    await secAuth.signOut();
+    await secondaryApp.delete();
+    ['newName','newEmail','newPw'].forEach(id => document.getElementById(id).value = '');
+    ok.textContent = `Agent "${name}" added successfully.`;
+    ok.style.display = 'block';
+  } catch(e) { err.textContent = e.message; err.style.display = 'block'; }
+  btn.disabled = false; btn.textContent = 'Add Agent';
+}
+
+async function toggleAgent(uid, isActive) {
+  await db.collection('users').doc(uid).update({ active: !isActive });
+}
+
+// ── Export ────────────────────────────────────────────────────────
+const CSV_COLS = ['name','phone','email','sex','age','address','pincode','area',
+                  'languages','workPreferences','experience','salaryExpectation',
+                  'experienceDetails','idType','referralName','referralPhone','notes','addedBy'];
+
+async function exportCSV() {
+  const snap = await db.collection('caretakers').get();
+  const rows = snap.docs.map(d => d.data());
+  if (!rows.length) { alert('No caretakers to export.'); return; }
+  triggerCSVDownload(rows, 'caretakers_' + dateStr(new Date()) + '.csv');
+}
+
+function downloadTemplate() {
+  triggerCSVDownload([{
+    name:'Sample Name', phone:'9876543210', email:'sample@email.com', sex:'Female',
+    age:35, address:'123 Main St', pincode:'560001', area:'Indiranagar Bangalore',
+    languages:'Kannada; Hindi', workPreferences:'Live-in; Elder Care',
+    experience:3, salaryExpectation:'18000', experienceDetails:'3 years elder care',
+    idType:'Aadhar Card', referralName:'', referralPhone:'', notes:'', addedBy:''
+  }], 'caretaker_template.csv');
+}
+
+function triggerCSVDownload(rows, filename) {
+  const lines = rows.map(r => CSV_COLS.map(h => {
+    let v = r[h];
+    if (Array.isArray(v)) v = v.join('; ');
+    if (v == null) v = '';
+    v = String(v).replace(/"/g, '""');
+    return (v.includes(',') || v.includes('"') || v.includes('\n')) ? `"${v}"` : v;
+  }).join(','));
+  const csv  = '﻿' + [CSV_COLS.join(','), ...lines].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── Import ────────────────────────────────────────────────────────
+function handleImportFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  document.getElementById('csvFileName').textContent = file.name;
+  document.getElementById('importErr').style.display = 'none';
+  document.getElementById('importOk').style.display  = 'none';
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      importRows = parseCSV(e.target.result);
+      if (!importRows.length) throw new Error('No data rows found.');
+      showImportPreview();
+    } catch(err) {
+      document.getElementById('importErr').textContent = 'Parse error: ' + err.message;
+      document.getElementById('importErr').style.display = 'block';
+    }
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+function parseCSV(text) {
+  text = text.replace(/^﻿/, '');
+  const lines = text.split('\n').filter(l => l.trim());
+  if (lines.length < 2) return [];
+  const headers = splitCSVLine(lines[0]);
+  return lines.slice(1).map(line => {
+    const vals = splitCSVLine(line);
+    const obj  = {};
+    headers.forEach((h, i) => { obj[h.trim()] = (vals[i] || '').trim(); });
+    return obj;
+  });
+}
+
+function splitCSVLine(line) {
+  const result = []; let cur = ''; let inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if      (c === '"' && inQ && line[i+1] === '"') { cur += '"'; i++; }
+    else if (c === '"') { inQ = !inQ; }
+    else if (c === ',' && !inQ) { result.push(cur); cur = ''; }
+    else { cur += c; }
+  }
+  result.push(cur);
+  return result;
+}
+
+function showImportPreview() {
+  const cols = ['name','phone','sex','age','area','pincode','languages','workPreferences'];
+  const hdr  = cols.map(c => `<th>${c}</th>`).join('');
+  const body = importRows.slice(0, 10).map(r =>
+    `<tr>${cols.map(c => `<td>${r[c] || ''}</td>`).join('')}</tr>`).join('');
+  const more = importRows.length > 10
+    ? `<tr><td colspan="${cols.length}" style="color:#888;font-style:italic;padding:8px 10px">… and ${importRows.length - 10} more rows</td></tr>` : '';
+  document.getElementById('importPreview').innerHTML =
+    `<table><thead><tr>${hdr}</tr></thead><tbody>${body}${more}</tbody></table>`;
+  document.getElementById('importPreviewWrap').style.display = 'block';
+  document.getElementById('importCount').textContent = `${importRows.length} records ready to import`;
+}
+
+async function importCSV() {
+  if (!importRows.length) return;
+  const btn = document.getElementById('confirmImportBtn');
+  btn.disabled = true; btn.textContent = 'Importing…';
+  try {
+    const batch = db.batch();
+    importRows.forEach(row => {
+      const ref = db.collection('caretakers').doc();
+      batch.set(ref, {
+        name: row.name || '', phone: row.phone || '', email: row.email || '',
+        sex: row.sex || '', age: Number(row.age) || 0,
+        address: row.address || '', pincode: row.pincode || '', area: row.area || '',
+        languages:      row.languages      ? row.languages.split(';').map(s=>s.trim()).filter(Boolean) : [],
+        workPreferences:row.workPreferences ? row.workPreferences.split(';').map(s=>s.trim()).filter(Boolean) : [],
+        experience:        Number(row.experience) || 0,
+        salaryExpectation: row.salaryExpectation || '',
+        experienceDetails: row.experienceDetails || '',
+        idType: row.idType || '', referralName: row.referralName || '',
+        referralPhone: row.referralPhone || '', notes: row.notes || '',
+        addedBy:   row.addedBy || currentProfile?.name || 'Import',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    });
+    await batch.commit();
+    document.getElementById('importOk').textContent = `${importRows.length} caretakers imported successfully.`;
+    document.getElementById('importOk').style.display = 'block';
+    document.getElementById('importPreviewWrap').style.display = 'none';
+    importRows = [];
+    document.getElementById('csvFile').value = '';
+    document.getElementById('csvFileName').textContent = '';
+  } catch(e) {
+    document.getElementById('importErr').textContent = 'Import failed: ' + e.message;
+    document.getElementById('importErr').style.display = 'block';
+  }
+  btn.disabled = false; btn.textContent = 'Import Records';
+}
+
+// ── Pill Checkboxes ───────────────────────────────────────────────
+function syncPill(cb) {
+  cb.parentElement.classList.toggle('on', cb.checked);
+}
+function getChecked(groupId) {
+  return [...document.getElementById(groupId).querySelectorAll('input[type=checkbox]:checked')].map(cb => cb.value);
+}
+
+// ── Save Caretaker ────────────────────────────────────────────────
+async function saveCaretaker() {
+  const name  = document.getElementById('ctName').value.trim();
+  const phone = document.getElementById('ctPhone').value.trim();
+  const sex   = document.getElementById('ctSex').value;
+  if (!name || !phone || !sex) { showMsg('ctErr','Name, Phone, and Sex are required.'); return; }
+  const btn = document.getElementById('saveCtBtn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  hideMsg('ctErr'); hideMsg('ctOk');
+  try {
+    await db.collection('caretakers').add({
+      name, phone,
+      email:             document.getElementById('ctEmail').value.trim(),
+      sex,
+      age:               Number(document.getElementById('ctAge').value) || 0,
+      address:           document.getElementById('ctAddress').value.trim(),
+      pincode:           document.getElementById('ctPincode').value.trim(),
+      area:              document.getElementById('ctArea').value.trim(),
+      languages:         getChecked('langGroup'),
+      workPreferences:   getChecked('prefGroup'),
+      experience:        Number(document.getElementById('ctExp').value) || 0,
+      salaryExpectation: document.getElementById('ctSalary').value.trim(),
+      experienceDetails: document.getElementById('ctExpDetails').value.trim(),
+      photoURL:          document.getElementById('ctPhotoURL').value.trim(),
+      idType:            document.getElementById('ctIdType').value,
+      idURL:             document.getElementById('ctIdURL').value.trim(),
+      referralName:      document.getElementById('ctRefName').value.trim(),
+      referralPhone:     document.getElementById('ctRefPhone').value.trim(),
+      notes:             document.getElementById('ctNotes').value.trim(),
+      addedBy:           currentProfile?.name || currentUser?.email || 'Agent',
+      createdAt:         firebase.firestore.FieldValue.serverTimestamp()
+    });
+    showMsg('ctOk', `${name} saved successfully!`);
+    resetForm();
+  } catch(e) { showMsg('ctErr', e.message); }
+  btn.disabled = false; btn.textContent = 'Save Caretaker';
+}
+
+function resetForm() {
+  ['ctName','ctPhone','ctEmail','ctAge','ctAddress','ctPincode','ctArea',
+   'ctExp','ctSalary','ctExpDetails','ctPhotoURL','ctIdURL','ctRefName','ctRefPhone','ctNotes'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('ctSex').value = '';
+  document.getElementById('ctIdType').value = '';
+  document.querySelectorAll('#langGroup input[type=checkbox], #prefGroup input[type=checkbox]').forEach(cb => {
+    cb.checked = false;
+    cb.parentElement.classList.remove('on');
+  });
+}
+
+// ── AI Search ─────────────────────────────────────────────────────
+async function doAiSearch() {
+  const req = document.getElementById('aiReq').value.trim();
+  if (!req) { alert('Please describe the requirement.'); return; }
+  const btn = document.getElementById('aiSearchBtn');
+  btn.disabled = true; btn.textContent = 'Matching…';
+  document.getElementById('searchResults').innerHTML =
+    '<div style="color:#888;font-size:14px;padding:20px 0">Fetching profiles and running AI match…</div>';
+  try {
+    const snap     = await db.collection('caretakers').get();
+    const profiles = snap.docs.map(d => {
+      const c = d.data();
+      return { id: d.id, name: c.name, sex: c.sex, age: c.age, area: c.area, pincode: c.pincode,
+               languages: (c.languages||[]).join(', '), workPrefs: (c.workPreferences||[]).join(', '),
+               exp: c.experience, salary: c.salaryExpectation, notes: c.notes, details: c.experienceDetails };
+    });
+    const prompt = `You are a caretaker matching expert. Given this requirement and these caretaker profiles, return the top 10 best matches as a JSON array: [{"id":"...","score":0-100,"reason":"one sentence why this person fits"}]. Return only the JSON array, no markdown, no extra text.\n\nREQUIREMENT:\n${req}\n\nCAREATAKERS:\n${JSON.stringify(profiles)}`;
+    const resp = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+      { method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ contents:[{ parts:[{ text: prompt }] }] }) }
+    );
+    const data    = await resp.json();
+    const raw     = data.candidates[0].content.parts[0].text;
+    const clean   = raw.replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
+    const matches = JSON.parse(clean);
+    const fullMap = {};
+    snap.docs.forEach(d => { fullMap[d.id] = { id: d.id, ...d.data() }; });
+    const results = matches.map(m => ({ ...fullMap[m.id], score: m.score, reason: m.reason })).filter(r => r.name);
+    showResults(results, true);
+  } catch(e) {
+    document.getElementById('searchResults').innerHTML =
+      `<div style="color:#CC0000;font-size:13px;padding:12px 0">Error: ${e.message}</div>`;
+  }
+  btn.disabled = false; btn.textContent = 'Find Best Matches (AI)';
+}
+
+// ── Filter Search ─────────────────────────────────────────────────
+async function doFilterSearch() {
+  const sex  = document.getElementById('fSex').value;
+  const pin  = document.getElementById('fPin').value.trim();
+  const exp  = Number(document.getElementById('fExp').value) || 0;
+  const lang = document.getElementById('fLang').value;
+  const pref = document.getElementById('fPref').value;
+  document.getElementById('searchResults').innerHTML =
+    '<div style="color:#888;font-size:14px;padding:20px 0">Filtering…</div>';
+  try {
+    const snap = await db.collection('caretakers').get();
+    let results = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    if (sex)  results = results.filter(c => c.sex === sex);
+    if (pin)  results = results.filter(c => (c.pincode||'').startsWith(pin));
+    if (exp)  results = results.filter(c => (c.experience||0) >= exp);
+    if (lang) results = results.filter(c => (c.languages||[]).includes(lang));
+    if (pref) results = results.filter(c => (c.workPreferences||[]).includes(pref));
+    showResults(results, false);
+  } catch(e) {
+    document.getElementById('searchResults').innerHTML =
+      `<div style="color:#CC0000;font-size:13px;padding:12px 0">Error: ${e.message}</div>`;
+  }
+}
+
+// ── Render Results ────────────────────────────────────────────────
+function showResults(results, isAi) {
+  lastSearchResults = results;
+  if (!results.length) {
+    document.getElementById('searchResults').innerHTML =
+      '<div style="color:#888;font-size:14px;padding:20px 0">No matches found.</div>';
+    return;
+  }
+  const cards = results.map(c => {
+    const ringClass  = isAi ? (c.score >= 70 ? 'ring-green' : c.score >= 40 ? 'ring-amber' : 'ring-grey') : '';
+    const ringHtml   = isAi ? `<div class="score-ring ${ringClass}">${c.score}</div>` : '';
+    const reasonHtml = isAi && c.reason ? `<div class="result-reason">${c.reason}</div>` : '';
+    const tags       = [...(c.languages||[]).slice(0,2), ...(c.workPreferences||[]).slice(0,2)];
+    const wa         = `https://wa.me/91${(c.phone||'').replace(/\D/g,'')}`;
+    const idx        = results.indexOf(c);
+    return `<div class="result-card">
+      ${ringHtml}
+      <div class="result-info">
+        <div class="result-name">${c.name}</div>
+        <div class="result-meta">${c.sex||''} · ${c.age ? c.age+'y' : ''} · ${c.area||c.pincode||'—'} · ${c.experience||0}yr exp · ₹${c.salaryExpectation||'?'}</div>
+        ${reasonHtml}
+        <div class="tags">${tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>
+        <div class="result-btns">
+          <a href="${wa}" target="_blank" class="btn btn-sm btn-outline">WhatsApp</a>
+          <button class="btn btn-sm btn-primary" onclick="viewDetails('${c.id}')">View</button>
+          <button class="btn btn-sm btn-outline" onclick="downloadProfile(lastSearchResults[${idx}],false)">Full PDF</button>
+          <button class="btn btn-sm btn-outline" onclick="downloadProfile(lastSearchResults[${idx}],true)">Brief PDF</button>
+        </div>
+      </div>
+    </div>`;
+  });
+
+  const dlBar = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+    <div style="font-size:13px;font-weight:600;color:#555">${results.length} profile${results.length!==1?'s':''} found</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-sm btn-outline" onclick="downloadAllProfiles(false)">&#8659; All — Full PDF</button>
+      <button class="btn btn-sm btn-outline" onclick="downloadAllProfiles(true)">&#8659; All — Brief PDF</button>
+    </div>
+  </div>`;
+
+  document.getElementById('searchResults').innerHTML = dlBar + `<div class="results-grid">${cards.join('')}</div>`;
+}
+
+// ── View Details Modal ────────────────────────────────────────────
+async function viewDetails(id) {
+  const doc = await db.collection('caretakers').doc(id).get();
+  if (!doc.exists) return;
+  modalCaretaker = { id, ...doc.data() };
+  const c  = modalCaretaker;
+  const wa = `https://wa.me/91${(c.phone||'').replace(/\D/g,'')}`;
+
+  const photoHtml = c.photoURL
+    ? `<img src="${c.photoURL}" style="width:72px;height:72px;border-radius:50%;object-fit:cover;border:2px solid #E8E8E8;flex-shrink:0" onerror="this.style.display='none'">`
+    : `<div style="width:72px;height:72px;border-radius:50%;background:#E8E8E8;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;color:#999;flex-shrink:0">${(c.name||'?')[0].toUpperCase()}</div>`;
+
+  document.getElementById('modalName').textContent = c.name;
+  document.getElementById('modalBody').innerHTML = `
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #F0F0F0">
+      ${photoHtml}
+      <div>
+        <div style="font-size:18px;font-weight:700">${c.name}</div>
+        <div style="font-size:13px;color:#888;margin-top:3px">${c.sex||''}${c.age ? ' · '+c.age+' years' : ''} · ${c.area||c.pincode||'—'}</div>
+        <div style="font-size:13px;color:#555;margin-top:2px">${c.experience||0} yrs experience · ₹${c.salaryExpectation||'?'}/month</div>
+      </div>
+    </div>
+    <div class="detail-grid">
+      <div class="detail-item"><label>Phone</label><p>${c.phone||'—'}</p></div>
+      <div class="detail-item"><label>Email</label><p>${c.email||'—'}</p></div>
+      <div class="detail-item" style="grid-column:1/-1"><label>Address</label><p>${c.address||'—'}${c.area ? ', '+c.area : ''}${c.pincode ? ' – '+c.pincode : ''}</p></div>
+      <div class="detail-item"><label>Languages</label><p>${(c.languages||[]).join(', ')||'—'}</p></div>
+      <div class="detail-item"><label>Work Preferences</label><p>${(c.workPreferences||[]).join(', ')||'—'}</p></div>
+      <div class="detail-item"><label>Experience</label><p>${c.experience||0} years</p></div>
+      <div class="detail-item"><label>Salary Expectation</label><p>₹${c.salaryExpectation||'—'}/month</p></div>
+      <div class="detail-item" style="grid-column:1/-1"><label>Experience Details</label><p>${c.experienceDetails||'—'}</p></div>
+      <div class="detail-item"><label>ID Verification</label><p>${c.idType ? '✓ '+c.idType : '—'}${c.idURL ? ` &nbsp;<a href="${c.idURL}" target="_blank" style="font-size:12px;color:#2563EB">View →</a>` : ''}</p></div>
+      <div class="detail-item"><label>Referral</label><p>${c.referralName||'—'}${c.referralPhone ? ' ('+c.referralPhone+')' : ''}</p></div>
+      <div class="detail-item" style="grid-column:1/-1"><label>Notes</label><p>${c.notes||'—'}</p></div>
+      <div class="detail-item"><label>Added By</label><p>${c.addedBy||'—'}</p></div>
+      <div class="detail-item"><label>Added On</label><p>${c.createdAt ? toDate(c.createdAt).toLocaleDateString('en-IN') : '—'}</p></div>
+    </div>
+    <div style="margin-top:20px;display:flex;gap:10px;flex-wrap:wrap">
+      <a href="${wa}" target="_blank" class="btn btn-success">Open WhatsApp</a>
+      <button class="btn btn-outline" onclick="downloadProfile(modalCaretaker,false)">Full Profile PDF</button>
+      <button class="btn btn-outline" onclick="downloadProfile(modalCaretaker,true)">Brief PDF</button>
+    </div>`;
+  document.getElementById('detailModal').style.display = 'flex';
+}
+
+// ── PDF Profile Generation ────────────────────────────────────────
+function generateProfileHTML(c, redacted) {
+  const date     = new Date().toLocaleDateString('en-IN', { day:'numeric', month:'long', year:'numeric' });
+  const langs    = (c.languages||[]).join(', ') || '—';
+  const prefs    = (c.workPreferences||[]).join(' · ') || '—';
+  const initials = (c.name||'?')[0].toUpperCase();
+
+  const photoHtml = c.photoURL
+    ? `<img src="${c.photoURL}" width="72" height="72" style="border-radius:50%;object-fit:cover;border:3px solid #e0e0e0;display:block" crossorigin="anonymous">`
+    : `<div style="width:72px;height:72px;border-radius:50%;background:#e0e0e0;text-align:center;line-height:72px;font-size:26px;font-weight:bold;color:#777">${initials}</div>`;
+
+  const contactSection = !redacted ? `
+    <tr><td colspan="2" style="padding-top:0">
+      <div style="font-size:10px;font-weight:bold;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;border-top:1px solid #eee;padding-top:14px">Contact Information</div>
+      <table width="100%" cellpadding="0" cellspacing="4">
+        <tr><td style="font-size:11px;color:#888;width:110px">Phone</td><td style="font-size:13px;font-weight:600">${c.phone||'—'}</td></tr>
+        <tr><td style="font-size:11px;color:#888">Email</td><td style="font-size:13px">${c.email||'—'}</td></tr>
+        <tr><td style="font-size:11px;color:#888">Full Address</td><td style="font-size:13px">${c.address||'—'}</td></tr>
+        <tr><td style="font-size:11px;color:#888">Area</td><td style="font-size:13px">${c.area||'—'}</td></tr>
+        <tr><td style="font-size:11px;color:#888">Pincode</td><td style="font-size:13px">${c.pincode||'—'}</td></tr>
+      </table>
+    </td></tr>` : `
+    <tr><td colspan="2" style="padding-bottom:4px">
+      <span style="font-size:12px;color:#666">&#9679; Location: ${c.area || c.pincode || '—'}</span>
+    </td></tr>`;
+
+  const verifySection = !redacted && (c.idType || c.referralName) ? `
+    <tr><td colspan="2" style="padding-top:0">
+      <div style="font-size:10px;font-weight:bold;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;border-top:1px solid #eee;padding-top:14px">Verification &amp; Referral</div>
+      ${c.idType ? `<div style="font-size:12px;color:#166534;background:#f0fff4;padding:5px 10px;border-radius:4px;display:inline-block;margin-bottom:6px">&#10003; ${c.idType} provided</div>` : ''}
+      ${c.referralName ? `<div style="font-size:12px;color:#555">Referred by: ${c.referralName}${c.referralPhone ? ' &middot; '+c.referralPhone : ''}</div>` : ''}
+    </td></tr>` : '';
+
+  const footerMsg = redacted
+    ? 'To engage this caretaker, contact <b>OutdoorSeniors</b>. We handle verification, background checks &amp; placement.'
+    : `Managed by OutdoorSeniors &nbsp;&middot;&nbsp; Added by ${c.addedBy||'OutdoorSeniors'}`;
+
+  return `<div style="font-family:Arial,Helvetica,sans-serif;width:680px;background:#fff;color:#111;margin:0;padding:0">
+    <table width="100%" cellpadding="0" cellspacing="0" bgcolor="#111111">
+      <tr>
+        <td style="padding:18px 24px;color:#fff">
+          <div style="font-size:19px;font-weight:bold;letter-spacing:-0.5px">OutdoorSeniors</div>
+          <div style="font-size:10px;color:#aaa;margin-top:2px">Professional Caretaker Network</div>
+        </td>
+        <td align="right" style="padding:18px 24px;color:#fff">
+          <div style="font-size:11px;font-weight:bold">${redacted ? 'CARETAKER SUMMARY' : 'CARETAKER PROFILE'}</div>
+          <div style="font-size:10px;color:#aaa;margin-top:3px">${date}</div>
+        </td>
+      </tr>
+    </table>
+    <div style="padding:22px 24px 8px">
+      <table width="100%" cellpadding="0" cellspacing="0" style="border-bottom:1px solid #eee;padding-bottom:16px;margin-bottom:16px">
+        <tr>
+          <td width="88" valign="middle" style="padding-right:16px">${photoHtml}</td>
+          <td valign="middle">
+            <div style="font-size:22px;font-weight:bold">${c.name}</div>
+            <div style="font-size:12px;color:#666;margin-top:4px">Professional Caretaker &nbsp;&middot;&nbsp; ${c.experience||0} years experience</div>
+            <table cellpadding="0" cellspacing="0" style="margin-top:8px"><tr>
+              ${c.sex ? `<td style="background:#f5f5f5;padding:3px 9px;border-radius:10px;font-size:11px">${c.sex}</td><td width="6"></td>` : ''}
+              ${c.age  ? `<td style="background:#f5f5f5;padding:3px 9px;border-radius:10px;font-size:11px">${c.age} yrs old</td><td width="6"></td>` : ''}
+              ${c.salaryExpectation ? `<td style="background:#eff6ff;padding:3px 9px;border-radius:10px;font-size:11px;color:#1e40af">&#8377;${c.salaryExpectation}/month</td>` : ''}
+            </tr></table>
+          </td>
+        </tr>
+      </table>
+      <table width="100%" cellpadding="0" cellspacing="0">
+        ${contactSection}
+        <tr><td colspan="2" style="padding-top:0">
+          <div style="font-size:10px;font-weight:bold;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;border-top:1px solid #eee;padding-top:14px">Skills &amp; Availability</div>
+          <table width="100%" cellpadding="0" cellspacing="0">
+            <tr>
+              <td width="50%" valign="top" style="padding-right:12px">
+                <div style="font-size:11px;color:#888;margin-bottom:4px">Languages</div>
+                <div style="font-size:13px">${langs}</div>
+              </td>
+              <td width="50%" valign="top">
+                <div style="font-size:11px;color:#888;margin-bottom:4px">Work Preferences</div>
+                <div style="font-size:13px">${prefs}</div>
+              </td>
+            </tr>
+          </table>
+        </td></tr>
+        ${c.experienceDetails ? `
+        <tr><td colspan="2" style="padding-top:0">
+          <div style="font-size:10px;font-weight:bold;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;border-top:1px solid #eee;padding-top:14px">Experience</div>
+          <div style="font-size:13px;color:#333;line-height:1.6">${c.experienceDetails}</div>
+        </td></tr>` : ''}
+        ${c.notes ? `
+        <tr><td colspan="2" style="padding-top:0">
+          <div style="font-size:10px;font-weight:bold;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;border-top:1px solid #eee;padding-top:14px">Additional Notes</div>
+          <div style="font-size:13px;color:#333;line-height:1.6">${c.notes}</div>
+        </td></tr>` : ''}
+        ${verifySection}
+      </table>
+    </div>
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8f8f8;border-top:2px solid #111;margin-top:16px">
+      <tr>
+        <td style="padding:12px 24px;font-size:11px;color:#555">${footerMsg}</td>
+        <td align="right" style="padding:12px 24px;font-size:11px;color:#aaa;white-space:nowrap">outdoorseniors.com</td>
+      </tr>
+    </table>
+  </div>`;
+}
+
+async function downloadProfile(c, redacted) {
+  if (!c) { alert('Profile data unavailable.'); return; }
+  const el = document.createElement('div');
+  el.style.cssText = 'position:fixed;top:0;left:-1400px;width:720px;z-index:-1;background:#fff';
+  el.innerHTML = generateProfileHTML(c, redacted);
+  document.body.appendChild(el);
+  const safe = (c.name||'caretaker').replace(/[^a-zA-Z0-9]/g,'_');
+  await html2pdf().set({
+    margin:      [8, 8, 8, 8],
+    filename:    `${safe}_${redacted ? 'brief' : 'full'}.pdf`,
+    image:       { type:'jpeg', quality:0.95 },
+    html2canvas: { scale:2, useCORS:true, logging:false },
+    jsPDF:       { unit:'mm', format:'a4', orientation:'portrait' }
+  }).from(el).save();
+  document.body.removeChild(el);
+}
+
+async function downloadAllProfiles(redacted) {
+  if (!lastSearchResults.length) return;
+  const wrapper = document.createElement('div');
+  wrapper.style.cssText = 'position:fixed;top:0;left:-1400px;width:720px;z-index:-1;background:#fff';
+  lastSearchResults.forEach((c, i) => {
+    const page = document.createElement('div');
+    if (i > 0) page.style.cssText = 'page-break-before:always;margin-top:0';
+    page.innerHTML = generateProfileHTML(c, redacted);
+    wrapper.appendChild(page);
+  });
+  document.body.appendChild(wrapper);
+  await html2pdf().set({
+    margin:      [8, 8, 8, 8],
+    filename:    `caretakers_${redacted ? 'brief' : 'full'}_${dateStr(new Date())}.pdf`,
+    image:       { type:'jpeg', quality:0.95 },
+    html2canvas: { scale:2, useCORS:true, logging:false },
+    jsPDF:       { unit:'mm', format:'a4', orientation:'portrait' }
+  }).from(wrapper).save();
+  document.body.removeChild(wrapper);
+}
+
+function closeModalOnBg(e) {
+  if (e.target.id === 'detailModal') document.getElementById('detailModal').style.display = 'none';
+}
+
+// ── Filter Toggle ─────────────────────────────────────────────────
+function toggleFilters() {
+  const body = document.getElementById('filterBody');
+  const icon = document.getElementById('filterIcon');
+  const open = body.style.display === 'none';
+  body.style.display = open ? 'block' : 'none';
+  icon.textContent   = open ? '▲ hide filters' : '▼ show filters';
+}
+
+// ── Utilities ─────────────────────────────────────────────────────
+function toDate(v) {
+  if (!v) return new Date(0);
+  if (v.toDate) return v.toDate();
+  if (v.seconds) return new Date(v.seconds * 1000);
+  return new Date(v);
+}
+function dateStr(d) { return d.toISOString().slice(0, 10); }
+function showMsg(id, msg) { const el = document.getElementById(id); el.textContent = msg; el.style.display = 'block'; }
+function hideMsg(id)       { document.getElementById(id).style.display = 'none'; }
+</script>
+</body>
+</html>
