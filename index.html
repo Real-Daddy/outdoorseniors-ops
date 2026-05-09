@@ -844,7 +844,8 @@ function buildProfileHTML(c,redacted){
 function viewCaretaker(id){
   const c=allCaretakers.find(x=>x.id===id);if(!c)return;
   const initials=(c.name||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
-  document.getElementById('ctModalInner').innerHTML=`
+  const inner=document.getElementById('ctModalInner');inner.style.maxWidth='640px';
+  inner.innerHTML=`
   <button class="modal-close" onclick="closeModal('ctModal')">×</button>
   <div style="display:flex;gap:16px;align-items:flex-start;margin-bottom:20px">
     <div class="rc-avatar" style="width:60px;height:60px;font-size:22px">${c.photoURL?`<img src="${esc(c.photoURL)}" onerror="this.style.display='none'">`:initials}</div>
@@ -908,7 +909,7 @@ function buildCuTable(q){
   if(!data.length)return`<tr><td colspan="6" class="empty-state">No customers yet.</td></tr>`;
   return data.map(c=>{
     const cnt=allOrders.filter(o=>o.customerId===c.id).length;
-    return`<tr><td><strong>${esc(c.name)}</strong></td><td>${esc(c.phone||'—')}</td><td>${esc(c.email||'—')}</td><td>${esc(c.area||'—')}</td>
+    return`<tr><td><strong style="cursor:pointer;color:var(--accent)" onclick="viewCustomer('${c.id}')">${esc(c.name)}</strong></td><td>${esc(c.phone||'—')}</td><td>${esc(c.email||'—')}</td><td>${esc(c.area||'—')}</td>
     <td><span class="badge badge-info">${cnt}</span></td>
     <td><div style="display:flex;gap:4px"><button class="btn btn-ghost btn-sm" onclick="openCustModal('${c.id}')">Edit</button><button class="btn btn-secondary btn-sm" onclick="openOrderModal(null,'${c.id}')">+ Order</button><button class="btn btn-danger btn-sm" onclick="deleteCust('${c.id}')">Del</button></div></td></tr>`;
   }).join('');
@@ -959,8 +960,8 @@ function buildOrdTable(q,status){
   if(!data.length)return`<tr><td colspan="8" class="empty-state">No orders found.</td></tr>`;
   const sb={pending:'badge-warn',matched:'badge-info',assigned:'badge-purple',active:'badge-ok',closed:'badge-default'};
   return data.map(o=>`<tr>
-    <td><strong style="font-family:monospace;font-size:12px">${esc(o.orderId)}</strong></td>
-    <td>${esc(o.customerName||'—')}</td>
+    <td><strong style="font-family:monospace;font-size:12px;cursor:pointer;color:var(--accent);text-decoration:underline" onclick="viewOrder('${o.id}')">${esc(o.orderId)}</strong></td>
+    <td><span style="cursor:pointer;color:var(--accent)" onclick="viewCustomer('${o.customerId}')">${esc(o.customerName||'—')}</span></td>
     <td>${esc(o.patientName||'—')}${o.patientAge?` <span style="font-size:11px;color:var(--muted)">(${o.patientAge}y)</span>`:''}</td>
     <td style="font-size:12px">${esc(o.packageType||'—')}</td>
     <td><span class="badge ${sb[o.status]||'badge-default'}">${o.status||'—'}</span></td>
@@ -1015,34 +1016,160 @@ async function saveOrder(){
   }catch(e){toast(e.message,'error');}
 }
 
-function viewOrder(id){
+async function viewOrder(id){
   const o=allOrders.find(x=>x.id===id);if(!o)return;
+  const cust=allCustomers.find(c=>c.id===o.customerId);
   const sb={pending:'badge-warn',matched:'badge-info',assigned:'badge-purple',active:'badge-ok',closed:'badge-default'};
-  document.getElementById('ctModalInner').innerHTML=`
+  const inner=document.getElementById('ctModalInner');inner.style.maxWidth='740px';
+  inner.innerHTML=`
   <button class="modal-close" onclick="closeModal('ctModal')">×</button>
-  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
-    <div><div style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:1px;text-transform:uppercase">Order</div>
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">
+    <div>
+      <div style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:1px;text-transform:uppercase">Order</div>
       <h2 style="margin:4px 0;font-family:monospace;text-transform:none;font-size:18px;letter-spacing:0">${esc(o.orderId)}</h2>
-      <span class="badge ${sb[o.status]||'badge-default'}">${o.status}</span></div>
-    <div style="font-size:11px;color:var(--muted)">${o.createdAt?.toDate?o.createdAt.toDate().toLocaleDateString('en-IN'):''}</div>
+      <span class="badge ${sb[o.status]||'badge-default'}">${o.status}</span>
+    </div>
+    <div style="text-align:right;font-size:11px;color:var(--muted)">${o.createdAt?.toDate?o.createdAt.toDate().toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}):''}<br>By: ${esc(o.createdBy||'—')}</div>
   </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px;margin-bottom:16px">
-    <div><strong>Customer:</strong> ${esc(o.customerName||'—')}</div><div><strong>Phone:</strong> ${esc(o.customerPhone||'—')}</div>
-    <div><strong>Patient:</strong> ${esc(o.patientName||'—')}</div><div><strong>Age/Weight:</strong> ${o.patientAge||'—'}y / ${o.patientWeight||'—'}kg</div>
-    <div><strong>Package:</strong> ${esc(o.packageType||'—')}</div><div><strong>Start:</strong> ${o.preferredStartDate||'—'}</div>
-    <div><strong>Duration:</strong> ${esc(o.duration||'—')}</div><div><strong>Location:</strong> ${esc(o.location||'—')} ${o.pincode?'('+o.pincode+')':''}</div>
-    <div><strong>Gender pref:</strong> ${o.caretakerGender||'Any'}</div><div><strong>Diapers:</strong> ${o.onDiapers||'No'}</div>
-    <div><strong>Medical:</strong> ${esc(o.medicalConditions||'None')}</div><div><strong>Languages:</strong> ${(o.languagesPreferred||[]).join(', ')||'Any'}</div>
+
+  <div style="background:var(--bg);border:1px solid var(--border);padding:12px 14px;margin-bottom:14px">
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px">Customer</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px">
+      <div><span style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase">Name</span><br>
+        <span style="cursor:pointer;color:var(--accent);font-weight:700" onclick="closeModal('ctModal');viewCustomer('${o.customerId}')">${esc(o.customerName||'—')} →</span>
+      </div>
+      <div><span style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase">Phone</span><br>${esc(o.customerPhone||cust?.phone||'—')}</div>
+      ${cust?.area?`<div><span style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase">Area</span><br>${esc(cust.area)}</div>`:''}
+      ${cust?.email?`<div><span style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase">Email</span><br>${esc(cust.email)}</div>`:''}
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px;margin-bottom:14px">
+    <div><strong>Patient:</strong> ${esc(o.patientName||'—')}</div>
+    <div><strong>Age / Weight:</strong> ${o.patientAge||'—'}y / ${o.patientWeight||'—'}kg</div>
+    <div><strong>Package:</strong> ${esc(o.packageType||'—')}</div>
+    <div><strong>Start:</strong> ${o.preferredStartDate||'—'}</div>
+    <div><strong>Duration:</strong> ${esc(o.duration||'—')}</div>
+    <div><strong>Location:</strong> ${esc(o.location||'—')}${o.pincode?' ('+o.pincode+')':''}</div>
+    <div><strong>Gender pref:</strong> ${o.caretakerGender||'Any'}</div>
+    <div><strong>Diapers:</strong> ${o.onDiapers||'No'}</div>
+    <div><strong>Medical:</strong> ${esc(o.medicalConditions||'None')}</div>
+    <div><strong>Languages:</strong> ${(o.languagesPreferred||[]).join(', ')||'Any'}</div>
     <div style="grid-column:1/-1"><strong>For:</strong> ${o.forSelf||'Self'}${o.relationship?' ('+o.relationship+')':''}</div>
     ${o.notes?`<div style="grid-column:1/-1"><strong>Notes:</strong> ${esc(o.notes)}</div>`:''}
-    ${o.assignedCaretakerName?`<div style="grid-column:1/-1;color:var(--ok-fg)"><strong>Assigned To:</strong> ${esc(o.assignedCaretakerName)}</div>`:''}
   </div>
-  <div style="display:flex;gap:6px;flex-wrap:wrap">
-    ${!o.assignedCaretakerId?`<button class="btn btn-primary btn-sm" onclick="closeModal('ctModal');findMatches('${o.id}')">Find Matches</button>`:''}
-    ${!o.assignedCaretakerId?`<button class="btn btn-secondary btn-sm" onclick="closeModal('ctModal');openAssign('${o.id}')">Assign</button>`:''}
-    <button class="btn btn-ghost btn-sm" onclick="closeModal('ctModal');openOrderModal('${o.id}')">Edit</button>
+
+  <div style="background:var(--bg);border:1px solid var(--border);padding:12px 14px;margin-bottom:14px">
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px">Caretaker Assignment</div>
+    <div style="font-size:13px;margin-bottom:10px">
+      ${o.assignedCaretakerName?`<span style="color:var(--ok-fg);font-weight:700">✓ ${esc(o.assignedCaretakerName)}</span>`:'<span style="color:var(--muted)">Not yet assigned</span>'}
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+      ${!o.assignedCaretakerId?`<button class="btn btn-primary btn-sm" onclick="closeModal('ctModal');findMatches('${o.id}')">Find AI Matches</button>`:''}
+      <button class="btn btn-secondary btn-sm" onclick="closeModal('ctModal');openAssign('${o.id}')">${o.assignedCaretakerId?'Reassign Caretaker':'Assign Caretaker'}</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('ctModal');openOrderModal('${o.id}')">Edit Order</button>
+      <select onchange="updateOrdStatus('${o.id}',this.value)" style="margin-left:auto;border:1px solid var(--border);padding:5px 8px;font-size:11px;outline:none;background:var(--bg);cursor:pointer">
+        ${['pending','matched','assigned','active','closed'].map(s=>`<option${o.status===s?' selected':''}>${s}</option>`).join('')}
+      </select>
+    </div>
+  </div>
+
+  <div>
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:10px">Comments</div>
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <textarea id="newCommentText" rows="2" placeholder="Add a comment… (Ctrl+Enter to post)" onkeydown="if(event.ctrlKey&&event.key==='Enter')addComment('${o.id}')" style="flex:1;border:1px solid var(--border);padding:8px 10px;font-size:13px;outline:none;background:var(--bg);color:var(--text);resize:vertical;font-family:inherit"></textarea>
+      <button class="btn btn-primary btn-sm" onclick="addComment('${o.id}')" style="align-self:flex-end">Post</button>
+    </div>
+    <div id="commentsList" style="display:flex;flex-direction:column;gap:8px">
+      <div style="color:var(--muted);font-size:12px">Loading…</div>
+    </div>
   </div>`;
   openModal('ctModal');
+  loadComments(id);
+}
+
+function viewCustomer(id){
+  const c=allCustomers.find(x=>x.id===id);if(!c)return;
+  const orders=allOrders.filter(o=>o.customerId===id);
+  const current=orders.find(o=>o.status==='active'||o.status==='assigned'||o.status==='matched');
+  const sb={pending:'badge-warn',matched:'badge-info',assigned:'badge-purple',active:'badge-ok',closed:'badge-default'};
+  const inner=document.getElementById('ctModalInner');inner.style.maxWidth='700px';
+  const ordRows=orders.map(o=>`<tr>
+    <td><strong style="font-family:monospace;font-size:11px;cursor:pointer;color:var(--accent);text-decoration:underline" onclick="viewOrder('${o.id}')">${esc(o.orderId)}</strong></td>
+    <td>${esc(o.patientName||'—')}</td>
+    <td style="font-size:12px">${esc(o.packageType||'—')}</td>
+    <td><span class="badge ${sb[o.status]||'badge-default'}">${o.status}</span></td>
+    <td style="font-size:11px;color:var(--muted)">${o.createdAt?.toDate?o.createdAt.toDate().toLocaleDateString('en-IN'):''}</td>
+    <td><button class="btn btn-ghost btn-sm" onclick="viewOrder('${o.id}')">View →</button></td>
+  </tr>`).join('');
+  inner.innerHTML=`
+  <button class="modal-close" onclick="closeModal('ctModal')">×</button>
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px">
+    <div>
+      <div style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:1px;text-transform:uppercase">Customer</div>
+      <h2 style="margin:4px 0;text-transform:none;letter-spacing:0;font-size:20px">${esc(c.name)}</h2>
+    </div>
+    <button class="btn btn-primary btn-sm" onclick="closeModal('ctModal');openOrderModal(null,'${c.id}')">+ New Order</button>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px;margin-bottom:18px">
+    <div><span style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase">Phone</span><br>${esc(c.phone||'—')}</div>
+    <div><span style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase">Email</span><br>${esc(c.email||'—')}</div>
+    <div><span style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase">Area</span><br>${esc(c.area||'—')}</div>
+    <div><span style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase">Pincode</span><br>${esc(c.pincode||'—')}</div>
+    ${c.address?`<div style="grid-column:1/-1"><span style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase">Address</span><br>${esc(c.address)}</div>`:''}
+    ${c.notes?`<div style="grid-column:1/-1"><span style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase">Notes</span><br>${esc(c.notes)}</div>`:''}
+  </div>
+  ${current?`<div style="background:var(--ok-bg);border:1px solid #b5dab5;padding:14px;margin-bottom:16px">
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--ok-fg);margin-bottom:8px">Current Order</div>
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <strong style="font-family:monospace;cursor:pointer;color:var(--accent);text-decoration:underline" onclick="viewOrder('${current.id}')">${esc(current.orderId)}</strong>
+        <span class="badge ${sb[current.status]||'badge-default'}" style="margin-left:8px">${current.status}</span>
+        <div style="font-size:12px;margin-top:4px">${esc(current.patientName||'—')} · ${esc(current.packageType||'—')}</div>
+        ${current.assignedCaretakerName?`<div style="font-size:12px;color:var(--ok-fg);margin-top:2px">Caretaker: ${esc(current.assignedCaretakerName)}</div>`:''}
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="viewOrder('${current.id}')">View →</button>
+    </div>
+  </div>`:''}
+  <div>
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:10px">Order History (${orders.length})</div>
+    ${orders.length?`<div class="table-wrap"><table><thead><tr><th>Order ID</th><th>Patient</th><th>Package</th><th>Status</th><th>Date</th><th></th></tr></thead><tbody>${ordRows}</tbody></table></div>`:'<div class="empty-state">No orders yet.</div>'}
+  </div>
+  <div style="margin-top:16px">
+    <button class="btn btn-ghost btn-sm" onclick="closeModal('ctModal');openCustModal('${c.id}')">Edit Customer</button>
+  </div>`;
+  openModal('ctModal');
+}
+
+async function loadComments(orderId){
+  const box=document.getElementById('commentsList');if(!box)return;
+  try{
+    const snap=await db.collection('comments').where('orderId','==',orderId).get();
+    if(snap.empty){box.innerHTML=`<div style="color:var(--muted);font-size:12px;padding:4px 0">No comments yet.</div>`;return;}
+    const docs=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(a.createdAt?.toDate?.()?.getTime()||0)-(b.createdAt?.toDate?.()?.getTime()||0));
+    box.innerHTML=docs.map(cm=>{
+      const dt=cm.createdAt?.toDate?cm.createdAt.toDate().toLocaleString('en-IN',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'';
+      return`<div style="background:var(--bg);border:1px solid var(--border);padding:10px 14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
+          <strong style="font-size:12px">${esc(cm.agentName||'Unknown')}</strong>
+          <span style="font-size:10px;color:var(--muted)">${dt}</span>
+        </div>
+        <div style="font-size:13px;white-space:pre-wrap">${esc(cm.text)}</div>
+      </div>`;
+    }).join('');
+  }catch(e){box.innerHTML=`<div style="color:var(--danger);font-size:12px">Could not load comments: ${e.message}</div>`;}
+}
+
+async function addComment(orderId){
+  const el=document.getElementById('newCommentText');
+  const text=(el?.value||'').trim();
+  if(!text){toast('Comment cannot be empty','error');return;}
+  try{
+    await db.collection('comments').add({orderId,text,agentName:currentProfile?.name||currentUser?.email||'Agent',agentId:currentUser?.uid||'',createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+    el.value='';
+    await loadComments(orderId);
+    toast('Comment posted');
+  }catch(e){toast(e.message,'error');}
 }
 
 async function findMatches(orderId){
@@ -1192,8 +1319,8 @@ function buildOmsTable(status){
   if(!data.length)return`<tr><td colspan="9" class="empty-state">No orders.</td></tr>`;
   const sb={pending:'badge-warn',matched:'badge-info',assigned:'badge-purple',active:'badge-ok',closed:'badge-default'};
   return data.map(o=>`<tr>
-    <td><strong style="font-family:monospace;font-size:11px">${esc(o.orderId)}</strong></td>
-    <td>${esc(o.customerName||'—')}</td><td>${esc(o.patientName||'—')}</td>
+    <td><strong style="font-family:monospace;font-size:11px;cursor:pointer;color:var(--accent);text-decoration:underline" onclick="viewOrder('${o.id}')">${esc(o.orderId)}</strong></td>
+    <td><span style="cursor:pointer;color:var(--accent)" onclick="viewCustomer('${o.customerId}')">${esc(o.customerName||'—')}</span></td><td>${esc(o.patientName||'—')}</td>
     <td style="font-size:12px">${esc(o.packageType||'—')}</td>
     <td><span class="badge ${sb[o.status]||'badge-default'}">${o.status}</span></td>
     <td style="font-size:12px">${esc(o.createdBy||'—')}</td>
