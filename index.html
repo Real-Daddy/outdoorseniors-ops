@@ -8,164 +8,178 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
+/* ── Warm neutral palette ── */
+:root{
+  --bg:       #f0ede8;   /* warm off-white page */
+  --surface:  #faf9f6;   /* card / sidebar surface */
+  --border:   #dbd8d0;   /* soft warm border */
+  --text:     #2e2c28;   /* dark warm brown-gray, not harsh black */
+  --muted:    #7a7670;   /* secondary text */
+  --accent:   #3d3a35;   /* buttons / active states */
+  --danger:   #8c2020;
+  --ok-bg:    #eef5ee; --ok-fg:#2a5c2a;
+  --warn-bg:  #fdf5e6; --warn-fg:#7a5500;
+  --err-bg:   #fdeaea; --err-fg:#8c2020;
+  --info-bg:  #eaecfd; --info-fg:#2a3070;
+  --pur-bg:   #f3eafd; --pur-fg:#5a1a8c;
+}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Segoe UI',system-ui,sans-serif;background:#f5f5f5;color:#111;height:100vh;overflow:hidden;font-size:14px}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);height:100vh;overflow:hidden;font-size:14px}
 
-/* Login */
-#loginView{display:flex;align-items:center;justify-content:center;height:100vh;background:#000}
-.login-box{background:#fff;padding:48px 40px;width:360px}
-.login-logo{text-align:center;margin-bottom:36px}
-.login-logo .brand{font-size:28px;font-weight:800;color:#000;letter-spacing:-1px}
-.login-logo .brand span{color:#555}
-.login-logo .sub{font-size:11px;color:#888;margin-top:4px;letter-spacing:2px;text-transform:uppercase}
+/* ── Login ── */
+#loginView{display:flex;align-items:center;justify-content:center;height:100vh;background:#1e1c18}
+.login-box{background:var(--surface);padding:48px 40px;width:360px;border:1px solid var(--border)}
+.login-logo{text-align:center;margin-bottom:32px}
+.login-logo .brand{font-size:26px;font-weight:800;color:var(--text);letter-spacing:-0.5px}
+.login-logo .brand span{color:var(--muted)}
+.login-logo .sub{font-size:10px;color:var(--muted);margin-top:4px;letter-spacing:2px;text-transform:uppercase}
 .form-group{margin-bottom:14px}
-.form-group label{display:block;font-size:11px;font-weight:700;color:#555;margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px}
-.form-group input{width:100%;border:1px solid #ddd;padding:10px 12px;font-size:14px;outline:none;transition:border .15s}
-.form-group input:focus{border-color:#000}
-.btn-login{width:100%;background:#000;color:#fff;border:none;padding:12px;font-size:14px;font-weight:700;cursor:pointer;margin-top:8px;letter-spacing:.5px}
-.btn-login:hover{background:#222}
-#loginError{color:#c00;font-size:12px;margin-top:10px;text-align:center;min-height:18px}
+.form-group label{display:block;font-size:10px;font-weight:700;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px}
+.form-group input{width:100%;border:1px solid var(--border);padding:10px 12px;font-size:14px;outline:none;background:var(--bg);color:var(--text);transition:border .15s}
+.form-group input:focus{border-color:var(--accent)}
+.btn-login{width:100%;background:var(--accent);color:#fff;border:none;padding:12px;font-size:14px;font-weight:700;cursor:pointer;margin-top:8px;letter-spacing:.3px}
+.btn-login:hover{background:#2a2822}
+#loginError{color:var(--danger);font-size:12px;margin-top:10px;text-align:center;min-height:18px}
 
-/* App Shell */
+/* ── App Shell ── */
 #appView{height:100vh;flex-direction:row}
 
-/* Sidebar */
-.sidebar{width:220px;min-width:220px;background:#fff;border-right:1px solid #e5e5e5;display:flex;flex-direction:column;height:100vh;overflow-y:auto}
-.sidebar-logo{padding:20px 18px;border-bottom:1px solid #e5e5e5}
-.sidebar-logo .brand{font-size:18px;font-weight:800;color:#000;letter-spacing:-0.5px}
-.sidebar-logo .brand span{color:#555}
-.sidebar-logo .sub{font-size:10px;color:#aaa;letter-spacing:1.5px;text-transform:uppercase;margin-top:2px}
-.sidebar-user{padding:14px 18px;border-bottom:1px solid #e5e5e5}
-.sidebar-user .name{font-size:13px;font-weight:700;color:#111}
-.sidebar-user .role{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+/* ── Sidebar ── */
+.sidebar{width:218px;min-width:218px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh;overflow-y:auto}
+.sidebar-logo{padding:20px 18px;border-bottom:1px solid var(--border)}
+.sidebar-logo .brand{font-size:17px;font-weight:800;color:var(--text)}
+.sidebar-logo .brand span{color:var(--muted)}
+.sidebar-logo .sub{font-size:9px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-top:2px}
+.sidebar-user{padding:14px 18px;border-bottom:1px solid var(--border)}
+.sidebar-user .name{font-size:13px;font-weight:700;color:var(--text)}
+.sidebar-user .role{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
 .nav-section{padding:8px 0}
-.nav-label{font-size:9px;font-weight:700;color:#bbb;letter-spacing:1.5px;text-transform:uppercase;padding:8px 18px 4px}
-.nav-item{display:flex;align-items:center;gap:8px;padding:9px 18px;cursor:pointer;font-size:13px;color:#555;border-left:2px solid transparent;transition:all .1s}
-.nav-item:hover{background:#f5f5f5;color:#000}
-.nav-item.active{background:#f5f5f5;color:#000;border-left-color:#000;font-weight:700}
-.nav-item .icon{font-size:14px;width:18px;text-align:center}
-.sidebar-footer{margin-top:auto;padding:14px 18px;border-top:1px solid #e5e5e5}
-.btn-signout{width:100%;background:#fff;color:#555;border:1px solid #ddd;padding:8px;font-size:12px;cursor:pointer;transition:all .1s}
-.btn-signout:hover{background:#000;color:#fff;border-color:#000}
+.nav-label{font-size:9px;font-weight:700;color:#b5b0a8;letter-spacing:1.5px;text-transform:uppercase;padding:8px 18px 4px}
+.nav-item{display:flex;align-items:center;gap:8px;padding:9px 18px;cursor:pointer;font-size:13px;color:var(--muted);border-left:2px solid transparent;transition:all .1s}
+.nav-item:hover{background:var(--bg);color:var(--text)}
+.nav-item.active{background:var(--bg);color:var(--text);border-left-color:var(--accent);font-weight:700}
+.nav-item .icon{font-size:14px;width:18px;text-align:center;opacity:.7}
+.sidebar-footer{margin-top:auto;padding:14px 18px;border-top:1px solid var(--border)}
+.btn-signout{width:100%;background:transparent;color:var(--muted);border:1px solid var(--border);padding:8px;font-size:12px;cursor:pointer;transition:all .1s}
+.btn-signout:hover{background:var(--err-bg);color:var(--err-fg);border-color:var(--err-fg)}
 
-/* Main */
+/* ── Main ── */
 .main-content{flex:1;overflow-y:auto;display:flex;flex-direction:column}
-.topbar{background:#fff;border-bottom:1px solid #e5e5e5;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;min-height:56px}
-.topbar-title{font-size:16px;font-weight:800;color:#000}
-.topbar-sub{font-size:11px;color:#888;margin-top:2px}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;min-height:56px}
+.topbar-title{font-size:15px;font-weight:800;color:var(--text)}
+.topbar-sub{font-size:11px;color:var(--muted);margin-top:2px}
 .content-area{padding:20px 24px;flex:1}
 
-/* Cards */
+/* ── KPI Cards ── */
 .kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:20px}
-.kpi-card{background:#fff;border:1px solid #e5e5e5;padding:18px}
-.kpi-card .label{font-size:10px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
-.kpi-card .value{font-size:30px;font-weight:800;color:#000;margin:6px 0 2px}
-.kpi-card .delta{font-size:11px;color:#666}
+.kpi-card{background:var(--surface);border:1px solid var(--border);padding:18px}
+.kpi-card .label{font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.kpi-card .value{font-size:30px;font-weight:800;color:var(--text);margin:6px 0 2px}
+.kpi-card .delta{font-size:11px;color:var(--muted)}
 
-.section-card{background:#fff;border:1px solid #e5e5e5;padding:20px;margin-bottom:16px}
-.section-card h2{font-size:14px;font-weight:800;margin-bottom:16px;color:#000;text-transform:uppercase;letter-spacing:.5px}
+.section-card{background:var(--surface);border:1px solid var(--border);padding:20px;margin-bottom:16px}
+.section-card h2{font-size:12px;font-weight:800;margin-bottom:16px;color:var(--text);text-transform:uppercase;letter-spacing:.8px}
 
-/* Forms */
+/* ── Forms ── */
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .form-grid.cols3{grid-template-columns:1fr 1fr 1fr}
 .form-full{grid-column:1/-1}
-.field label{display:block;font-size:10px;font-weight:700;color:#555;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
-.field input,.field select,.field textarea{width:100%;border:1px solid #ddd;padding:8px 10px;font-size:13px;outline:none;transition:border .15s;background:#fff}
-.field input:focus,.field select:focus,.field textarea:focus{border-color:#000}
+.field label{display:block;font-size:10px;font-weight:700;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
+.field input,.field select,.field textarea{width:100%;border:1px solid var(--border);padding:8px 10px;font-size:13px;outline:none;background:var(--bg);color:var(--text);transition:border .15s}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent)}
 .field textarea{resize:vertical;min-height:64px}
 
-/* Pills */
+/* ── Pills ── */
 .pill-group{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
-.pill-label{display:inline-flex;align-items:center;padding:5px 12px;border:1px solid #ddd;cursor:pointer;font-size:12px;color:#555;transition:all .1s;user-select:none}
-.pill-label.on{background:#000;border-color:#000;color:#fff;font-weight:700}
+.pill-label{display:inline-flex;align-items:center;padding:5px 12px;border:1px solid var(--border);cursor:pointer;font-size:12px;color:var(--muted);transition:all .1s;user-select:none}
+.pill-label.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:700}
 .pill-label input{display:none}
 
-/* Buttons */
-.btn{display:inline-flex;align-items:center;gap:5px;padding:8px 16px;border:1px solid #000;font-size:12px;font-weight:700;cursor:pointer;transition:all .1s;letter-spacing:.3px}
-.btn-primary{background:#000;color:#fff;border-color:#000}.btn-primary:hover{background:#222}
-.btn-secondary{background:#fff;color:#000;border-color:#000}.btn-secondary:hover{background:#000;color:#fff}
-.btn-danger{background:#fff;color:#c00;border-color:#c00}.btn-danger:hover{background:#c00;color:#fff}
-.btn-ghost{background:#f5f5f5;color:#555;border-color:#ddd}.btn-ghost:hover{background:#eee;color:#000;border-color:#999}
+/* ── Buttons ── */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer;transition:all .1s;letter-spacing:.2px;border:1px solid transparent}
+.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}.btn-primary:hover{background:#2a2822}
+.btn-secondary{background:var(--surface);color:var(--text);border-color:var(--border)}.btn-secondary:hover{background:var(--bg);border-color:var(--accent);color:var(--accent)}
+.btn-danger{background:var(--surface);color:var(--danger);border-color:var(--danger)}.btn-danger:hover{background:var(--err-bg)}
+.btn-ghost{background:var(--bg);color:var(--muted);border-color:var(--border)}.btn-ghost:hover{color:var(--text);border-color:var(--muted)}
 .btn-sm{padding:5px 10px;font-size:11px}
-.btn-wa{background:#25d366;color:#fff;border-color:#25d366}.btn-wa:hover{background:#128c7e;border-color:#128c7e}
+.btn-wa{background:#25d366;color:#fff;border-color:#25d366}.btn-wa:hover{background:#128c7e}
 
-/* Table */
+/* ── Table ── */
 .table-wrap{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:13px}
-th{background:#f5f5f5;color:#555;font-weight:700;text-align:left;padding:9px 12px;border-bottom:2px solid #e5e5e5;font-size:11px;text-transform:uppercase;letter-spacing:.5px}
-td{padding:10px 12px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
-tr:hover td{background:#fafafa}
-.badge{display:inline-block;padding:2px 8px;font-size:10px;font-weight:700;letter-spacing:.3px;border:1px solid}
-.badge-default{background:#f5f5f5;color:#555;border-color:#ddd}
-.badge-ok{background:#f0faf0;color:#1a6e1a;border-color:#b3d9b3}
-.badge-warn{background:#fffbf0;color:#8a5a00;border-color:#f0d090}
-.badge-err{background:#fff5f5;color:#c00;border-color:#f5b3b3}
-.badge-info{background:#f0f5ff;color:#1a3a8a;border-color:#b3c8f5}
-.badge-purple{background:#f8f0ff;color:#5a1a8a;border-color:#d4b3f5}
+th{background:var(--bg);color:var(--muted);font-weight:700;text-align:left;padding:9px 12px;border-bottom:1px solid var(--border);font-size:10px;text-transform:uppercase;letter-spacing:.5px}
+td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle;color:var(--text)}
+tr:hover td{background:var(--bg)}
+.badge{display:inline-block;padding:2px 8px;font-size:10px;font-weight:700;letter-spacing:.2px}
+.badge-default{background:#eee;color:var(--muted)}
+.badge-ok{background:var(--ok-bg);color:var(--ok-fg)}
+.badge-warn{background:var(--warn-bg);color:var(--warn-fg)}
+.badge-err{background:var(--err-bg);color:var(--err-fg)}
+.badge-info{background:var(--info-bg);color:var(--info-fg)}
+.badge-purple{background:var(--pur-bg);color:var(--pur-fg)}
 
-/* Search bar */
+/* ── Search bar ── */
 .search-bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
-.search-bar input,.search-bar select{border:1px solid #ddd;padding:7px 10px;font-size:13px;outline:none;background:#fff}
-.search-bar input:focus,.search-bar select:focus{border-color:#000}
+.search-bar input,.search-bar select{border:1px solid var(--border);padding:7px 10px;font-size:13px;outline:none;background:var(--bg);color:var(--text)}
+.search-bar input:focus,.search-bar select:focus{border-color:var(--accent)}
 
-/* AI Box */
-.ai-box{background:#000;padding:24px;color:#fff;margin-bottom:20px}
-.ai-box h2{font-size:16px;font-weight:800;margin-bottom:4px}
-.ai-box p{font-size:12px;color:#888;margin-bottom:14px}
+/* ── AI Box ── */
+.ai-box{background:#1e1c18;padding:24px;color:#f0ede8;margin-bottom:20px}
+.ai-box h2{font-size:15px;font-weight:800;margin-bottom:4px}
+.ai-box p{font-size:12px;color:#857f74;margin-bottom:14px}
 .ai-input-row{display:flex;gap:8px}
-.ai-input-row input{flex:1;border:1px solid #333;padding:10px 14px;font-size:13px;outline:none;background:#111;color:#fff}
-.ai-input-row input::placeholder{color:#444}
-.ai-input-row input:focus{border-color:#666}
-.ai-input-row button{background:#fff;color:#000;border:none;padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer}
-.ai-input-row button:hover{background:#ddd}
-.ai-response{margin-top:14px;padding:14px;background:#111;border:1px solid #222;font-size:13px;line-height:1.7;color:#ccc;white-space:pre-wrap;display:none}
+.ai-input-row input{flex:1;border:1px solid #3a3830;padding:10px 14px;font-size:13px;outline:none;background:#2a2822;color:#f0ede8}
+.ai-input-row input::placeholder{color:#5a5650}
+.ai-input-row input:focus{border-color:#6a6450}
+.ai-input-row button{background:var(--surface);color:var(--text);border:none;padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer}
+.ai-input-row button:hover{background:#e5e0d8}
+.ai-response{margin-top:14px;padding:14px;background:#2a2822;border:1px solid #3a3830;font-size:13px;line-height:1.7;color:#c8c0b0;white-space:pre-wrap;display:none}
 
-/* Result cards */
+/* ── Result cards ── */
 .result-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-top:12px}
-.result-card{background:#fff;border:1px solid #e5e5e5;padding:16px;transition:border-color .1s}
-.result-card:hover{border-color:#000}
-.rc-avatar{width:48px;height:48px;background:#000;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:#fff;overflow:hidden;flex-shrink:0}
+.result-card{background:var(--surface);border:1px solid var(--border);padding:16px;transition:border-color .1s}
+.result-card:hover{border-color:var(--accent)}
+.rc-avatar{width:48px;height:48px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:#fff;overflow:hidden;flex-shrink:0}
 .rc-avatar img{width:100%;height:100%;object-fit:cover}
-.rc-name{font-size:14px;font-weight:800;color:#000}
-.rc-meta{font-size:11px;color:#666;margin:3px 0 8px}
+.rc-name{font-size:14px;font-weight:800;color:var(--text)}
+.rc-meta{font-size:11px;color:var(--muted);margin:3px 0 8px}
 .rc-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px}
-.rc-tag{background:#f5f5f5;color:#555;font-size:10px;padding:2px 7px;border:1px solid #e5e5e5;font-weight:600}
+.rc-tag{background:var(--bg);color:var(--muted);font-size:10px;padding:2px 7px;border:1px solid var(--border);font-weight:600}
 .rc-actions{display:flex;gap:5px;flex-wrap:wrap}
-.match-score{display:inline-block;background:#000;color:#fff;padding:3px 10px;font-size:11px;font-weight:800;margin-bottom:6px}
+.match-score{display:inline-block;background:var(--accent);color:#fff;padding:3px 10px;font-size:11px;font-weight:800;margin-bottom:6px}
 
-/* Modal */
-.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;align-items:center;justify-content:center}
+/* ── Modal ── */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(30,28,24,.65);z-index:1000;align-items:center;justify-content:center}
 .modal-bg.open{display:flex}
-.modal{background:#fff;padding:28px;width:90%;max-width:600px;max-height:90vh;overflow-y:auto;position:relative}
-.modal h2{font-size:16px;font-weight:800;margin-bottom:18px;text-transform:uppercase;letter-spacing:.3px}
-.modal-close{position:absolute;top:14px;right:18px;font-size:20px;cursor:pointer;color:#888;background:none;border:none;line-height:1;font-weight:400}
-.modal-close:hover{color:#000}
+.modal{background:var(--surface);padding:28px;width:90%;max-width:600px;max-height:90vh;overflow-y:auto;position:relative;border:1px solid var(--border)}
+.modal h2{font-size:14px;font-weight:800;margin-bottom:18px;text-transform:uppercase;letter-spacing:.5px}
+.modal-close{position:absolute;top:14px;right:18px;font-size:20px;cursor:pointer;color:var(--muted);background:none;border:none;line-height:1}
+.modal-close:hover{color:var(--text)}
 
-/* Tabs */
-.tab-bar{display:flex;gap:0;border-bottom:2px solid #e5e5e5;margin-bottom:20px}
-.tab-btn{padding:8px 18px;border:none;font-size:12px;font-weight:700;cursor:pointer;background:transparent;color:#888;border-bottom:2px solid transparent;margin-bottom:-2px;text-transform:uppercase;letter-spacing:.5px;transition:all .1s}
-.tab-btn.active{color:#000;border-bottom-color:#000}
-.tab-btn:hover{color:#000}
+/* ── Tabs ── */
+.tab-bar{display:flex;border-bottom:1px solid var(--border);margin-bottom:20px}
+.tab-btn{padding:8px 18px;border:none;font-size:11px;font-weight:700;cursor:pointer;background:transparent;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;text-transform:uppercase;letter-spacing:.5px;transition:all .1s}
+.tab-btn.active{color:var(--text);border-bottom-color:var(--accent)}
+.tab-btn:hover{color:var(--text)}
 
-/* Period toggle */
-.period-toggle{display:flex;gap:0;margin-bottom:18px;border:1px solid #ddd;width:fit-content}
-.period-btn{padding:6px 16px;border:none;border-right:1px solid #ddd;font-size:11px;font-weight:700;cursor:pointer;background:#fff;color:#888;text-transform:uppercase;letter-spacing:.5px}
+/* ── Period toggle ── */
+.period-toggle{display:flex;margin-bottom:18px;border:1px solid var(--border);width:fit-content}
+.period-btn{padding:6px 16px;border:none;border-right:1px solid var(--border);font-size:11px;font-weight:700;cursor:pointer;background:var(--surface);color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
 .period-btn:last-child{border-right:none}
-.period-btn.active{background:#000;color:#fff}
+.period-btn.active{background:var(--accent);color:#fff}
 
-/* Toast */
-.toast{position:fixed;bottom:20px;right:20px;background:#000;color:#fff;padding:12px 18px;font-size:13px;z-index:9999;transform:translateY(60px);opacity:0;transition:all .25s;max-width:320px;border-left:3px solid #fff}
+/* ── Toast ── */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--accent);color:#fff;padding:12px 18px;font-size:13px;z-index:9999;transform:translateY(60px);opacity:0;transition:all .25s;max-width:320px;border-left:3px solid #fff}
 .toast.show{transform:translateY(0);opacity:1}
-.toast.error{border-left-color:#c00}
-.toast.success{border-left-color:#1a6e1a}
+.toast.error{background:var(--danger)}
+.toast.success{border-left-color:#7bc87b}
 
-.empty-state{text-align:center;padding:40px 20px;color:#aaa;font-size:13px}
-.spinner{display:inline-block;width:16px;height:16px;border:2px solid #e5e5e5;border-top-color:#000;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+.empty-state{text-align:center;padding:40px 20px;color:var(--muted);font-size:13px}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
 @keyframes spin{to{transform:rotate(360deg)}}
-.dl-bar{display:flex;align-items:center;justify-content:space-between;background:#f5f5f5;padding:10px 14px;margin-bottom:10px;border:1px solid #e5e5e5;flex-wrap:wrap;gap:8px}
-.dl-bar span{font-size:12px;color:#555;font-weight:700}
+.dl-bar{display:flex;align-items:center;justify-content:space-between;background:var(--bg);padding:10px 14px;margin-bottom:10px;border:1px solid var(--border);flex-wrap:wrap;gap:8px}
+.dl-bar span{font-size:12px;color:var(--muted);font-weight:700}
 </style>
 </head>
 <body>
@@ -177,7 +191,7 @@ tr:hover td{background:#fafafa}
       <div class="brand">Care<span>OS</span></div>
       <div class="sub">OutdoorSeniors Operations</div>
     </div>
-    <h2 style="font-size:15px;font-weight:700;margin-bottom:20px">Sign in</h2>
+    <h2 style="font-size:14px;font-weight:700;margin-bottom:18px;color:var(--text)">Sign in</h2>
     <div class="form-group">
       <label>Email</label>
       <input type="email" id="loginEmail" autocomplete="username">
@@ -228,7 +242,7 @@ tr:hover td{background:#fafafa}
         <div class="topbar-title" id="topbarTitle">Home</div>
         <div class="topbar-sub" id="topbarSub"></div>
       </div>
-      <div style="font-size:11px;color:#aaa" id="topbarDate"></div>
+      <div style="font-size:11px;color:var(--muted)" id="topbarDate"></div>
     </div>
     <div class="content-area" id="contentArea"></div>
   </div>
@@ -292,7 +306,7 @@ tr:hover td{background:#fafafa}
       <div class="field"><label>Duration</label><input type="text" id="ordDuration" placeholder="e.g. 3 months"></div>
       <div class="field"><label>Location / Area</label><input type="text" id="ordLocation"></div>
       <div class="field"><label>Pincode</label><input type="text" id="ordPincode"></div>
-      <div class="field form-full"><label>Medical Conditions</label><input type="text" id="ordMedical" placeholder="e.g. Diabetes, Hypertension — leave blank if none"></div>
+      <div class="field form-full"><label>Medical Conditions</label><input type="text" id="ordMedical" placeholder="Leave blank if none"></div>
       <div class="field form-full">
         <label>Languages Preferred</label>
         <div class="pill-group" id="langPills"></div>
@@ -325,7 +339,7 @@ tr:hover td{background:#fafafa}
   <div class="modal" style="max-width:460px">
     <button class="modal-close" onclick="closeModal('assignModal')">×</button>
     <h2>Assign Caretaker</h2>
-    <p style="font-size:12px;color:#666;margin-bottom:14px">Order: <strong id="assignOrderLabel"></strong></p>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:14px">Order: <strong id="assignOrderLabel"></strong></p>
     <div class="field"><label>Select Caretaker</label><select id="assignCtSelect" style="width:100%"></select></div>
     <div style="margin-top:18px;display:flex;gap:8px;justify-content:flex-end">
       <button class="btn btn-ghost" onclick="closeModal('assignModal')">Cancel</button>
@@ -337,8 +351,8 @@ tr:hover td{background:#fafafa}
 <div class="toast" id="toast"></div>
 
 <script>
-// ── Init ──
-firebase.initializeApp(FIREBASE_CONFIG);
+// ── Firebase Init ──
+firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db   = firebase.firestore();
 
@@ -387,8 +401,7 @@ function doSignOut() { auth.signOut(); }
 
 function showApp() {
   document.getElementById('loginView').style.display = 'none';
-  const app = document.getElementById('appView');
-  app.style.display = 'flex';
+  document.getElementById('appView').style.display = 'flex';
   document.getElementById('sidebarName').textContent = currentProfile?.name || currentUser.email;
   document.getElementById('sidebarRole').textContent = currentProfile?.role === 'admin' ? 'Administrator' : 'Agent';
   document.getElementById('topbarDate').textContent = new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
@@ -396,7 +409,6 @@ function showApp() {
   loadAllData().then(() => showSection('home'));
 }
 
-// ── Data Load ──
 async function loadAllData() {
   const [ctSnap, cuSnap, ordSnap] = await Promise.all([
     db.collection('caretakers').orderBy('createdAt','desc').get(),
@@ -456,7 +468,7 @@ function renderHome(ca) {
     <div class="kpi-card"><div class="label">Customers</div><div class="value">${allCustomers.length}</div><div class="delta">registered</div></div>
     <div class="kpi-card"><div class="label">Total Orders</div><div class="value">${allOrders.length}</div><div class="delta">all time</div></div>
     <div class="kpi-card"><div class="label">Open Orders</div><div class="value">${open_ord}</div><div class="delta">unassigned</div></div>
-    ${isAdmin?`<div class="kpi-card"><div class="label">Agents</div><div class="value">${allAgents.length}</div><div class="delta">active</div></div>`:''}
+    ${isAdmin?`<div class="kpi-card"><div class="label">Agents</div><div class="value">${allAgents.length}</div></div>`:''}
   </div>
   <div class="section-card">
     <h2>Quick Actions</h2>
@@ -476,7 +488,7 @@ async function askAI() {
   const box = document.getElementById('aiResp');
   box.style.display = 'block';
   box.textContent = 'Thinking…';
-  const sys = `You are CareOS Assistant for OutdoorSeniors care operations platform. Sections: Home, Supply Ops (caretaker management & search), Customer Ops (customers + orders + AI matching), Analytics (admin), OMS (admin), Agent Ops (admin). Current user role: ${currentProfile?.role}. Stats: ${allCaretakers.length} caretakers, ${allCustomers.length} customers, ${allOrders.length} orders. Be concise and give practical step-by-step guidance.`;
+  const sys = `You are CareOS Assistant for OutdoorSeniors care operations. Sections: Home, Supply Ops (caretaker management & search), Customer Ops (customers + orders + AI matching), Analytics (admin), OMS (admin), Agent Ops (admin). Current role: ${currentProfile?.role}. Stats: ${allCaretakers.length} caretakers, ${allCustomers.length} customers, ${allOrders.length} orders. Be concise, give step-by-step navigation guidance.`;
   try {
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,{
       method:'POST',headers:{'Content-Type':'application/json'},
@@ -504,9 +516,7 @@ function renderAgentOps(ca) {
 function buildAgentsTable() {
   if (!allAgents.length) return `<tr><td colspan="5" class="empty-state">No agents yet.</td></tr>`;
   return allAgents.map(a=>`<tr>
-    <td><strong>${esc(a.name)}</strong></td>
-    <td>${esc(a.email)}</td>
-    <td>${esc(a.phone||'—')}</td>
+    <td><strong>${esc(a.name)}</strong></td><td>${esc(a.email)}</td><td>${esc(a.phone||'—')}</td>
     <td><span class="badge ${a.active===false?'badge-err':'badge-ok'}">${a.active===false?'Inactive':'Active'}</span></td>
     <td><div style="display:flex;gap:5px">
       <button class="btn btn-ghost btn-sm" onclick="openAgentModal('${a.id}')">Edit</button>
@@ -515,9 +525,9 @@ function buildAgentsTable() {
   </tr>`).join('');
 }
 function openAgentModal(id) {
-  editingAgentId = id||null;
-  document.getElementById('agentModalTitle').textContent = id?'Edit Agent':'Add Agent';
-  document.getElementById('agPass').placeholder = id?'Leave blank to keep':'min 6 chars';
+  editingAgentId=id||null;
+  document.getElementById('agentModalTitle').textContent=id?'Edit Agent':'Add Agent';
+  document.getElementById('agPass').placeholder=id?'Leave blank to keep':'min 6 chars';
   if(id){const a=allAgents.find(x=>x.id===id);if(a){document.getElementById('agName').value=a.name||'';document.getElementById('agEmail').value=a.email||'';document.getElementById('agPhone').value=a.phone||'';document.getElementById('agPass').value='';}}
   else ['agName','agEmail','agPass','agPhone'].forEach(x=>document.getElementById(x).value='');
   openModal('agentModal');
@@ -534,7 +544,7 @@ async function saveAgent() {
       toast('Agent updated');
     }else{
       if(!pass||pass.length<6){toast('Password must be 6+ chars','error');return;}
-      if(!_secondaryApp)_secondaryApp=firebase.initializeApp(FIREBASE_CONFIG,'secondary');
+      if(!_secondaryApp)_secondaryApp=firebase.initializeApp(firebaseConfig,'secondary');
       const cred=await _secondaryApp.auth().createUserWithEmailAndPassword(email,pass);
       await _secondaryApp.auth().signOut();
       const profile={name,email,phone,role:'agent',active:true,createdAt:firebase.firestore.FieldValue.serverTimestamp()};
@@ -621,7 +631,6 @@ function clearCtForm(){
   document.querySelectorAll('#ctLangPills input,[name=ctWork]').forEach(cb=>{cb.checked=false;cb.parentElement.classList.remove('on');});
 }
 
-// All Caretakers
 let ctFilter={q:'',gender:'',area:'',lang:''};
 function renderAllCaretakers(c){
   c.innerHTML=`
@@ -639,15 +648,15 @@ function renderAllCaretakers(c){
 }
 function renderCtTable(){
   const data=allCaretakers.filter(c=>{
-    if(ctFilter.q&&!c.name?.toLowerCase().includes(ctFilter.q.toLowerCase())&&!c.phone?.includes(ctFilter.q))return false;
+    if(ctFilter.q&&!c.name?.toLowerCase().includes(ctFilter.q.toLowerCase())&&!(c.phone||'').includes(ctFilter.q))return false;
     if(ctFilter.gender&&c.gender!==ctFilter.gender)return false;
-    if(ctFilter.area&&!c.area?.toLowerCase().includes(ctFilter.area.toLowerCase()))return false;
-    if(ctFilter.lang&&!c.languages?.includes(ctFilter.lang))return false;
+    if(ctFilter.area&&!(c.area||'').toLowerCase().includes(ctFilter.area.toLowerCase()))return false;
+    if(ctFilter.lang&&!(c.languages||[]).includes(ctFilter.lang))return false;
     return true;
   });
   const wrap=document.getElementById('ctTableWrap');if(!wrap)return;
   if(!data.length){wrap.innerHTML=`<div class="empty-state">No caretakers match filters.</div>`;return;}
-  wrap.innerHTML=`<table><thead><tr><th>Name</th><th>Gender</th><th>Age</th><th>Area</th><th>Languages</th><th>Salary</th><th>Exp</th><th>Actions</th></tr></thead><tbody>${data.map(c=>`<tr><td><strong>${esc(c.name)}</strong><br><span style="font-size:11px;color:#888">${esc(c.phone)}</span></td><td>${esc(c.gender||'—')}</td><td>${c.age||'—'}</td><td>${esc(c.area||'—')}</td><td style="font-size:12px">${(c.languages||[]).slice(0,2).join(', ')||'—'}</td><td>₹${c.salary||'—'}</td><td>${c.experience||'0'}y</td><td><div style="display:flex;gap:4px"><button class="btn btn-ghost btn-sm" onclick="viewCaretaker('${c.id}')">View</button><button class="btn btn-danger btn-sm" onclick="deleteCaretaker('${c.id}')">Del</button></div></td></tr>`).join('')}</tbody></table>`;
+  wrap.innerHTML=`<table><thead><tr><th>Name</th><th>Gender</th><th>Age</th><th>Area</th><th>Languages</th><th>Salary</th><th>Exp</th><th>Actions</th></tr></thead><tbody>${data.map(c=>`<tr><td><strong>${esc(c.name)}</strong><br><span style="font-size:11px;color:var(--muted)">${esc(c.phone)}</span></td><td>${esc(c.gender||'—')}</td><td>${c.age||'—'}</td><td>${esc(c.area||'—')}</td><td style="font-size:12px">${(c.languages||[]).slice(0,2).join(', ')||'—'}</td><td>₹${c.salary||'—'}</td><td>${c.experience||'0'}y</td><td><div style="display:flex;gap:4px"><button class="btn btn-ghost btn-sm" onclick="viewCaretaker('${c.id}')">View</button><button class="btn btn-danger btn-sm" onclick="deleteCaretaker('${c.id}')">Del</button></div></td></tr>`).join('')}</tbody></table>`;
 }
 async function deleteCaretaker(id){
   if(!confirm('Delete this caretaker?'))return;
@@ -655,7 +664,6 @@ async function deleteCaretaker(id){
   allCaretakers=allCaretakers.filter(c=>c.id!==id);renderCtTable();toast('Deleted');
 }
 
-// Search & Match
 function renderSearchMatch(c){
   c.innerHTML=`
   <div class="section-card">
@@ -667,9 +675,9 @@ function renderSearchMatch(c){
       <div class="field"><label>Language</label><select id="smLang"><option value="">Any</option>${LANGUAGES.map(l=>`<option>${l}</option>`).join('')}</select></div>
       <div class="field"><label>Max Salary (₹)</label><input type="number" id="smSalary"></div>
       <div class="field"><label>Min Experience (yrs)</label><input type="number" id="smExp" min="0"></div>
-      <div class="field form-full"><label>AI Match Description (for AI Match only)</label><textarea id="smAiQ" rows="2" placeholder="Describe the ideal caretaker in plain English…"></textarea></div>
+      <div class="field form-full"><label>AI Description (for AI Match)</label><textarea id="smAiQ" rows="2" placeholder="Describe the ideal caretaker in plain English…"></textarea></div>
     </div>
-    <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+    <div style="margin-top:14px;display:flex;gap:8px">
       <button class="btn btn-primary" onclick="doSearch(false)">Search</button>
       <button class="btn btn-secondary" onclick="doSearch(true)">AI Match</button>
     </div>
@@ -687,50 +695,37 @@ async function doSearch(useAI){
   const aiQ=(document.getElementById('smAiQ')?.value||'').trim();
   const box=document.getElementById('searchResults');
   if(!box)return;
-  box.innerHTML=`<div style="padding:20px;color:#555"><span class="spinner"></span>${useAI?'AI is matching…':'Searching…'}</div>`;
+  box.innerHTML=`<div style="padding:20px;color:var(--muted)"><span class="spinner"></span>${useAI?'AI is matching…':'Searching…'}</div>`;
 
-  // Filter
   let results=allCaretakers.filter(c=>{
-    if(q&&!c.name?.toLowerCase().includes(q)&&!(c.phone||'').includes(q))return false;
+    if(q&&!( (c.name||'').toLowerCase().includes(q)||(c.phone||'').includes(q) ))return false;
     if(gender&&c.gender!==gender)return false;
-    if(area&&!(c.area||'').toLowerCase().includes(area)&&!(c.address||'').toLowerCase().includes(area))return false;
+    if(area&&!( (c.area||'').toLowerCase().includes(area)||(c.address||'').toLowerCase().includes(area) ))return false;
     if(lang&&!(c.languages||[]).includes(lang))return false;
-    if(c.salary&&parseFloat(c.salary)>maxSal)return false;
-    if((parseFloat(c.experience)||0)<minExp)return false;
+    if(isFinite(maxSal)&&c.salary&&parseFloat(c.salary)>maxSal)return false;
+    if(minExp>0&&(parseFloat(c.experience)||0)<minExp)return false;
     return true;
   });
 
-  // AI rank
   if(useAI){
-    if(!aiQ&&!q&&!gender&&!area&&!lang){
-      // no criteria at all — use all caretakers
-      results=allCaretakers.slice();
-    }
-    if(results.length===0){
-      box.innerHTML=`<div class="empty-state">No caretakers match your filters. Try removing some filters first.</div>`;return;
-    }
+    if(results.length===0){box.innerHTML=`<div class="empty-state">No caretakers match your filters. Try removing some filters first.</div>`;return;}
     const prompt=`You are a caretaker-matching AI for a home-care agency in India.
 Requirement: "${aiQ||'Best available caretakers'}"
-Score and rank the following caretakers (score 0-100, higher=better match).
-Return ONLY valid JSON array (no markdown, no explanation): [{"id":"...","score":90,"reason":"..."}]
+Score each caretaker 0-100 based on fit.
+Return ONLY a valid JSON array, no markdown, no code blocks: [{"id":"...","score":85,"reason":"..."}]
 Sort by score descending.
 Caretakers: ${JSON.stringify(results.slice(0,30).map(c=>({id:c.id,name:c.name,gender:c.gender,age:c.age,area:c.area,languages:c.languages||[],workPreferences:c.workPreferences||[],experience:c.experience,salary:c.salary,notes:c.notes||''})))}`;
     try{
       const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})});
       const data=await res.json();
-      const rawText=data.candidates?.[0]?.content?.parts?.[0]?.text||'';
-      // Extract JSON array robustly
-      const jsonMatch=rawText.match(/\[[\s\S]*\]/);
-      if(jsonMatch){
-        const ranked=JSON.parse(jsonMatch[0]);
-        const out=[];
-        for(const r of ranked){
-          const c=results.find(x=>x.id===r.id);
-          if(c) out.push({...c,_score:r.score,_reason:r.reason||''});
-        }
-        if(out.length>0){results=out.slice(0,10);}
+      const raw=data.candidates?.[0]?.content?.parts?.[0]?.text||'';
+      const m=raw.match(/\[[\s\S]*\]/);
+      if(m){
+        const ranked=JSON.parse(m[0]);
+        const out=ranked.map(r=>{const c=results.find(x=>x.id===r.id);return c?{...c,_score:r.score,_reason:r.reason||''}:null;}).filter(Boolean);
+        if(out.length>0)results=out.slice(0,10);
       }
-    }catch(err){console.error('AI match error:',err);toast('AI match failed, showing filtered results','error');}
+    }catch(err){console.error('AI match:',err);toast('AI ranking failed — showing unranked results','error');}
   }
 
   lastSearchResults=results;
@@ -738,8 +733,8 @@ Caretakers: ${JSON.stringify(results.slice(0,30).map(c=>({id:c.id,name:c.name,ge
 }
 
 function showResultCards(results,isAI,box){
-  if(!results.length){box.innerHTML=`<div class="empty-state">No caretakers found. Try different filters.</div>`;return;}
-  const dlBar=`<div class="dl-bar"><span>${results.length} profile${results.length!==1?'s':''} found</span><div style="display:flex;gap:6px"><button class="btn btn-primary btn-sm" onclick="downloadAllProfiles(false)">↓ All Full PDF</button><button class="btn btn-ghost btn-sm" onclick="downloadAllProfiles(true)">↓ All Brief PDF</button></div></div>`;
+  if(!results.length){box.innerHTML=`<div class="empty-state">No caretakers found.</div>`;return;}
+  const dlBar=`<div class="dl-bar"><span>${results.length} profile${results.length!==1?'s':''} found</span><div style="display:flex;gap:6px"><button class="btn btn-primary btn-sm" onclick="printAllProfiles(false)">Print All — Full</button><button class="btn btn-ghost btn-sm" onclick="printAllProfiles(true)">Print All — Brief</button></div></div>`;
   const cards=results.map(c=>{
     const initials=(c.name||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
     return`<div class="result-card">
@@ -749,23 +744,100 @@ function showResultCards(results,isAI,box){
           ${isAI&&c._score!==undefined?`<div class="match-score">${c._score}% match</div>`:''}
           <div class="rc-name">${esc(c.name)}</div>
           <div class="rc-meta">${[c.gender,c.age?c.age+'y':'',c.salary?'₹'+c.salary+'/mo':'',c.experience?c.experience+'y exp':''].filter(Boolean).join(' · ')}</div>
-          ${isAI&&c._reason?`<div style="font-size:11px;color:#666;font-style:italic;margin-bottom:6px">${esc(c._reason)}</div>`:''}
+          ${isAI&&c._reason?`<div style="font-size:11px;color:var(--muted);font-style:italic;margin-bottom:6px">${esc(c._reason)}</div>`:''}
           <div class="rc-tags">${(c.languages||[]).slice(0,3).map(l=>`<span class="rc-tag">${l}</span>`).join('')}${c.area?`<span class="rc-tag">📍 ${esc(c.area)}</span>`:''}</div>
         </div>
       </div>
       <div class="rc-actions">
         <button class="btn btn-ghost btn-sm" onclick="viewCaretaker('${c.id}')">View</button>
-        <button class="btn btn-secondary btn-sm" onclick="downloadProfile('${c.id}',false)">Full PDF</button>
-        <button class="btn btn-ghost btn-sm" onclick="downloadProfile('${c.id}',true)">Brief PDF</button>
+        <button class="btn btn-secondary btn-sm" onclick="printProfile('${c.id}',false)">Full Profile</button>
+        <button class="btn btn-ghost btn-sm" onclick="printProfile('${c.id}',true)">Brief Profile</button>
       </div>
     </div>`;
   }).join('');
   box.innerHTML=dlBar+`<div class="result-grid">${cards}</div>`;
 }
 
-function downloadAllProfiles(redacted){
+function printAllProfiles(redacted){
   if(!lastSearchResults.length)return;
-  lastSearchResults.forEach((c,i)=>setTimeout(()=>downloadProfile(c.id,redacted),i*1400));
+  // Print all profiles in one window
+  const html=lastSearchResults.map(c=>buildProfileHTML(c,redacted)).join('<div style="page-break-after:always"></div>');
+  openPrintWindow(html,redacted?'Brief Profiles':'Full Profiles');
+}
+
+// ── Profile Print (replaces broken PDF) ──
+// Opens a new tab with formatted profile + triggers browser Print dialog.
+// User chooses "Save as PDF" in the print dialog — works on every browser/OS.
+function printProfile(id,redacted){
+  const c=allCaretakers.find(x=>x.id===id);
+  if(!c){toast('Caretaker not found','error');return;}
+  openPrintWindow(buildProfileHTML(c,redacted), redacted?'Brief Profile':'Full Profile');
+}
+
+function openPrintWindow(bodyHTML,title){
+  const win=window.open('','_blank');
+  if(!win){toast('Pop-up blocked — please allow pop-ups for this site','error');return;}
+  win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${title}</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Arial,Helvetica,sans-serif;color:#2e2c28;background:#fff;padding:0}
+    @media print{.no-print{display:none}body{padding:0}}
+    .print-btn{position:fixed;top:16px;right:16px;background:#3d3a35;color:#fff;border:none;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer;z-index:999}
+    .print-btn:hover{background:#2a2822}
+  </style></head><body>
+  <button class="print-btn no-print" onclick="window.print()">🖨 Print / Save as PDF</button>
+  ${bodyHTML}
+  <script>setTimeout(function(){window.print();},600);<\/script>
+  </body></html>`);
+  win.document.close();
+}
+
+function buildProfileHTML(c,redacted){
+  const initials=(c.name||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  const photoHtml=c.photoURL&&!redacted
+    ?`<img src="${c.photoURL}" style="width:90px;height:90px;border-radius:50%;object-fit:cover;border:3px solid #fff" onerror="this.outerHTML='<div style=&quot;width:90px;height:90px;border-radius:50%;background:#5a5650;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:800;color:#fff&quot;>${initials}</div>'">`
+    :`<div style="width:90px;height:90px;border-radius:50%;background:#5a5650;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:800;color:#fff;border:3px solid #fff">${initials}</div>`;
+
+  const contactSection=redacted
+    ?`<div style="background:#f5f2ed;border-left:3px solid #3d3a35;padding:10px 16px;margin-bottom:16px;font-size:13px">
+        <strong>Service Area:</strong> ${c.area||'—'} &nbsp;|&nbsp; <strong>Pincode:</strong> ${c.pincode||'—'}
+       </div>`
+    :`<table style="width:100%;border-collapse:collapse;margin-bottom:16px;font-size:13px">
+        <tr><td style="padding:5px 0;width:50%"><strong>Phone:</strong> ${c.phone||'—'}</td><td style="padding:5px 0"><strong>Email:</strong> ${c.email||'—'}</td></tr>
+        <tr><td colspan="2" style="padding:5px 0"><strong>Address:</strong> ${c.address||c.area||'—'}</td></tr>
+        ${c.idType?`<tr><td style="padding:5px 0"><strong>ID Verified:</strong> ${c.idType}${c.idURL?' ✓':''}</td><td style="padding:5px 0">${c.referredBy?`<strong>Referred by:</strong> ${c.referredBy}`:''}</td></tr>`:''}
+      </table>`;
+
+  const langTags=(c.languages||[]).map(l=>`<span style="display:inline-block;border:1px solid #ccc;padding:2px 8px;margin:2px;font-size:11px">${l}</span>`).join('')||'—';
+  const prefTags=(c.workPreferences||[]).map(w=>`<span style="display:inline-block;border:1px solid #ccc;padding:2px 8px;margin:2px;font-size:11px">${w}</span>`).join('')||'—';
+
+  return`<div style="width:680px;max-width:100%;margin:0 auto;font-family:Arial,Helvetica,sans-serif">
+  <div style="background:#2e2c28;padding:24px 28px;color:#fff;display:flex;align-items:center;gap:20px">
+    ${photoHtml}
+    <div style="flex:1">
+      <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#a09890;margin-bottom:5px">OutdoorSeniors — Caretaker Profile${redacted?' (Brief)':''}</div>
+      <div style="font-size:24px;font-weight:900;margin-bottom:4px">${c.name||''}</div>
+      <div style="font-size:13px;color:#a09890">${[c.gender,c.age?c.age+' years':'',c.experience?c.experience+' yrs experience':''].filter(Boolean).join('  ·  ')}</div>
+    </div>
+    <div style="text-align:right">
+      <div style="font-size:22px;font-weight:900">₹${c.salary||'?'}</div>
+      <div style="font-size:11px;color:#a09890">per month</div>
+    </div>
+  </div>
+  <div style="padding:20px 28px">
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#7a7670;margin-bottom:8px">${redacted?'Location':'Contact Information'}</div>
+    ${contactSection}
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+      <div><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#7a7670;margin-bottom:6px">Languages</div><div>${langTags}</div></div>
+      <div><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#7a7670;margin-bottom:6px">Work Preferences</div><div>${prefTags}</div></div>
+    </div>
+    ${c.notes?`<div style="background:#f5f2ed;padding:12px 16px;margin-bottom:16px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#7a7670;margin-bottom:5px">Notes</div><div style="font-size:13px">${c.notes}</div></div>`:''}
+    <div style="border-top:1px solid #dbd8d0;padding-top:12px;font-size:10px;color:#a09890;display:flex;justify-content:space-between">
+      <span>OutdoorSeniors · outdoorseniors.com</span>
+      <span>${redacted?'Contact us to engage this caretaker':new Date().toLocaleDateString('en-IN')}</span>
+    </div>
+  </div>
+</div>`;
 }
 
 // ── Caretaker Detail Modal ──
@@ -777,89 +849,29 @@ function viewCaretaker(id){
   <div style="display:flex;gap:16px;align-items:flex-start;margin-bottom:20px">
     <div class="rc-avatar" style="width:60px;height:60px;font-size:22px">${c.photoURL?`<img src="${esc(c.photoURL)}" onerror="this.style.display='none'">`:initials}</div>
     <div>
-      <h2 style="margin:0 0 3px">${esc(c.name)}</h2>
-      <div style="font-size:12px;color:#666">${[c.gender,c.age?c.age+' yrs':'',c.experience?c.experience+' yrs exp':''].filter(Boolean).join(' · ')}</div>
-      <div style="font-size:14px;font-weight:800;margin-top:4px">₹${c.salary||'?'}/mo</div>
+      <h2 style="margin:0 0 3px;text-transform:none;letter-spacing:0;font-size:18px">${esc(c.name)}</h2>
+      <div style="font-size:12px;color:var(--muted)">${[c.gender,c.age?c.age+' yrs':'',c.experience?c.experience+' yrs exp':''].filter(Boolean).join(' · ')}</div>
+      <div style="font-size:15px;font-weight:800;margin-top:4px">₹${c.salary||'?'}/mo</div>
     </div>
   </div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px;margin-bottom:16px">
-    <div><span style="color:#888;font-size:11px;font-weight:700;text-transform:uppercase">Phone</span><br>${esc(c.phone||'—')}</div>
-    <div><span style="color:#888;font-size:11px;font-weight:700;text-transform:uppercase">Email</span><br>${esc(c.email||'—')}</div>
-    <div><span style="color:#888;font-size:11px;font-weight:700;text-transform:uppercase">Area</span><br>${esc(c.area||'—')}</div>
-    <div><span style="color:#888;font-size:11px;font-weight:700;text-transform:uppercase">Pincode</span><br>${esc(c.pincode||'—')}</div>
-    <div style="grid-column:1/-1"><span style="color:#888;font-size:11px;font-weight:700;text-transform:uppercase">Address</span><br>${esc(c.address||'—')}</div>
-    <div style="grid-column:1/-1"><span style="color:#888;font-size:11px;font-weight:700;text-transform:uppercase">Languages</span><br>${(c.languages||[]).join(', ')||'—'}</div>
-    <div style="grid-column:1/-1"><span style="color:#888;font-size:11px;font-weight:700;text-transform:uppercase">Work Preferences</span><br>${(c.workPreferences||[]).join(', ')||'—'}</div>
-    <div><span style="color:#888;font-size:11px;font-weight:700;text-transform:uppercase">ID</span><br>${esc(c.idType||'—')} ${c.idURL?`<a href="${esc(c.idURL)}" target="_blank" style="color:#000;font-weight:700">View →</a>`:''}</div>
-    <div><span style="color:#888;font-size:11px;font-weight:700;text-transform:uppercase">Referred By</span><br>${esc(c.referredBy||'—')}</div>
-    ${c.notes?`<div style="grid-column:1/-1"><span style="color:#888;font-size:11px;font-weight:700;text-transform:uppercase">Notes</span><br>${esc(c.notes)}</div>`:''}
+    <div><span style="color:var(--muted);font-size:10px;font-weight:700;text-transform:uppercase">Phone</span><br>${esc(c.phone||'—')}</div>
+    <div><span style="color:var(--muted);font-size:10px;font-weight:700;text-transform:uppercase">Email</span><br>${esc(c.email||'—')}</div>
+    <div><span style="color:var(--muted);font-size:10px;font-weight:700;text-transform:uppercase">Area</span><br>${esc(c.area||'—')}</div>
+    <div><span style="color:var(--muted);font-size:10px;font-weight:700;text-transform:uppercase">Pincode</span><br>${esc(c.pincode||'—')}</div>
+    <div style="grid-column:1/-1"><span style="color:var(--muted);font-size:10px;font-weight:700;text-transform:uppercase">Address</span><br>${esc(c.address||'—')}</div>
+    <div style="grid-column:1/-1"><span style="color:var(--muted);font-size:10px;font-weight:700;text-transform:uppercase">Languages</span><br>${(c.languages||[]).join(', ')||'—'}</div>
+    <div style="grid-column:1/-1"><span style="color:var(--muted);font-size:10px;font-weight:700;text-transform:uppercase">Work Preferences</span><br>${(c.workPreferences||[]).join(', ')||'—'}</div>
+    <div><span style="color:var(--muted);font-size:10px;font-weight:700;text-transform:uppercase">ID</span><br>${esc(c.idType||'—')} ${c.idURL?`<a href="${esc(c.idURL)}" target="_blank" style="color:var(--accent);font-weight:700">View →</a>`:''}</div>
+    <div><span style="color:var(--muted);font-size:10px;font-weight:700;text-transform:uppercase">Referred By</span><br>${esc(c.referredBy||'—')}</div>
+    ${c.notes?`<div style="grid-column:1/-1"><span style="color:var(--muted);font-size:10px;font-weight:700;text-transform:uppercase">Notes</span><br>${esc(c.notes)}</div>`:''}
   </div>
   <div style="display:flex;gap:6px;flex-wrap:wrap">
     ${c.phone?`<button class="btn btn-wa btn-sm" onclick="window.open('https://wa.me/91'+('${c.phone}'.replace(/\\D/g,'')),'_blank')">WhatsApp</button>`:''}
-    <button class="btn btn-secondary btn-sm" onclick="downloadProfile('${c.id}',false)">Full PDF</button>
-    <button class="btn btn-ghost btn-sm" onclick="downloadProfile('${c.id}',true)">Brief PDF</button>
+    <button class="btn btn-secondary btn-sm" onclick="printProfile('${c.id}',false)">Full Profile</button>
+    <button class="btn btn-ghost btn-sm" onclick="printProfile('${c.id}',true)">Brief Profile</button>
   </div>`;
   openModal('ctModal');
-}
-
-// ── PDF (fixed: visible element, simple layout) ──
-async function downloadProfile(idOrObj, redacted){
-  const c = typeof idOrObj==='string' ? allCaretakers.find(x=>x.id===idOrObj) : idOrObj;
-  if(!c){toast('Caretaker data not found','error');return;}
-  const initials=(c.name||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
-
-  // Build PDF HTML using simple table/block layout (html2canvas-friendly, no flexbox)
-  const contactBlock = redacted
-    ? `<div style="background:#f5f5f5;border-left:3px solid #000;padding:10px 14px;margin-bottom:14px;font-size:12px">Area: <strong>${c.area||'—'}</strong> &nbsp;|&nbsp; Pincode: <strong>${c.pincode||'—'}</strong></div>`
-    : `<table style="width:100%;border-collapse:collapse;margin-bottom:14px;font-size:12px"><tr>
-        <td style="padding:6px 0;width:50%"><strong>Phone:</strong> ${c.phone||'—'}</td>
-        <td style="padding:6px 0"><strong>Email:</strong> ${c.email||'—'}</td>
-       </tr><tr>
-        <td colspan="2" style="padding:6px 0"><strong>Address:</strong> ${c.address||c.area||'—'}</td>
-       </tr>${c.idType?`<tr><td colspan="2" style="padding:6px 0"><strong>ID:</strong> ${c.idType}${c.idURL?' (Verified ✓)':''}</td></tr>`:''}
-       ${c.referredBy?`<tr><td colspan="2" style="padding:6px 0"><strong>Referred by:</strong> ${c.referredBy}</td></tr>`:''}
-      </table>`;
-
-  const html=`<div style="width:680px;font-family:Arial,sans-serif;background:#ffffff;padding:0">
-  <div style="background:#000000;padding:24px 28px;color:#ffffff">
-    <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#888888;margin-bottom:6px">OutdoorSeniors — Caretaker Profile${redacted?' (Brief)':''}</div>
-    <div style="font-size:26px;font-weight:900;margin-bottom:4px">${c.name||''}</div>
-    <div style="font-size:13px;color:#aaaaaa">${[c.gender,c.age?c.age+' years':'',c.experience?c.experience+' yrs experience':''].filter(Boolean).join('  ·  ')}</div>
-    <div style="font-size:20px;font-weight:900;margin-top:8px;color:#ffffff">₹${c.salary||'?'}<span style="font-size:12px;font-weight:400"> /month</span></div>
-  </div>
-  <div style="padding:20px 28px">
-    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#888;margin-bottom:8px">${redacted?'Location':'Contact Information'}</div>
-    ${contactBlock}
-    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#888;margin-bottom:6px">Languages</div>
-    <div style="margin-bottom:14px;font-size:12px">${(c.languages||[]).map(l=>`<span style="display:inline-block;border:1px solid #ddd;padding:2px 8px;margin:2px;font-size:11px">${l}</span>`).join('')||'—'}</div>
-    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#888;margin-bottom:6px">Work Preferences</div>
-    <div style="margin-bottom:14px;font-size:12px">${(c.workPreferences||[]).map(w=>`<span style="display:inline-block;border:1px solid #ddd;padding:2px 8px;margin:2px;font-size:11px">${w}</span>`).join('')||'—'}</div>
-    ${c.notes?`<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#888;margin-bottom:6px">Notes</div><div style="font-size:12px;margin-bottom:14px;color:#333">${c.notes}</div>`:''}
-    <div style="border-top:1px solid #e5e5e5;padding-top:12px;font-size:10px;color:#aaa">OutdoorSeniors · outdoorseniors.com${redacted?' · Contact us to engage this caretaker':''}</div>
-  </div>
-</div>`;
-
-  // Render in a visible but off-screen wrapper
-  const wrapper=document.createElement('div');
-  wrapper.style.cssText='position:fixed;top:0;left:0;width:680px;z-index:-9999;opacity:0.01;pointer-events:none;background:#fff';
-  wrapper.innerHTML=html;
-  document.body.appendChild(wrapper);
-
-  // Small delay to let browser render
-  await new Promise(r=>setTimeout(r,300));
-
-  const safe=(c.name||'caretaker').replace(/\s+/g,'_');
-  try{
-    await html2pdf().set({
-      margin:10,
-      filename:`${safe}_${redacted?'brief':'full'}.pdf`,
-      image:{type:'jpeg',quality:0.92},
-      html2canvas:{scale:2,useCORS:true,logging:false,backgroundColor:'#ffffff',width:680},
-      jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}
-    }).from(wrapper).save();
-    toast('PDF downloaded','success');
-  }catch(e){toast('PDF error: '+e.message,'error');console.error(e);}
-  document.body.removeChild(wrapper);
 }
 
 // ══ CUSTOMER OPS ══
@@ -896,7 +908,8 @@ function buildCuTable(q){
   if(!data.length)return`<tr><td colspan="6" class="empty-state">No customers yet.</td></tr>`;
   return data.map(c=>{
     const cnt=allOrders.filter(o=>o.customerId===c.id).length;
-    return`<tr><td><strong>${esc(c.name)}</strong></td><td>${esc(c.phone||'—')}</td><td>${esc(c.email||'—')}</td><td>${esc(c.area||'—')}</td><td><span class="badge badge-info">${cnt}</span></td>
+    return`<tr><td><strong>${esc(c.name)}</strong></td><td>${esc(c.phone||'—')}</td><td>${esc(c.email||'—')}</td><td>${esc(c.area||'—')}</td>
+    <td><span class="badge badge-info">${cnt}</span></td>
     <td><div style="display:flex;gap:4px"><button class="btn btn-ghost btn-sm" onclick="openCustModal('${c.id}')">Edit</button><button class="btn btn-secondary btn-sm" onclick="openOrderModal(null,'${c.id}')">+ Order</button><button class="btn btn-danger btn-sm" onclick="deleteCust('${c.id}')">Del</button></div></td></tr>`;
   }).join('');
 }
@@ -908,27 +921,15 @@ function openCustModal(id){
   openModal('custModal');
 }
 async function saveCustomer(){
-  const name=document.getElementById('cuName').value.trim();
-  if(!name){toast('Name required','error');return;}
+  const name=document.getElementById('cuName').value.trim();if(!name){toast('Name required','error');return;}
   const data={name,phone:document.getElementById('cuPhone').value.trim(),email:document.getElementById('cuEmail').value.trim(),address:document.getElementById('cuAddress').value.trim(),area:document.getElementById('cuArea').value.trim(),pincode:document.getElementById('cuPin').value.trim(),notes:document.getElementById('cuNotes').value.trim()};
   try{
-    if(editingCustomerId){
-      await db.collection('customers').doc(editingCustomerId).update(data);
-      const idx=allCustomers.findIndex(c=>c.id===editingCustomerId);if(idx>=0)allCustomers[idx]={...allCustomers[idx],...data};
-      toast('Customer updated');
-    }else{
-      data.createdBy=currentProfile?.name||currentUser?.email||'Agent';data.createdAt=firebase.firestore.FieldValue.serverTimestamp();
-      const ref=await db.collection('customers').add(data);allCustomers.unshift({id:ref.id,...data});
-      toast('Customer added');
-    }
+    if(editingCustomerId){await db.collection('customers').doc(editingCustomerId).update(data);const idx=allCustomers.findIndex(c=>c.id===editingCustomerId);if(idx>=0)allCustomers[idx]={...allCustomers[idx],...data};toast('Customer updated');}
+    else{data.createdBy=currentProfile?.name||currentUser?.email||'Agent';data.createdAt=firebase.firestore.FieldValue.serverTimestamp();const ref=await db.collection('customers').add(data);allCustomers.unshift({id:ref.id,...data});toast('Customer added');}
     closeModal('custModal');renderCuTable(document.getElementById('cuSearch')?.value||'');
   }catch(e){toast(e.message,'error');}
 }
-async function deleteCust(id){
-  if(!confirm('Delete this customer?'))return;
-  await db.collection('customers').doc(id).delete();
-  allCustomers=allCustomers.filter(c=>c.id!==id);renderCuTable('');toast('Deleted');
-}
+async function deleteCust(id){if(!confirm('Delete?'))return;await db.collection('customers').doc(id).delete();allCustomers=allCustomers.filter(c=>c.id!==id);renderCuTable('');toast('Deleted');}
 
 function renderOrderList(c){
   c.innerHTML=`
@@ -960,7 +961,7 @@ function buildOrdTable(q,status){
   return data.map(o=>`<tr>
     <td><strong style="font-family:monospace;font-size:12px">${esc(o.orderId)}</strong></td>
     <td>${esc(o.customerName||'—')}</td>
-    <td>${esc(o.patientName||'—')}${o.patientAge?` <span style="font-size:11px;color:#888">(${o.patientAge}y)</span>`:''}</td>
+    <td>${esc(o.patientName||'—')}${o.patientAge?` <span style="font-size:11px;color:var(--muted)">(${o.patientAge}y)</span>`:''}</td>
     <td style="font-size:12px">${esc(o.packageType||'—')}</td>
     <td><span class="badge ${sb[o.status]||'badge-default'}">${o.status||'—'}</span></td>
     <td>${esc(o.assignedCaretakerName||'—')}</td>
@@ -986,12 +987,7 @@ function openOrderModal(orderId,prefillCustomerId){
   if(orderId){
     const o=allOrders.find(x=>x.id===orderId);
     if(o){
-      document.getElementById('ordCustomer').value=o.customerId||'';
-      document.getElementById('ordPatient').value=o.patientName||'';document.getElementById('ordAge').value=o.patientAge||'';document.getElementById('ordWeight').value=o.patientWeight||'';
-      document.getElementById('ordGender').value=o.caretakerGender||'';document.getElementById('ordPackage').value=o.packageType||CARE_PACKAGES[0];
-      document.getElementById('ordStart').value=o.preferredStartDate||'';document.getElementById('ordDuration').value=o.duration||'';
-      document.getElementById('ordLocation').value=o.location||'';document.getElementById('ordPincode').value=o.pincode||'';
-      document.getElementById('ordMedical').value=o.medicalConditions||'';document.getElementById('ordNotes').value=o.notes||'';
+      document.getElementById('ordCustomer').value=o.customerId||'';document.getElementById('ordPatient').value=o.patientName||'';document.getElementById('ordAge').value=o.patientAge||'';document.getElementById('ordWeight').value=o.patientWeight||'';document.getElementById('ordGender').value=o.caretakerGender||'';document.getElementById('ordPackage').value=o.packageType||CARE_PACKAGES[0];document.getElementById('ordStart').value=o.preferredStartDate||'';document.getElementById('ordDuration').value=o.duration||'';document.getElementById('ordLocation').value=o.location||'';document.getElementById('ordPincode').value=o.pincode||'';document.getElementById('ordMedical').value=o.medicalConditions||'';document.getElementById('ordNotes').value=o.notes||'';
       (o.languagesPreferred||[]).forEach(l=>{const cb=[...document.querySelectorAll('#langPills input')].find(x=>x.value===l);if(cb){cb.checked=true;cb.parentElement.classList.add('on');}});
       if(o.onDiapers){const r=[...document.querySelectorAll('[name=diapers]')].find(x=>x.value===o.onDiapers);if(r){r.checked=true;r.parentElement.classList.add('on');}}
       if(o.forSelf){const r=[...document.querySelectorAll('[name=forWhom]')].find(x=>x.value===o.forSelf);if(r){r.checked=true;r.parentElement.classList.add('on');}}
@@ -1002,30 +998,19 @@ function openOrderModal(orderId,prefillCustomerId){
 }
 function toggleRel(){const s=[...document.querySelectorAll('[name=forWhom]')].find(r=>r.checked);document.getElementById('relField').style.display=(s&&s.value==='Someone else')?'block':'none';}
 function radioSync(name){document.querySelectorAll(`[name=${name}]`).forEach(r=>r.parentElement.classList.toggle('on',r.checked));}
-function genOrderId(){
-  const d=new Date(),dt=`${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
-  const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  return`ORD-${dt}-${Array.from({length:4},()=>chars[Math.floor(Math.random()*chars.length)]).join('')}`;
-}
+function genOrderId(){const d=new Date(),dt=`${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';return`ORD-${dt}-${Array.from({length:4},()=>chars[Math.floor(Math.random()*chars.length)]).join('')}`;}
+
 async function saveOrder(){
   const custId=document.getElementById('ordCustomer').value,patientName=document.getElementById('ordPatient').value.trim();
-  if(!custId){toast('Select a customer','error');return;}
-  if(!patientName){toast('Patient name required','error');return;}
+  if(!custId){toast('Select a customer','error');return;}if(!patientName){toast('Patient name required','error');return;}
   const cust=allCustomers.find(c=>c.id===custId);
   const langs=[...document.querySelectorAll('#langPills input:checked')].map(x=>x.value);
   const diapers=[...document.querySelectorAll('[name=diapers]')].find(r=>r.checked)?.value||'No';
   const forSel=[...document.querySelectorAll('[name=forWhom]')].find(r=>r.checked)?.value||'Self';
   const data={customerId:custId,customerName:cust?.name||'',customerPhone:cust?.phone||'',patientName,patientAge:document.getElementById('ordAge').value||'',patientWeight:document.getElementById('ordWeight').value||'',caretakerGender:document.getElementById('ordGender').value,packageType:document.getElementById('ordPackage').value,preferredStartDate:document.getElementById('ordStart').value,duration:document.getElementById('ordDuration').value.trim(),location:document.getElementById('ordLocation').value.trim(),pincode:document.getElementById('ordPincode').value.trim(),medicalConditions:document.getElementById('ordMedical').value.trim(),languagesPreferred:langs,onDiapers:diapers,forSelf:forSel,relationship:forSel!=='Self'?document.getElementById('ordRel').value.trim():'',notes:document.getElementById('ordNotes').value.trim(),status:'pending'};
   try{
-    if(editingOrderId){
-      await db.collection('orders').doc(editingOrderId).update(data);
-      const idx=allOrders.findIndex(o=>o.id===editingOrderId);if(idx>=0)allOrders[idx]={...allOrders[idx],...data};
-      toast('Order updated');
-    }else{
-      data.orderId=genOrderId();data.createdBy=currentProfile?.name||currentUser?.email||'Agent';data.createdAt=firebase.firestore.FieldValue.serverTimestamp();
-      const ref=await db.collection('orders').add(data);allOrders.unshift({id:ref.id,...data});
-      toast(`Order ${data.orderId} created`,'success');
-    }
+    if(editingOrderId){await db.collection('orders').doc(editingOrderId).update(data);const idx=allOrders.findIndex(o=>o.id===editingOrderId);if(idx>=0)allOrders[idx]={...allOrders[idx],...data};toast('Order updated');}
+    else{data.orderId=genOrderId();data.createdBy=currentProfile?.name||currentUser?.email||'Agent';data.createdAt=firebase.firestore.FieldValue.serverTimestamp();const ref=await db.collection('orders').add(data);allOrders.unshift({id:ref.id,...data});toast(`Order ${data.orderId} created`,'success');}
     closeModal('orderModal');renderOrdTable(document.getElementById('ordSearch')?.value||'',document.getElementById('ordStatusFilter')?.value||'');
   }catch(e){toast(e.message,'error');}
 }
@@ -1036,25 +1021,25 @@ function viewOrder(id){
   document.getElementById('ctModalInner').innerHTML=`
   <button class="modal-close" onclick="closeModal('ctModal')">×</button>
   <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
-    <div><div style="font-size:10px;color:#888;font-weight:700;letter-spacing:1px;text-transform:uppercase">Order</div>
-      <h2 style="margin:4px 0;font-family:monospace">${esc(o.orderId)}</h2>
+    <div><div style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:1px;text-transform:uppercase">Order</div>
+      <h2 style="margin:4px 0;font-family:monospace;text-transform:none;font-size:18px;letter-spacing:0">${esc(o.orderId)}</h2>
       <span class="badge ${sb[o.status]||'badge-default'}">${o.status}</span></div>
-    <div style="font-size:11px;color:#aaa">${o.createdAt?.toDate?o.createdAt.toDate().toLocaleDateString('en-IN'):''}</div>
+    <div style="font-size:11px;color:var(--muted)">${o.createdAt?.toDate?o.createdAt.toDate().toLocaleDateString('en-IN'):''}</div>
   </div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px;margin-bottom:16px">
     <div><strong>Customer:</strong> ${esc(o.customerName||'—')}</div><div><strong>Phone:</strong> ${esc(o.customerPhone||'—')}</div>
-    <div><strong>Patient:</strong> ${esc(o.patientName||'—')}</div><div><strong>Age / Weight:</strong> ${o.patientAge||'—'} yrs / ${o.patientWeight||'—'} kg</div>
+    <div><strong>Patient:</strong> ${esc(o.patientName||'—')}</div><div><strong>Age/Weight:</strong> ${o.patientAge||'—'}y / ${o.patientWeight||'—'}kg</div>
     <div><strong>Package:</strong> ${esc(o.packageType||'—')}</div><div><strong>Start:</strong> ${o.preferredStartDate||'—'}</div>
     <div><strong>Duration:</strong> ${esc(o.duration||'—')}</div><div><strong>Location:</strong> ${esc(o.location||'—')} ${o.pincode?'('+o.pincode+')':''}</div>
     <div><strong>Gender pref:</strong> ${o.caretakerGender||'Any'}</div><div><strong>Diapers:</strong> ${o.onDiapers||'No'}</div>
     <div><strong>Medical:</strong> ${esc(o.medicalConditions||'None')}</div><div><strong>Languages:</strong> ${(o.languagesPreferred||[]).join(', ')||'Any'}</div>
     <div style="grid-column:1/-1"><strong>For:</strong> ${o.forSelf||'Self'}${o.relationship?' ('+o.relationship+')':''}</div>
     ${o.notes?`<div style="grid-column:1/-1"><strong>Notes:</strong> ${esc(o.notes)}</div>`:''}
-    ${o.assignedCaretakerName?`<div style="grid-column:1/-1;color:#1a6e1a"><strong>Assigned To:</strong> ${esc(o.assignedCaretakerName)}</div>`:''}
+    ${o.assignedCaretakerName?`<div style="grid-column:1/-1;color:var(--ok-fg)"><strong>Assigned To:</strong> ${esc(o.assignedCaretakerName)}</div>`:''}
   </div>
   <div style="display:flex;gap:6px;flex-wrap:wrap">
     ${!o.assignedCaretakerId?`<button class="btn btn-primary btn-sm" onclick="closeModal('ctModal');findMatches('${o.id}')">Find Matches</button>`:''}
-    ${!o.assignedCaretakerId?`<button class="btn btn-secondary btn-sm" onclick="closeModal('ctModal');openAssign('${o.id}')">Assign Caretaker</button>`:''}
+    ${!o.assignedCaretakerId?`<button class="btn btn-secondary btn-sm" onclick="closeModal('ctModal');openAssign('${o.id}')">Assign</button>`:''}
     <button class="btn btn-ghost btn-sm" onclick="closeModal('ctModal');openOrderModal('${o.id}')">Edit</button>
   </div>`;
   openModal('ctModal');
@@ -1065,31 +1050,21 @@ async function findMatches(orderId){
   if(custTab!=='orders'){custTab='orders';renderCustomerOps(document.getElementById('contentArea'));await new Promise(r=>setTimeout(r,300));}
   let box=document.getElementById('matchBox');
   if(!box){box=document.createElement('div');box.id='matchBox';document.getElementById('contentArea').appendChild(box);}
-  box.innerHTML=`<div class="section-card"><h2>Finding Matches — ${esc(o.orderId)}</h2><div style="padding:20px;color:#555"><span class="spinner"></span>AI is matching…</div></div>`;
-
-  const candidates=allCaretakers.filter(c=>{
-    if(o.caretakerGender&&c.gender&&c.gender!==o.caretakerGender)return false;
-    return true;
-  });
-
-  if(candidates.length===0){box.innerHTML=`<div class="section-card"><h2>No Matches</h2><p style="color:#888;font-size:13px">No caretakers in the database match the gender requirement. Add more caretakers first.</p></div>`;return;}
-
-  const prompt=`You are a caretaker-matching AI for a home-care agency in India. Find the best matches for this care order.
-ORDER DETAILS: Patient=${o.patientName||'unknown'}, Age=${o.patientAge||'?'}, Medical conditions=${o.medicalConditions||'none'}, Package=${o.packageType}, Location=${o.location||'?'}, Preferred languages=${(o.languagesPreferred||[]).join(',')||'any'}, Caretaker gender preference=${o.caretakerGender||'any'}, On diapers=${o.onDiapers||'No'}, Duration=${o.duration||'?'}.
-AVAILABLE CARETAKERS: ${JSON.stringify(candidates.slice(0,25).map(c=>({id:c.id,name:c.name,gender:c.gender,age:c.age,area:c.area,languages:c.languages||[],workPreferences:c.workPreferences||[],experience:c.experience,salary:c.salary})))}
-Return ONLY a valid JSON array (no markdown code blocks), top 5 matches: [{"id":"...","name":"...","score":85,"reason":"brief reason"}]`;
-
+  box.innerHTML=`<div class="section-card"><h2>Finding Matches — ${esc(o.orderId)}</h2><div style="padding:16px;color:var(--muted)"><span class="spinner"></span>AI is matching…</div></div>`;
+  const candidates=allCaretakers.filter(c=>!(o.caretakerGender&&c.gender&&c.gender!==o.caretakerGender));
+  if(!candidates.length){box.innerHTML=`<div class="section-card"><h2>No Candidates</h2><p style="color:var(--muted);font-size:13px">No caretakers match the gender requirement.</p></div>`;return;}
+  const prompt=`You are a caretaker-matching AI. Find top 5 best matches for this care order.
+ORDER: Patient=${o.patientName||'?'}, Age=${o.patientAge||'?'}, Medical=${o.medicalConditions||'none'}, Package=${o.packageType}, Location=${o.location||'?'}, Languages preferred=${(o.languagesPreferred||[]).join(',')||'any'}, Caretaker gender=${o.caretakerGender||'any'}, On diapers=${o.onDiapers||'No'}, Duration=${o.duration||'?'}.
+CARETAKERS: ${JSON.stringify(candidates.slice(0,25).map(c=>({id:c.id,name:c.name,gender:c.gender,age:c.age,area:c.area,languages:c.languages||[],workPreferences:c.workPreferences||[],experience:c.experience,salary:c.salary})))}
+Return ONLY a valid JSON array (no markdown): [{"id":"...","name":"...","score":85,"reason":"..."}] sorted by score descending.`;
   try{
     const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})});
     const data=await res.json();
-    const rawText=data.candidates?.[0]?.content?.parts?.[0]?.text||'';
-    const jsonMatch=rawText.match(/\[[\s\S]*?\]/);
+    const raw=data.candidates?.[0]?.content?.parts?.[0]?.text||'';
+    const m=raw.match(/\[[\s\S]*?\]/);
     let matches=[];
-    if(jsonMatch){
-      const ranked=JSON.parse(jsonMatch[0]);
-      matches=ranked.map(r=>{const c=allCaretakers.find(x=>x.id===r.id);return c?{...c,_score:r.score,_reason:r.reason||''}:null;}).filter(Boolean);
-    }
-    if(!matches.length){box.innerHTML=`<div class="section-card"><h2>No AI Matches</h2><p style="color:#888;font-size:13px">AI could not rank candidates. Try assigning manually.</p></div>`;return;}
+    if(m){const ranked=JSON.parse(m[0]);matches=ranked.map(r=>{const c=allCaretakers.find(x=>x.id===r.id);return c?{...c,_score:r.score,_reason:r.reason||''}:null;}).filter(Boolean);}
+    if(!matches.length){box.innerHTML=`<div class="section-card"><h2>No AI Matches</h2><p style="color:var(--muted);font-size:13px">Try assigning manually.</p></div>`;return;}
     const cards=matches.map(c=>{
       const initials=(c.name||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
       return`<div class="result-card">
@@ -1099,21 +1074,21 @@ Return ONLY a valid JSON array (no markdown code blocks), top 5 matches: [{"id":
             <div class="match-score">${c._score}% match</div>
             <div class="rc-name">${esc(c.name)}</div>
             <div class="rc-meta">${[c.gender,c.age?c.age+'y':'',c.salary?'₹'+c.salary+'/mo':'',c.experience?c.experience+'y exp':''].filter(Boolean).join(' · ')}</div>
-            ${c._reason?`<div style="font-size:11px;color:#666;font-style:italic;margin-bottom:6px">${esc(c._reason)}</div>`:''}
+            ${c._reason?`<div style="font-size:11px;color:var(--muted);font-style:italic;margin-bottom:6px">${esc(c._reason)}</div>`:''}
             <div class="rc-tags">${(c.languages||[]).slice(0,3).map(l=>`<span class="rc-tag">${l}</span>`).join('')}${c.area?`<span class="rc-tag">📍 ${esc(c.area)}</span>`:''}</div>
           </div>
         </div>
         <div class="rc-actions">
           <button class="btn btn-ghost btn-sm" onclick="viewCaretaker('${c.id}')">View</button>
           <button class="btn btn-primary btn-sm" onclick="assignFromMatch('${orderId}','${c.id}','${c.name.replace(/'/g,"\\'")}')">Assign</button>
-          <button class="btn btn-secondary btn-sm" onclick="downloadProfile('${c.id}',false)">Full PDF</button>
-          <button class="btn btn-ghost btn-sm" onclick="downloadProfile('${c.id}',true)">Brief PDF</button>
+          <button class="btn btn-secondary btn-sm" onclick="printProfile('${c.id}',false)">Full Profile</button>
+          <button class="btn btn-ghost btn-sm" onclick="printProfile('${c.id}',true)">Brief Profile</button>
           ${c.phone?`<button class="btn btn-wa btn-sm" onclick="shareWhatsApp('${c.id}','${orderId}')">WhatsApp</button>`:''}
         </div>
       </div>`;
     }).join('');
     box.innerHTML=`<div class="section-card"><h2>Top ${matches.length} Matches — ${esc(o.orderId)}</h2><div class="result-grid">${cards}</div></div>`;
-  }catch(e){console.error(e);box.innerHTML=`<div class="section-card"><p style="color:#c00;font-size:13px">Error: ${e.message}</p></div>`;}
+  }catch(e){console.error(e);box.innerHTML=`<div class="section-card"><p style="color:var(--danger);font-size:13px">Error: ${e.message}</p></div>`;}
 }
 
 async function assignFromMatch(orderId,ctId,ctName){
@@ -1126,7 +1101,7 @@ async function assignFromMatch(orderId,ctId,ctName){
 
 function shareWhatsApp(ctId,orderId){
   const c=allCaretakers.find(x=>x.id===ctId),o=allOrders.find(x=>x.id===orderId);if(!c)return;
-  const msg=`Hello! Here is a caretaker profile from OutdoorSeniors:\n\n*${c.name}*\nGender: ${c.gender||'—'} | Age: ${c.age||'—'} | Experience: ${c.experience||0} yrs\nLanguages: ${(c.languages||[]).join(', ')||'—'}\nArea: ${c.area||'—'}\nSalary: ₹${c.salary||'?'}/month\n\nFor: ${o?.patientName||'Patient'} | Order: ${o?.orderId||''}\n\nTo engage this caretaker, contact OutdoorSeniors.`;
+  const msg=`Hello! Caretaker profile from OutdoorSeniors:\n\n*${c.name}*\nGender: ${c.gender||'—'} | Age: ${c.age||'—'} | Experience: ${c.experience||0} yrs\nLanguages: ${(c.languages||[]).join(', ')||'—'}\nArea: ${c.area||'—'}\nSalary: ₹${c.salary||'?'}/month\n\nFor: ${o?.patientName||'Patient'} | Order: ${o?.orderId||''}\n\nContact OutdoorSeniors to engage this caretaker.`;
   const num=c.phone?`91${c.phone.replace(/\D/g,'')}`:''
   window.open(`https://wa.me/${num}?text=${encodeURIComponent(msg)}`,'_blank');
 }
@@ -1134,7 +1109,7 @@ function shareWhatsApp(ctId,orderId){
 function openAssign(orderId){
   const o=allOrders.find(x=>x.id===orderId);assignOrderRef=o;
   document.getElementById('assignOrderLabel').textContent=o?.orderId||orderId;
-  document.getElementById('assignCtSelect').innerHTML=`<option value="">— Select Caretaker —</option>`+allCaretakers.map(c=>`<option value="${c.id}">${esc(c.name)} (${c.gender||''}, ${c.area||''})</option>`).join('');
+  document.getElementById('assignCtSelect').innerHTML=`<option value="">— Select —</option>`+allCaretakers.map(c=>`<option value="${c.id}">${esc(c.name)} (${c.gender||''}, ${c.area||''})</option>`).join('');
   openModal('assignModal');
 }
 async function confirmAssign(){
@@ -1149,11 +1124,7 @@ async function confirmAssign(){
 // ══ ANALYTICS ══
 function renderAnalytics(ca){
   const now=new Date();
-  const getStart=mode=>{
-    if(mode==='daily')return new Date(now.getFullYear(),now.getMonth(),now.getDate());
-    if(mode==='weekly'){const d=new Date(now);d.setDate(d.getDate()-d.getDay());d.setHours(0,0,0,0);return d;}
-    return new Date(now.getFullYear(),now.getMonth(),1);
-  };
+  const getStart=mode=>{if(mode==='daily')return new Date(now.getFullYear(),now.getMonth(),now.getDate());if(mode==='weekly'){const d=new Date(now);d.setDate(d.getDate()-d.getDay());d.setHours(0,0,0,0);return d;}return new Date(now.getFullYear(),now.getMonth(),1);};
   const start=getStart(periodMode);
   const byP=arr=>arr.filter(x=>{try{return x.createdAt?.toDate()>=start;}catch{return false;}});
   const op=byP(allOrders),cp=byP(allCustomers),ctp=byP(allCaretakers);
@@ -1170,25 +1141,18 @@ function renderAnalytics(ca){
     <div class="kpi-card"><div class="label">New Orders</div><div class="value">${op.length}</div><div class="delta">this ${periodMode} · ${allOrders.length} total</div></div>
     <div class="kpi-card"><div class="label">New Customers</div><div class="value">${cp.length}</div><div class="delta">this ${periodMode} · ${allCustomers.length} total</div></div>
     <div class="kpi-card"><div class="label">New Caretakers</div><div class="value">${ctp.length}</div><div class="delta">this ${periodMode} · ${allCaretakers.length} total</div></div>
-    <div class="kpi-card"><div class="label">Assigned</div><div class="value">${assigned.length}</div><div class="delta">${rate}% assignment rate</div></div>
-    <div class="kpi-card"><div class="label">Pending</div><div class="value">${pending.length}</div><div class="delta">awaiting caretaker</div></div>
+    <div class="kpi-card"><div class="label">Assigned</div><div class="value">${assigned.length}</div><div class="delta">${rate}% rate</div></div>
+    <div class="kpi-card"><div class="label">Pending</div><div class="value">${pending.length}</div><div class="delta">unassigned</div></div>
     <div class="kpi-card"><div class="label">Agents</div><div class="value">${allAgents.length}</div></div>
   </div>
   <div class="section-card"><h2>Orders by Status</h2>
-    <div style="display:flex;gap:12px;flex-wrap:wrap">
-      ${['pending','matched','assigned','active','closed'].map(s=>{
-        const n=allOrders.filter(o=>o.status===s).length,pct=allOrders.length?Math.round(n/allOrders.length*100):0;
-        return`<div style="flex:1;min-width:90px;border:1px solid #e5e5e5;padding:14px;text-align:center"><div style="font-size:26px;font-weight:800">${n}</div><div style="font-size:11px;color:#888;text-transform:capitalize;font-weight:700;margin:2px 0">${s}</div><div style="font-size:10px;color:#aaa">${pct}%</div></div>`;
-      }).join('')}
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      ${['pending','matched','assigned','active','closed'].map(s=>{const n=allOrders.filter(o=>o.status===s).length,pct=allOrders.length?Math.round(n/allOrders.length*100):0;return`<div style="flex:1;min-width:90px;border:1px solid var(--border);padding:14px;text-align:center"><div style="font-size:26px;font-weight:800">${n}</div><div style="font-size:10px;color:var(--muted);text-transform:capitalize;font-weight:700;margin:2px 0">${s}</div><div style="font-size:10px;color:var(--muted)">${pct}%</div></div>`;}).join('')}
     </div>
   </div>
   <div class="section-card"><h2>Package Distribution</h2>
     <div style="display:flex;flex-direction:column;gap:6px">
-      ${CARE_PACKAGES.map(p=>{
-        const n=allOrders.filter(o=>o.packageType===p).length;if(!n)return'';
-        const pct=allOrders.length?Math.round(n/allOrders.length*100):0;
-        return`<div style="display:flex;align-items:center;gap:10px"><div style="width:180px;font-size:12px;color:#555;flex-shrink:0">${p}</div><div style="flex:1;background:#f5f5f5;height:18px;overflow:hidden"><div style="width:${pct}%;background:#000;height:100%"></div></div><div style="width:32px;font-size:12px;font-weight:700;text-align:right">${n}</div></div>`;
-      }).join('')||'<div class="empty-state">No orders to analyze yet.</div>'}
+      ${CARE_PACKAGES.map(p=>{const n=allOrders.filter(o=>o.packageType===p).length;if(!n)return'';const pct=allOrders.length?Math.round(n/allOrders.length*100):0;return`<div style="display:flex;align-items:center;gap:10px"><div style="width:180px;font-size:12px;color:var(--muted);flex-shrink:0">${p}</div><div style="flex:1;background:var(--bg);height:16px;overflow:hidden"><div style="width:${pct}%;background:var(--accent);height:100%"></div></div><div style="width:30px;font-size:12px;font-weight:700;text-align:right">${n}</div></div>`;}).join('')||'<div class="empty-state">No orders yet.</div>'}
     </div>
   </div>`;
 }
@@ -1199,7 +1163,7 @@ function renderOMS(ca){
   const todayStart=new Date(now.getFullYear(),now.getMonth(),now.getDate());
   const weekStart=new Date(now);weekStart.setDate(weekStart.getDate()-weekStart.getDay());weekStart.setHours(0,0,0,0);
   const monthStart=new Date(now.getFullYear(),now.getMonth(),1);
-  const byDate=start=>allOrders.filter(o=>{try{return o.createdAt?.toDate()>=start;}catch{return false;}});
+  const byDate=s=>allOrders.filter(o=>{try{return o.createdAt?.toDate()>=s;}catch{return false;}});
   const unassigned=allOrders.filter(o=>!o.assignedCaretakerId&&o.status!=='closed');
   ca.innerHTML=`
   <div class="kpi-grid">
@@ -1207,12 +1171,12 @@ function renderOMS(ca){
     <div class="kpi-card"><div class="label">This Week</div><div class="value">${byDate(weekStart).length}</div></div>
     <div class="kpi-card"><div class="label">This Month</div><div class="value">${byDate(monthStart).length}</div></div>
     <div class="kpi-card"><div class="label">Unassigned</div><div class="value">${unassigned.length}</div><div class="delta">need action</div></div>
-    <div class="kpi-card"><div class="label">Total</div><div class="value">${allOrders.length}</div></div>
+    <div class="kpi-card"><div class="label">Total Orders</div><div class="value">${allOrders.length}</div></div>
   </div>
   <div class="section-card">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
       <h2 style="margin:0">All Orders</h2>
-      <select onchange="omsFilter(this.value)" style="border:1px solid #ddd;padding:6px 10px;font-size:12px;outline:none;background:#fff">
+      <select onchange="omsFilter(this.value)" style="border:1px solid var(--border);padding:6px 10px;font-size:12px;outline:none;background:var(--bg)">
         <option value="">All Status</option><option>pending</option><option>matched</option><option>assigned</option><option>active</option><option>closed</option>
       </select>
     </div>
@@ -1235,15 +1199,13 @@ function buildOmsTable(status){
     <td style="font-size:12px">${esc(o.createdBy||'—')}</td>
     <td>${esc(o.assignedCaretakerName||'—')}</td>
     <td style="font-size:12px">${o.createdAt?.toDate?o.createdAt.toDate().toLocaleDateString('en-IN'):''}</td>
-    <td><select onchange="updateOrdStatus('${o.id}',this.value)" style="border:1px solid #ddd;padding:4px 6px;font-size:11px;outline:none">
+    <td><select onchange="updateOrdStatus('${o.id}',this.value)" style="border:1px solid var(--border);padding:4px 6px;font-size:11px;outline:none;background:var(--bg)">
       ${['pending','matched','assigned','active','closed'].map(s=>`<option${o.status===s?' selected':''}>${s}</option>`).join('')}
     </select></td>
   </tr>`).join('');
 }
 async function updateOrdStatus(id,status){
-  await db.collection('orders').doc(id).update({status});
-  const idx=allOrders.findIndex(o=>o.id===id);if(idx>=0)allOrders[idx].status=status;
-  toast(`Status → ${status}`);
+  await db.collection('orders').doc(id).update({status});const idx=allOrders.findIndex(o=>o.id===id);if(idx>=0)allOrders[idx].status=status;toast(`Status → ${status}`);
 }
 
 // ── Utils ──
