@@ -180,6 +180,12 @@ tr:hover td{background:var(--bg)}
 @keyframes spin{to{transform:rotate(360deg)}}
 .dl-bar{display:flex;align-items:center;justify-content:space-between;background:var(--bg);padding:10px 14px;margin-bottom:10px;border:1px solid var(--border);flex-wrap:wrap;gap:8px}
 .dl-bar span{font-size:12px;color:var(--muted);font-weight:700}
+/* ── AI Chat ── */
+.ai-chat-msg{padding:10px 14px;max-width:86%}
+.ai-chat-bot{background:var(--surface);border:1px solid var(--border);align-self:flex-start}
+.ai-chat-user{background:var(--accent);color:#fff;align-self:flex-end;margin-left:auto}
+.ai-chat-name{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;opacity:.6}
+.ai-chat-text{font-size:13px;line-height:1.65;white-space:pre-wrap}
 </style>
 </head>
 <body>
@@ -361,6 +367,7 @@ let allCaretakers = [], allCustomers = [], allOrders = [], allAgents = [];
 let editingAgentId = null, editingCustomerId = null, editingOrderId = null;
 let assignOrderRef = null, lastSearchResults = [], currentSection = 'home';
 let supplyTab = 'list', custTab = 'cust', periodMode = 'daily';
+let aiChatHistory = [];
 
 const LANGUAGES = ['English','Hindi','Telugu','Tamil','Kannada','Malayalam','Marathi','Bengali','Gujarati','Odia','Punjabi','Urdu'];
 const CARE_PACKAGES = [
@@ -505,7 +512,10 @@ function renderAgentOps(ca) {
   <div class="section-card">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
       <h2 style="margin:0">All Agents</h2>
-      <button class="btn btn-primary btn-sm" onclick="openAgentModal()">+ Add Agent</button>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-ghost btn-sm" onclick="seedDemoData()">⬇ Seed Demo Data</button>
+        <button class="btn btn-primary btn-sm" onclick="openAgentModal()">+ Add Agent</button>
+      </div>
     </div>
     <div class="table-wrap"><table>
       <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Status</th><th>Actions</th></tr></thead>
@@ -665,24 +675,108 @@ async function deleteCaretaker(id){
 }
 
 function renderSearchMatch(c){
+  aiChatHistory=[];
   c.innerHTML=`
   <div class="section-card">
-    <h2>Search & Match</h2>
-    <div class="form-grid">
-      <div class="field"><label>Name / Phone</label><input type="text" id="smQ"></div>
-      <div class="field"><label>Gender</label><select id="smGender"><option value="">Any</option><option>Female</option><option>Male</option></select></div>
-      <div class="field"><label>Area</label><input type="text" id="smArea"></div>
-      <div class="field"><label>Language</label><select id="smLang"><option value="">Any</option>${LANGUAGES.map(l=>`<option>${l}</option>`).join('')}</select></div>
-      <div class="field"><label>Max Salary (₹)</label><input type="number" id="smSalary"></div>
-      <div class="field"><label>Min Experience (yrs)</label><input type="number" id="smExp" min="0"></div>
-      <div class="field form-full"><label>AI Description (for AI Match)</label><textarea id="smAiQ" rows="2" placeholder="Describe the ideal caretaker in plain English…"></textarea></div>
+    <h2>AI Caretaker Match</h2>
+    <div id="aiChatBox" style="min-height:220px;max-height:380px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:12px;background:var(--bg);border:1px solid var(--border);margin-bottom:10px"></div>
+    <div style="display:flex;gap:8px">
+      <input type="text" id="aiChatInput" placeholder="e.g. Female caretaker, Telugu speaking, Whitefield, budget ₹16000…" style="flex:1;border:1px solid var(--border);padding:9px 12px;font-size:13px;outline:none;background:var(--surface);color:var(--text)" onkeydown="if(event.key==='Enter')sendAIChat()">
+      <button class="btn btn-primary" onclick="sendAIChat()">Send →</button>
+      <button class="btn btn-ghost btn-sm" onclick="resetAIChat()" title="Start new conversation">↺</button>
     </div>
-    <div style="margin-top:14px;display:flex;gap:8px">
-      <button class="btn btn-primary" onclick="doSearch(false)">Search</button>
-      <button class="btn btn-secondary" onclick="doSearch(true)">AI Match</button>
+    <div id="aiSearchResults" style="margin-top:12px"></div>
+  </div>
+  <div class="section-card">
+    <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="toggleManualFilters()">
+      <h2 style="margin:0">Manual Filters</h2>
+      <span style="font-size:11px;color:var(--muted)" id="filterToggleLabel">Show ▾</span>
     </div>
-    <div id="searchResults" style="margin-top:16px"></div>
+    <div id="manualFilterBody" style="display:none;margin-top:14px">
+      <div class="form-grid">
+        <div class="field"><label>Name / Phone</label><input type="text" id="smQ"></div>
+        <div class="field"><label>Gender</label><select id="smGender"><option value="">Any</option><option>Female</option><option>Male</option></select></div>
+        <div class="field"><label>Area</label><input type="text" id="smArea"></div>
+        <div class="field"><label>Language</label><select id="smLang"><option value="">Any</option>${LANGUAGES.map(l=>`<option>${l}</option>`).join('')}</select></div>
+        <div class="field"><label>Max Salary (₹)</label><input type="number" id="smSalary"></div>
+        <div class="field"><label>Min Experience (yrs)</label><input type="number" id="smExp" min="0"></div>
+      </div>
+      <div style="margin-top:14px"><button class="btn btn-primary" onclick="doSearch(false)">Search</button></div>
+      <div id="searchResults" style="margin-top:16px"></div>
+    </div>
   </div>`;
+  initAIChat();
+}
+
+function toggleManualFilters(){
+  const b=document.getElementById('manualFilterBody'),l=document.getElementById('filterToggleLabel');if(!b)return;
+  const show=b.style.display==='none';b.style.display=show?'block':'none';if(l)l.textContent=show?'Hide ▴':'Show ▾';
+}
+function initAIChat(){
+  const box=document.getElementById('aiChatBox');if(!box)return;
+  appendChatMsg(box,`Hi! I'm your AI matching assistant. Tell me what you're looking for — area in Bangalore, type of care, budget, gender preference, languages needed, or anything else. The more you share, the better I can match.`,'bot');
+}
+function resetAIChat(){
+  aiChatHistory=[];
+  const box=document.getElementById('aiChatBox');if(box)box.innerHTML='';
+  const res=document.getElementById('aiSearchResults');if(res)res.innerHTML='';
+  initAIChat();
+}
+async function sendAIChat(){
+  const input=document.getElementById('aiChatInput');
+  const text=(input?.value||'').trim();if(!text)return;
+  input.value='';
+  const box=document.getElementById('aiChatBox');if(!box)return;
+  aiChatHistory.push({role:'user',text});
+  appendChatMsg(box,text,'user');
+  box.scrollTop=box.scrollHeight;
+  const loadId='ld_'+Date.now();
+  const loadDiv=document.createElement('div');
+  loadDiv.id=loadId;loadDiv.className='ai-chat-msg ai-chat-bot';
+  loadDiv.innerHTML=`<div class="ai-chat-name">CareOS AI</div><div class="ai-chat-text"><span class="spinner"></span> Thinking…</div>`;
+  box.appendChild(loadDiv);box.scrollTop=box.scrollHeight;
+  const ctData=JSON.stringify(allCaretakers.slice(0,50).map(c=>({id:c.id,name:c.name,gender:c.gender,age:c.age,area:c.area,pincode:c.pincode,languages:c.languages||[],workPreferences:c.workPreferences||[],experience:c.experience,salary:c.salary,notes:c.notes||''})));
+  const history=aiChatHistory.map(m=>`${m.role==='user'?'User':'Assistant'}: ${m.text}`).join('\n');
+  const prompt=`You are an AI caretaker-matching assistant for OutdoorSeniors, a home-care agency in Bangalore.
+
+RULES:
+- If the user gives ANY useful criteria (area, budget, care type, gender, language), perform a match immediately — do NOT wait for more info before trying
+- Briefly tell the user what criteria you matched on
+- If results are poor, suggest what they could change to improve
+- If the user wants to refine, re-rank with updated criteria
+- Keep responses short and conversational
+- When matching: end your reply with a raw JSON array on a new line (no markdown code fences): [{"id":"...","score":85,"reason":"brief reason"}]
+- Top 5 max, sorted by score descending
+
+DATABASE (${allCaretakers.length} caretakers): ${ctData}
+
+CONVERSATION SO FAR:
+${history}
+
+Respond now:`;
+  try{
+    const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})});
+    const data=await res.json();
+    const raw=data.candidates?.[0]?.content?.parts?.[0]?.text||'';
+    const m=raw.match(/\[[\s\S]*?\]/);
+    let msg=raw,results=[];
+    if(m){
+      msg=raw.replace(m[0],'').replace(/```json?/g,'').replace(/```/g,'').trim();
+      try{const ranked=JSON.parse(m[0]);results=ranked.map(r=>{const ct=allCaretakers.find(x=>x.id===r.id);return ct?{...ct,_score:r.score,_reason:r.reason||''}:null;}).filter(Boolean);}catch(e){}
+    }
+    const ld=document.getElementById(loadId);if(ld)ld.remove();
+    const displayMsg=msg||raw;
+    aiChatHistory.push({role:'assistant',text:displayMsg});
+    appendChatMsg(box,displayMsg,'bot');
+    box.scrollTop=box.scrollHeight;
+    if(results.length){lastSearchResults=results;const rb=document.getElementById('aiSearchResults');if(rb)showResultCards(results,true,rb);}
+  }catch(e){const ld=document.getElementById(loadId);if(ld)ld.innerHTML=`<div class="ai-chat-name">CareOS AI</div><div class="ai-chat-text" style="color:var(--danger)">Error: ${e.message}</div>`;}
+}
+function appendChatMsg(box,text,role){
+  const div=document.createElement('div');
+  div.className=`ai-chat-msg ai-chat-${role==='user'?'user':'bot'}`;
+  div.innerHTML=`${role!=='user'?'<div class="ai-chat-name">CareOS AI</div>':''}<div class="ai-chat-text">${esc(text)}</div>`;
+  box.appendChild(div);
 }
 
 async function doSearch(useAI){
@@ -1343,6 +1437,39 @@ function closeModal(id){document.getElementById(id).classList.remove('open');}
 document.querySelectorAll('.modal-bg').forEach(bg=>bg.addEventListener('click',e=>{if(e.target===bg)bg.classList.remove('open');}));
 let _tt=null;
 function toast(msg,type='success'){const t=document.getElementById('toast');t.textContent=msg;t.className=`toast ${type} show`;clearTimeout(_tt);_tt=setTimeout(()=>t.classList.remove('show'),3200);}
+
+// ── Demo Seed Data (15 Bangalore caretakers across zones) ──
+const DEMO_CARETAKERS=[
+  {name:'Meenakshi Reddy',phone:'9845001001',age:'32',gender:'Female',email:'meenakshi.r@gmail.com',salary:'16000',area:'Hebbal',pincode:'560024',address:'3rd Cross, Hebbal, Bangalore',languages:['Telugu','Kannada','Hindi'],workPreferences:['Elder Care','Overnight'],experience:'5',idType:'Aadhar Card',photoURL:'',idURL:'',referredBy:'',notes:'Specialises in bedridden elderly. Very patient and disciplined.',active:true},
+  {name:'Ramesh Kumar',phone:'9845002002',age:'40',gender:'Male',email:'',salary:'18000',area:'Yelahanka',pincode:'560064',address:'New Town, Yelahanka, Bangalore',languages:['Kannada','Hindi','Telugu'],workPreferences:['Patient Care','Post-Surgery'],experience:'8',idType:'Aadhar Card',photoURL:'',idURL:'',referredBy:'',notes:'Experienced with post-surgery recovery and physiotherapy assistance.',active:true},
+  {name:'Lakshmi Devi',phone:'9845003003',age:'35',gender:'Female',email:'',salary:'14000',area:'Jayanagar',pincode:'560041',address:'4th Block, Jayanagar, Bangalore',languages:['Kannada','Tamil','Telugu'],workPreferences:['Elder Care','Dementia Care'],experience:'6',idType:'Voter ID',photoURL:'',idURL:'',referredBy:'',notes:'Great experience with dementia and memory care patients.',active:true},
+  {name:'Suresh Murthy',phone:'9845004004',age:'38',gender:'Male',email:'',salary:'15000',area:'JP Nagar',pincode:'560078',address:'5th Phase, JP Nagar, Bangalore',languages:['Kannada','Hindi'],workPreferences:['Patient Care','Elder Care'],experience:'4',idType:'Aadhar Card',photoURL:'',idURL:'',referredBy:'',notes:'Good with male patients. Calm and reliable.',active:true},
+  {name:'Shantha Bai',phone:'9845005005',age:'45',gender:'Female',email:'',salary:'20000',area:'Banashankari',pincode:'560070',address:'2nd Stage, Banashankari, Bangalore',languages:['Kannada','Tamil'],workPreferences:['Elder Care','Live-in'],experience:'10',idType:'Aadhar Card',photoURL:'',idURL:'',referredBy:'Dr. Rao',notes:'10 years live-in experience. Excellent references.',active:true},
+  {name:'Priya Selvam',phone:'9845006006',age:'28',gender:'Female',email:'priya.selvam@gmail.com',salary:'13000',area:'Whitefield',pincode:'560066',address:'Whitefield Main Road, Bangalore',languages:['Tamil','Telugu','English','Hindi'],workPreferences:['Post-Surgery','Child Care'],experience:'3',idType:'PAN Card',photoURL:'',idURL:'',referredBy:'',notes:'English fluent. Good fit for working families or post-op care.',active:true},
+  {name:'Anand Raj',phone:'9845007007',age:'42',gender:'Male',email:'',salary:'17000',area:'Marathahalli',pincode:'560037',address:'Outer Ring Road, Marathahalli, Bangalore',languages:['Telugu','Kannada'],workPreferences:['Patient Care','Elder Care'],experience:'7',idType:'Aadhar Card',photoURL:'',idURL:'',referredBy:'',notes:'Strong background in ICU step-down and hospital-to-home transitions.',active:true},
+  {name:'Kavitha Nair',phone:'9845008008',age:'36',gender:'Female',email:'',salary:'15000',area:'KR Puram',pincode:'560036',address:'Old Madras Road, KR Puram, Bangalore',languages:['Kannada','Telugu','Hindi','Malayalam'],workPreferences:['Elder Care','Overnight'],experience:'5',idType:'Aadhar Card',photoURL:'',idURL:'',referredBy:'',notes:'Multi-lingual. Works well with South Indian families.',active:true},
+  {name:'Sunitha Patil',phone:'9845009009',age:'39',gender:'Female',email:'',salary:'19000',area:'Rajajinagar',pincode:'560010',address:'5th Block, Rajajinagar, Bangalore',languages:['Kannada','Hindi','Marathi'],workPreferences:['Elder Care','Dementia Care','Live-in'],experience:'8',idType:'Voter ID',photoURL:'',idURL:'',referredBy:'',notes:'Expert in dementia care. Completed training from Nightingales.',active:true},
+  {name:'Mohan Lal',phone:'9845010010',age:'35',gender:'Male',email:'',salary:'16000',area:'Vijayanagar',pincode:'560040',address:'4th Stage, Vijayanagar, Bangalore',languages:['Kannada','Hindi'],workPreferences:['Patient Care','Post-Surgery'],experience:'5',idType:'Aadhar Card',photoURL:'',idURL:'',referredBy:'',notes:'Good with male diabetic and cardiac patients.',active:true},
+  {name:'Ananya Krishnan',phone:'9845011011',age:'30',gender:'Female',email:'ananya.k@gmail.com',salary:'18000',area:'Indiranagar',pincode:'560038',address:'100 Feet Road, Indiranagar, Bangalore',languages:['English','Hindi','Kannada','Tamil'],workPreferences:['Elder Care','Post-Surgery'],experience:'4',idType:'Passport',photoURL:'',idURL:'',referredBy:'',notes:'English-fluent. Preferred by expat families. Professional and punctual.',active:true},
+  {name:'Rajan Thomas',phone:'9845012012',age:'44',gender:'Male',email:'',salary:'22000',area:'Koramangala',pincode:'560034',address:'6th Block, Koramangala, Bangalore',languages:['Tamil','English','Hindi'],workPreferences:['Patient Care','Elder Care'],experience:'9',idType:'Aadhar Card',photoURL:'',idURL:'',referredBy:'Apollo Hospital',notes:'Worked with Apollo Hospital home care division for 9 years.',active:true},
+  {name:'Deepa Menon',phone:'9845013013',age:'33',gender:'Female',email:'',salary:'16000',area:'HSR Layout',pincode:'560102',address:'Sector 6, HSR Layout, Bangalore',languages:['Kannada','Tamil','Telugu','Malayalam'],workPreferences:['Elder Care','Live-in'],experience:'6',idType:'Aadhar Card',photoURL:'',idURL:'',referredBy:'',notes:'Speaks 4 South Indian languages. Specialises in stroke recovery support.',active:true},
+  {name:'Savitha Gowda',phone:'9845014014',age:'37',gender:'Female',email:'',salary:'14000',area:'Electronic City',pincode:'560100',address:'Phase 1, Electronic City, Bangalore',languages:['Telugu','Kannada'],workPreferences:['Elder Care','Child Care'],experience:'5',idType:'Voter ID',photoURL:'',idURL:'',referredBy:'',notes:'Works well with both elderly and children. Preferred in tech households.',active:true},
+  {name:'Kumar Velu',phone:'9845015015',age:'41',gender:'Male',email:'',salary:'17000',area:'BTM Layout',pincode:'560076',address:'2nd Stage, BTM Layout, Bangalore',languages:['Tamil','Telugu','Kannada'],workPreferences:['Patient Care','Post-Surgery','Elder Care'],experience:'7',idType:'Aadhar Card',photoURL:'',idURL:'',referredBy:'',notes:'Experienced in catheter care and wound dressing assistance.',active:true}
+];
+async function seedDemoData(){
+  if(!confirm('Add 15 demo caretakers from Bangalore zones (Hebbal, Whitefield, Koramangala, HSR, Indiranagar, etc.) for testing?\n\nExisting data will NOT be deleted.'))return;
+  try{
+    const batch=db.batch();
+    DEMO_CARETAKERS.forEach(ct=>{
+      const ref=db.collection('caretakers').doc();
+      batch.set(ref,{...ct,addedBy:'Demo Seed',createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+    });
+    await batch.commit();
+    const snap=await db.collection('caretakers').orderBy('createdAt','desc').get();
+    allCaretakers=snap.docs.map(d=>({id:d.id,...d.data()}));
+    toast('15 demo caretakers added!','success');
+  }catch(e){toast(e.message,'error');}
+}
 </script>
 </body>
 </html>
