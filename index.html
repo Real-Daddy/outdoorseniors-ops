@@ -1,1178 +1,1307 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OutdoorSeniors Ops</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Inter', sans-serif; background: #F4F4F4; min-height: 100vh; color: #111; }
-
-    /* Login */
-    #view-login { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; }
-    .brand { font-size: 22px; font-weight: 800; color: #111; margin-bottom: 28px; letter-spacing: -0.5px; }
-    .login-card { background: #fff; border-radius: 12px; border: 1px solid #E0E0E0; padding: 40px; width: 100%; max-width: 380px; box-shadow: 0 2px 16px rgba(0,0,0,0.06); transition: opacity 0.2s; }
-    .card-title { font-size: 18px; font-weight: 700; color: #111; margin-bottom: 4px; }
-    .card-sub { font-size: 14px; color: #888; margin-bottom: 28px; }
-    .hint { margin-top: 20px; font-size: 12px; color: #BBB; text-align: center; }
-
-    /* Nav */
-    .topnav { background: #111; color: #fff; padding: 0 24px; height: 52px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
-    .topnav-brand { font-size: 16px; font-weight: 800; letter-spacing: -0.5px; }
-    .topnav-right { display: flex; align-items: center; gap: 14px; }
-    .role-badge { background: #333; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 4px; letter-spacing: 0.5px; text-transform: uppercase; }
-    .role-badge.admin { background: #2563EB; }
-    .user-name { font-size: 13px; color: #ccc; }
-    .logout-btn { font-size: 13px; color: #aaa; background: none; border: none; cursor: pointer; font-family: inherit; padding: 4px 8px; border-radius: 4px; }
-    .logout-btn:hover { color: #fff; background: #333; }
-
-    /* Tabs */
-    .tabs { background: #fff; border-bottom: 1px solid #E0E0E0; padding: 0 24px; display: flex; }
-    .tab-btn { padding: 14px 20px; font-size: 14px; font-weight: 600; color: #888; background: none; border: none; cursor: pointer; font-family: inherit; border-bottom: 2px solid transparent; transition: all 0.15s; }
-    .tab-btn:hover { color: #111; }
-    .tab-btn.active { color: #111; border-bottom-color: #111; }
-
-    /* Layout */
-    .main { padding: 28px 24px; max-width: 1100px; margin: 0 auto; }
-
-    /* Stat Cards */
-    .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 16px; margin-bottom: 28px; }
-    .stat-card { background: #fff; border-radius: 10px; border: 1px solid #E8E8E8; padding: 20px 22px; }
-    .stat-label { font-size: 12px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 8px; }
-    .stat-value { font-size: 32px; font-weight: 800; color: #111; line-height: 1; }
-
-    /* Period Buttons */
-    .period-btns { display: flex; gap: 6px; }
-    .period-btn { padding: 6px 14px; font-size: 13px; font-weight: 600; border: 1.5px solid #DDD; border-radius: 6px; background: none; cursor: pointer; font-family: inherit; color: #666; transition: all 0.15s; }
-    .period-btn.active { background: #111; color: #fff; border-color: #111; }
-
-    /* Tables */
-    .table-card { background: #fff; border-radius: 10px; border: 1px solid #E8E8E8; overflow: hidden; margin-bottom: 24px; }
-    .table-hdr { padding: 16px 16px 0; display: flex; align-items: center; justify-content: space-between; }
-    .section-title { font-size: 15px; font-weight: 700; color: #111; }
-    .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    .data-table th { background: #F8F8F8; font-weight: 600; color: #555; padding: 10px 12px; text-align: left; border-bottom: 1px solid #E8E8E8; }
-    .data-table td { padding: 10px 12px; border-bottom: 1px solid #F0F0F0; vertical-align: middle; }
-    .data-table tr:last-child td { border-bottom: none; }
-    .bar-wrap { background: #F0F0F0; border-radius: 3px; height: 6px; width: 120px; }
-    .bar-fill { height: 6px; border-radius: 3px; background: #111; transition: width 0.4s; }
-    .bar-fill.blue { background: #2563EB; }
-
-    /* Agent List */
-    .agent-row { display: flex; align-items: center; padding: 14px 16px; border-bottom: 1px solid #F0F0F0; gap: 12px; }
-    .agent-row:last-child { border-bottom: none; }
-    .agent-avatar { width: 36px; height: 36px; border-radius: 50%; background: #111; color: #fff; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-    .agent-info { flex: 1; }
-    .agent-name { font-size: 14px; font-weight: 600; }
-    .agent-email { font-size: 12px; color: #888; }
-    .status-dot { width: 8px; height: 8px; border-radius: 50%; }
-    .status-dot.on { background: #22C55E; }
-    .status-dot.off { background: #D1D5DB; }
-
-    /* Forms */
-    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-    .form-full { grid-column: 1 / -1; }
-    .field { display: flex; flex-direction: column; gap: 5px; }
-    label, .field > span { font-size: 13px; font-weight: 600; color: #444; }
-    input[type=text], input[type=email], input[type=password], input[type=number], input[type=tel], select, textarea {
-      width: 100%; padding: 10px 12px; border: 1.5px solid #DDD; border-radius: 7px;
-      font-size: 14px; font-family: inherit; outline: none; color: #111; background: #fff;
-      transition: border-color 0.15s; resize: vertical;
-    }
-    input:focus, select:focus, textarea:focus { border-color: #111; }
-
-    /* Pill Checkboxes */
-    .check-group { display: flex; flex-wrap: wrap; gap: 8px; }
-    .check-pill { display: inline-flex; align-items: center; gap: 5px; background: #F5F5F5; border: 1.5px solid #E0E0E0; border-radius: 20px; padding: 5px 12px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s; user-select: none; }
-    .check-pill input[type=checkbox] { display: none; }
-    .check-pill.on { background: #111; border-color: #111; color: #fff; }
-
-    /* Buttons */
-    .btn { padding: 10px 20px; font-size: 14px; font-weight: 700; border: none; border-radius: 8px; cursor: pointer; font-family: inherit; transition: background 0.15s; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
-    .btn-primary { background: #111; color: #fff; }
-    .btn-primary:hover { background: #333; }
-    .btn-primary:disabled { background: #999; cursor: not-allowed; }
-    .btn-outline { background: #fff; color: #111; border: 1.5px solid #CCC; }
-    .btn-outline:hover { border-color: #111; }
-    .btn-sm { padding: 6px 14px; font-size: 13px; }
-    .btn-danger { background: #fff; color: #CC0000; border: 1.5px solid #FFB3B3; }
-    .btn-danger:hover { background: #FFF2F2; }
-    .btn-success { background: #22C55E; color: #fff; border: none; }
-    .btn-success:hover { background: #16A34A; }
-
-    /* Messages */
-    .err { background: #FFF2F2; border: 1px solid #FFB3B3; color: #CC0000; font-size: 13px; padding: 10px 14px; border-radius: 8px; margin-top: 12px; display: none; }
-    .ok  { background: #F0FFF4; border: 1px solid #86EFAC; color: #166534; font-size: 13px; padding: 10px 14px; border-radius: 8px; margin-top: 12px; display: none; }
-
-    /* Boxes */
-    .box { background: #fff; border-radius: 10px; border: 1px solid #E8E8E8; padding: 22px; margin-bottom: 20px; }
-    .box-title { font-size: 14px; font-weight: 700; margin-bottom: 16px; }
-
-    /* Results */
-    .results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 16px; margin-top: 16px; }
-    .result-card { background: #fff; border: 1px solid #E8E8E8; border-radius: 10px; padding: 16px; display: flex; gap: 14px; }
-    .score-ring { width: 52px; height: 52px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 800; flex-shrink: 0; }
-    .ring-green { background: #DCFCE7; color: #166534; border: 3px solid #22C55E; }
-    .ring-amber { background: #FEF9C3; color: #854D0E; border: 3px solid #EAB308; }
-    .ring-grey  { background: #F3F4F6; color: #6B7280; border: 3px solid #D1D5DB; }
-    .result-info { flex: 1; min-width: 0; }
-    .result-name { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
-    .result-meta { font-size: 12px; color: #888; margin-bottom: 6px; }
-    .result-reason { font-size: 12px; color: #555; background: #F8F8F8; border-radius: 6px; padding: 7px 9px; margin-bottom: 8px; line-height: 1.4; }
-    .tags { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
-    .tag { font-size: 11px; background: #F0F0F0; color: #555; padding: 2px 8px; border-radius: 10px; }
-    .result-btns { display: flex; gap: 6px; flex-wrap: wrap; }
-
-    /* Modal */
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; }
-    .modal-box { background: #fff; border-radius: 12px; max-width: 600px; width: 100%; max-height: 85vh; overflow-y: auto; padding: 28px; }
-    .modal-hdr { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .modal-title { font-size: 18px; font-weight: 700; }
-    .modal-close { background: none; border: none; font-size: 24px; cursor: pointer; color: #888; line-height: 1; padding: 0 4px; }
-    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-    .detail-item label { font-size: 11px; font-weight: 600; color: #888; text-transform: uppercase; display: block; margin-bottom: 3px; }
-    .detail-item p { font-size: 14px; color: #111; }
-
-    /* Import Preview */
-    .import-preview { overflow-x: auto; max-height: 280px; overflow-y: auto; border: 1px solid #E0E0E0; border-radius: 8px; margin-top: 14px; }
-    .import-preview table { width: 100%; border-collapse: collapse; font-size: 12px; }
-    .import-preview th { background: #F5F5F5; padding: 8px 10px; border-bottom: 1px solid #E0E0E0; font-weight: 600; white-space: nowrap; position: sticky; top: 0; }
-    .import-preview td { padding: 7px 10px; border-bottom: 1px solid #F5F5F5; white-space: nowrap; }
-
-    @media (max-width: 640px) {
-      .form-grid { grid-template-columns: 1fr; }
-      .detail-grid { grid-template-columns: 1fr; }
-      .stat-grid { grid-template-columns: 1fr 1fr; }
-      .main { padding: 16px; }
-      .tabs { overflow-x: auto; }
-    }
-  </style>
-</head>
-<body>
-
-<!-- LOGIN VIEW -->
-<div id="view-login">
-  <div class="brand">OutdoorSeniors</div>
-  <div class="login-card" id="loginCard" style="opacity:0">
-    <div class="card-title">Staff Login</div>
-    <div class="card-sub">Sign in to continue</div>
-    <div class="field">
-      <label>Email address</label>
-      <input type="email" id="loginEmail" placeholder="you@outdoorseniors.com" autocomplete="email">
-    </div>
-    <div class="field" style="margin-top:12px">
-      <label>Password</label>
-      <input type="password" id="loginPw" placeholder="••••••••" autocomplete="current-password">
-    </div>
-    <button class="btn btn-primary" id="loginBtn" style="width:100%;margin-top:16px;justify-content:center" onclick="doLogin()">Sign In</button>
-    <div class="err" id="loginErr"></div>
-  </div>
-  <p class="hint">Don't have access? Contact your admin.</p>
-</div>
-
-<!-- ADMIN VIEW -->
-<div id="view-admin" style="display:none">
-  <nav class="topnav">
-    <span class="topnav-brand">OutdoorSeniors</span>
-    <div class="topnav-right">
-      <span class="role-badge admin">Admin</span>
-      <span class="user-name" id="adminUserName"></span>
-      <button class="logout-btn" onclick="doLogout()">Sign out</button>
-    </div>
-  </nav>
-  <div class="tabs">
-    <button class="tab-btn active" id="atab-dashboard" onclick="switchAdminTab('dashboard',this)">Dashboard</button>
-    <button class="tab-btn" id="atab-agents" onclick="switchAdminTab('agents',this)">Agents</button>
-    <button class="tab-btn" id="atab-database" onclick="switchAdminTab('database',this)">Database</button>
-  </div>
-
-  <!-- Dashboard -->
-  <div id="admin-dashboard" class="main">
-    <div class="stat-grid">
-      <div class="stat-card"><div class="stat-label">Total Caretakers</div><div class="stat-value" id="dTotal">—</div></div>
-      <div class="stat-card"><div class="stat-label">Added Today</div><div class="stat-value" id="dToday">—</div></div>
-      <div class="stat-card"><div class="stat-label">This Week</div><div class="stat-value" id="dWeek">—</div></div>
-      <div class="stat-card"><div class="stat-label">This Month</div><div class="stat-value" id="dMonth">—</div></div>
-    </div>
-
-    <div class="table-card">
-      <div class="table-hdr">
-        <div class="section-title">Caretaker Additions</div>
-        <div class="period-btns">
-          <button class="period-btn active" onclick="setPeriod('daily',this)">Daily</button>
-          <button class="period-btn" onclick="setPeriod('weekly',this)">Weekly</button>
-          <button class="period-btn" onclick="setPeriod('monthly',this)">Monthly</button>
-        </div>
-      </div>
-      <div style="padding:12px 16px 16px">
-        <table class="data-table">
-          <thead><tr><th>Period</th><th>Count</th><th>Trend</th></tr></thead>
-          <tbody id="trendBody"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="table-card">
-      <div class="table-hdr" style="padding-bottom:12px"><div class="section-title">Leaderboard — Most Caretakers Added</div></div>
-      <div style="padding:0 16px 16px">
-        <table class="data-table">
-          <thead><tr><th>#</th><th>Agent</th><th>Added</th><th></th></tr></thead>
-          <tbody id="leaderBody"></tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <!-- Agents -->
-  <div id="admin-agents" class="main" style="display:none">
-    <div class="stat-grid" style="grid-template-columns:repeat(3,1fr)">
-      <div class="stat-card"><div class="stat-label">Total Agents</div><div class="stat-value" id="agTotal">—</div></div>
-      <div class="stat-card"><div class="stat-label">Active</div><div class="stat-value" id="agActive">—</div></div>
-      <div class="stat-card"><div class="stat-label">Inactive</div><div class="stat-value" id="agInactive">—</div></div>
-    </div>
-
-    <div class="box">
-      <div class="box-title">Add New Agent</div>
-      <div class="form-grid">
-        <div class="field"><label>Name</label><input type="text" id="newName" placeholder="Full name"></div>
-        <div class="field"><label>Email</label><input type="email" id="newEmail" placeholder="agent@outdoorseniors.com"></div>
-        <div class="field"><label>Password</label><input type="password" id="newPw" placeholder="Temporary password"></div>
-        <div class="field" style="align-self:end">
-          <button class="btn btn-primary" id="addAgentBtn" onclick="addAgent()" style="width:100%;justify-content:center">Add Agent</button>
-        </div>
-      </div>
-      <div class="err" id="agentErr"></div>
-      <div class="ok"  id="agentOk"></div>
-    </div>
-
-    <div class="box" style="padding:0;overflow:hidden">
-      <div style="padding:18px 22px 10px"><div class="box-title" style="margin:0">All Agents</div></div>
-      <div id="agentList"><div style="padding:16px 22px;color:#888;font-size:13px">Loading…</div></div>
-    </div>
-  </div>
-
-  <!-- Database -->
-  <div id="admin-database" class="main" style="display:none">
-    <div class="box">
-      <div class="box-title">Export Database</div>
-      <p style="font-size:13px;color:#666;margin-bottom:16px">Download the entire caretaker database as a CSV file.</p>
-      <div style="display:flex;gap:10px;flex-wrap:wrap">
-        <button class="btn btn-primary" onclick="exportCSV()">Export All as CSV</button>
-        <button class="btn btn-outline" onclick="downloadTemplate()">Download CSV Template</button>
-      </div>
-    </div>
-
-    <div class="box">
-      <div class="box-title">Import from CSV</div>
-      <p style="font-size:13px;color:#666;margin-bottom:16px">Upload a CSV to bulk-add caretakers. Use the template above for the correct column format.</p>
-      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-        <button class="btn btn-outline" onclick="document.getElementById('csvFile').click()">Choose CSV File</button>
-        <span id="csvFileName" style="font-size:13px;color:#666"></span>
-      </div>
-      <input type="file" id="csvFile" accept=".csv" onchange="handleImportFile(this)" style="display:none">
-      <div id="importPreviewWrap" style="display:none">
-        <div class="import-preview" id="importPreview"></div>
-        <div style="margin-top:14px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
-          <button class="btn btn-success" id="confirmImportBtn" onclick="importCSV()">Import Records</button>
-          <span id="importCount" style="font-size:13px;color:#666"></span>
-        </div>
-      </div>
-      <div class="err" id="importErr"></div>
-      <div class="ok"  id="importOk"></div>
-    </div>
-  </div>
-</div>
-
-<!-- AGENT VIEW -->
-<div id="view-agent" style="display:none">
-  <nav class="topnav">
-    <span class="topnav-brand">OutdoorSeniors</span>
-    <div class="topnav-right">
-      <span class="role-badge">Agent</span>
-      <span class="user-name" id="agentUserName"></span>
-      <button class="logout-btn" onclick="doLogout()">Sign out</button>
-    </div>
-  </nav>
-  <div class="tabs">
-    <button class="tab-btn active" id="agtab-add"    onclick="switchAgentTab('add',this)">Add Caretaker</button>
-    <button class="tab-btn"        id="agtab-search" onclick="switchAgentTab('search',this)">Search &amp; Match</button>
-  </div>
-
-  <!-- Add Caretaker -->
-  <div id="agent-add" class="main">
-    <div class="box">
-      <div class="box-title">New Caretaker Profile</div>
-      <div class="form-grid">
-        <div class="field"><label>Full Name *</label><input type="text" id="ctName" placeholder="e.g. Sunita Devi"></div>
-        <div class="field"><label>Phone *</label><input type="tel" id="ctPhone" placeholder="+91 9876543210"></div>
-        <div class="field"><label>Email</label><input type="email" id="ctEmail" placeholder="optional"></div>
-        <div class="field"><label>Sex *</label>
-          <select id="ctSex"><option value="">Select…</option><option>Male</option><option>Female</option><option>Other</option></select>
-        </div>
-        <div class="field"><label>Age</label><input type="number" id="ctAge" placeholder="e.g. 35" min="18" max="70"></div>
-        <div class="field form-full"><label>Address</label><input type="text" id="ctAddress" placeholder="Street address"></div>
-        <div class="field"><label>Pincode</label><input type="text" id="ctPincode" placeholder="e.g. 560001"></div>
-        <div class="field"><label>Area / Locality</label><input type="text" id="ctArea" placeholder="e.g. Indiranagar, Bangalore"></div>
-
-        <div class="field form-full">
-          <label>Languages Known</label>
-          <div class="check-group" id="langGroup">
-            <label class="check-pill"><input type="checkbox" value="Kannada"   onchange="syncPill(this)">Kannada</label>
-            <label class="check-pill"><input type="checkbox" value="Hindi"     onchange="syncPill(this)">Hindi</label>
-            <label class="check-pill"><input type="checkbox" value="English"   onchange="syncPill(this)">English</label>
-            <label class="check-pill"><input type="checkbox" value="Tamil"     onchange="syncPill(this)">Tamil</label>
-            <label class="check-pill"><input type="checkbox" value="Telugu"    onchange="syncPill(this)">Telugu</label>
-            <label class="check-pill"><input type="checkbox" value="Malayalam" onchange="syncPill(this)">Malayalam</label>
-            <label class="check-pill"><input type="checkbox" value="Marathi"   onchange="syncPill(this)">Marathi</label>
-            <label class="check-pill"><input type="checkbox" value="Bengali"   onchange="syncPill(this)">Bengali</label>
-          </div>
-        </div>
-
-        <div class="field form-full">
-          <label>Work Preferences</label>
-          <div class="check-group" id="prefGroup">
-            <label class="check-pill"><input type="checkbox" value="Live-in"      onchange="syncPill(this)">Live-in</label>
-            <label class="check-pill"><input type="checkbox" value="Day Shift"    onchange="syncPill(this)">Day Shift</label>
-            <label class="check-pill"><input type="checkbox" value="Night Shift"  onchange="syncPill(this)">Night Shift</label>
-            <label class="check-pill"><input type="checkbox" value="Part Time"    onchange="syncPill(this)">Part Time</label>
-            <label class="check-pill"><input type="checkbox" value="Elder Care"   onchange="syncPill(this)">Elder Care</label>
-            <label class="check-pill"><input type="checkbox" value="Child Care"   onchange="syncPill(this)">Child Care</label>
-            <label class="check-pill"><input type="checkbox" value="Patient Care" onchange="syncPill(this)">Patient Care</label>
-            <label class="check-pill"><input type="checkbox" value="Cooking"      onchange="syncPill(this)">Cooking</label>
-            <label class="check-pill"><input type="checkbox" value="Cleaning"     onchange="syncPill(this)">Cleaning</label>
-            <label class="check-pill"><input type="checkbox" value="Companion"    onchange="syncPill(this)">Companion</label>
-          </div>
-        </div>
-
-        <div class="field"><label>Experience (years)</label><input type="number" id="ctExp" placeholder="e.g. 3" min="0"></div>
-        <div class="field"><label>Salary Expectation (₹/month)</label><input type="text" id="ctSalary" placeholder="e.g. 18000"></div>
-        <div class="field form-full"><label>Experience Details</label><textarea id="ctExpDetails" rows="3" placeholder="Describe previous work, duties, employers…"></textarea></div>
-
-        <div class="field"><label>Photo URL</label><input type="url" id="ctPhotoURL" placeholder="Paste Google Drive / direct image link (optional)"></div>
-        <div class="field"><label>ID Type</label>
-          <select id="ctIdType"><option value="">Select ID…</option><option>Aadhar Card</option><option>PAN Card</option><option>Voter ID</option><option>Passport</option><option>Driving License</option></select>
-        </div>
-        <div class="field form-full"><label>ID Document URL</label><input type="url" id="ctIdURL" placeholder="Paste Google Drive link to ID scan (optional)"></div>
-
-        <div class="field"><label>Referral Name</label><input type="text" id="ctRefName" placeholder="Who referred?"></div>
-        <div class="field"><label>Referral Phone</label><input type="tel" id="ctRefPhone" placeholder="+91…"></div>
-        <div class="field form-full"><label>Additional Notes</label><textarea id="ctNotes" rows="3" placeholder="Any other information…"></textarea></div>
-      </div>
-
-      <div style="margin-top:20px;display:flex;gap:10px;flex-wrap:wrap">
-        <button class="btn btn-primary" id="saveCtBtn" onclick="saveCaretaker()">Save Caretaker</button>
-        <button class="btn btn-outline" onclick="resetForm()">Clear Form</button>
-      </div>
-      <div class="err" id="ctErr"></div>
-      <div class="ok"  id="ctOk"></div>
-    </div>
-  </div>
-
-  <!-- Search & Match -->
-  <div id="agent-search" class="main" style="display:none">
-    <div class="box">
-      <div class="box-title">AI Match — Describe the Requirement</div>
-      <textarea id="aiReq" rows="4" style="width:100%;margin-bottom:12px"
-        placeholder="e.g. Female caretaker needed for 78-year-old male patient in Whitefield, Bangalore. Live-in preferred. Must speak Kannada and Hindi. Budget ₹20,000/month."></textarea>
-      <button class="btn btn-primary" id="aiSearchBtn" onclick="doAiSearch()">Find Best Matches (AI)</button>
-    </div>
-
-    <div class="box">
-      <div class="box-title" style="cursor:pointer;margin-bottom:0" onclick="toggleFilters()">
-        Filter Search &nbsp;<span id="filterIcon" style="font-size:12px;color:#888;font-weight:400">▼ show filters</span>
-      </div>
-      <div id="filterBody" style="display:none;margin-top:16px">
-        <div class="form-grid" style="grid-template-columns:1fr 1fr 1fr">
-          <div class="field"><label>Sex</label><select id="fSex"><option value="">Any</option><option>Male</option><option>Female</option></select></div>
-          <div class="field"><label>Pincode starts with</label><input type="text" id="fPin" placeholder="e.g. 560"></div>
-          <div class="field"><label>Min Experience (yrs)</label><input type="number" id="fExp" min="0" placeholder="0"></div>
-          <div class="field"><label>Language</label>
-            <select id="fLang"><option value="">Any</option><option>Kannada</option><option>Hindi</option><option>English</option><option>Tamil</option><option>Telugu</option><option>Malayalam</option><option>Marathi</option><option>Bengali</option></select>
-          </div>
-          <div class="field"><label>Work Preference</label>
-            <select id="fPref"><option value="">Any</option><option>Live-in</option><option>Day Shift</option><option>Night Shift</option><option>Part Time</option><option>Elder Care</option><option>Child Care</option><option>Patient Care</option><option>Cooking</option><option>Cleaning</option><option>Companion</option></select>
-          </div>
-        </div>
-        <button class="btn btn-outline btn-sm" style="margin-top:12px" onclick="doFilterSearch()">Apply Filters</button>
-      </div>
-    </div>
-
-    <div id="searchResults"></div>
-  </div>
-</div>
-
-<!-- DETAIL MODAL -->
-<div class="modal-overlay" id="detailModal" style="display:none" onclick="closeModalOnBg(event)">
-  <div class="modal-box">
-    <div class="modal-hdr">
-      <div class="modal-title" id="modalName">Caretaker Details</div>
-      <button class="modal-close" onclick="document.getElementById('detailModal').style.display='none'">&times;</button>
-    </div>
-    <div id="modalBody"></div>
-  </div>
-</div>
-
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CareOS — OutdoorSeniors Operations</title>
 <script src="config.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#f0f2f5;color:#1a1a2e;height:100vh;overflow:hidden}
+
+/* ── Login ── */
+#loginView{display:flex;align-items:center;justify-content:center;height:100vh;background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 50%,#0f172a 100%)}
+.login-box{background:#fff;border-radius:16px;padding:48px 40px;width:380px;box-shadow:0 24px 64px rgba(0,0,0,.35)}
+.login-logo{text-align:center;margin-bottom:32px}
+.login-logo .brand{font-size:32px;font-weight:800;color:#0f172a;letter-spacing:-1px}
+.login-logo .brand span{color:#3b82f6}
+.login-logo .sub{font-size:12px;color:#64748b;margin-top:4px;letter-spacing:2px;text-transform:uppercase}
+.login-box h2{font-size:18px;font-weight:600;margin-bottom:24px;color:#0f172a}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:12px;font-weight:600;color:#475569;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+.form-group input{width:100%;border:1.5px solid #e2e8f0;border-radius:8px;padding:10px 14px;font-size:14px;outline:none;transition:border .2s}
+.form-group input:focus{border-color:#3b82f6}
+.btn-primary{width:100%;background:#3b82f6;color:#fff;border:none;border-radius:8px;padding:12px;font-size:15px;font-weight:600;cursor:pointer;transition:background .2s;margin-top:8px}
+.btn-primary:hover{background:#2563eb}
+#loginError{color:#ef4444;font-size:13px;margin-top:12px;text-align:center;min-height:20px}
+
+/* ── App Shell ── */
+#appView{height:100vh;flex-direction:row}
+
+/* ── Sidebar ── */
+.sidebar{width:240px;min-width:240px;background:#0f172a;color:#cbd5e1;display:flex;flex-direction:column;height:100vh;overflow-y:auto}
+.sidebar-logo{padding:24px 20px 20px;border-bottom:1px solid #1e293b}
+.sidebar-logo .brand{font-size:22px;font-weight:800;color:#fff;letter-spacing:-0.5px}
+.sidebar-logo .brand span{color:#3b82f6}
+.sidebar-logo .sub{font-size:10px;color:#475569;letter-spacing:2px;text-transform:uppercase;margin-top:2px}
+.sidebar-user{padding:16px 20px;border-bottom:1px solid #1e293b}
+.sidebar-user .name{font-size:13px;font-weight:600;color:#e2e8f0}
+.sidebar-user .role{font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:.5px}
+.nav-section{padding:12px 0}
+.nav-label{font-size:10px;font-weight:700;color:#334155;letter-spacing:1.5px;text-transform:uppercase;padding:8px 20px 4px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;cursor:pointer;transition:background .15s;font-size:13.5px;color:#94a3b8;border-left:3px solid transparent}
+.nav-item:hover{background:#1e293b;color:#e2e8f0}
+.nav-item.active{background:#1e3a5f;color:#60a5fa;border-left-color:#3b82f6;font-weight:600}
+.nav-item .icon{font-size:16px;width:20px;text-align:center}
+.sidebar-footer{margin-top:auto;padding:16px 20px;border-top:1px solid #1e293b}
+.btn-signout{width:100%;background:#1e293b;color:#94a3b8;border:none;border-radius:8px;padding:9px;font-size:13px;cursor:pointer;transition:background .15s}
+.btn-signout:hover{background:#ef4444;color:#fff}
+
+/* ── Main Content ── */
+.main-content{flex:1;overflow-y:auto;display:flex;flex-direction:column}
+.topbar{background:#fff;border-bottom:1px solid #e2e8f0;padding:16px 28px;display:flex;align-items:center;justify-content:space-between;min-height:64px}
+.topbar-title{font-size:20px;font-weight:700;color:#0f172a}
+.topbar-sub{font-size:13px;color:#64748b}
+.content-area{padding:24px 28px;flex:1}
+
+/* ── Cards & Grid ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin-bottom:24px}
+.kpi-card{background:#fff;border-radius:12px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+.kpi-card .label{font-size:12px;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.kpi-card .value{font-size:32px;font-weight:800;color:#0f172a;margin:6px 0}
+.kpi-card .delta{font-size:12px;color:#10b981}
+.section-card{background:#fff;border-radius:12px;padding:24px;box-shadow:0 1px 4px rgba(0,0,0,.07);margin-bottom:20px}
+.section-card h2{font-size:16px;font-weight:700;margin-bottom:16px;color:#0f172a}
+
+/* ── Forms ── */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-grid.cols3{grid-template-columns:1fr 1fr 1fr}
+.form-full{grid-column:1/-1}
+.field label{display:block;font-size:12px;font-weight:600;color:#475569;margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px}
+.field input,.field select,.field textarea{width:100%;border:1.5px solid #e2e8f0;border-radius:8px;padding:9px 12px;font-size:13.5px;outline:none;transition:border .2s;background:#fff}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:#3b82f6}
+.field textarea{resize:vertical;min-height:72px}
+
+/* Pills */
+.pill-group{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.pill-label{display:inline-flex;align-items:center;padding:6px 14px;border-radius:20px;border:1.5px solid #e2e8f0;cursor:pointer;font-size:13px;color:#475569;transition:all .15s;user-select:none}
+.pill-label.on{background:#3b82f6;border-color:#3b82f6;color:#fff;font-weight:600}
+.pill-label input{display:none}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:8px;border:none;font-size:13.5px;font-weight:600;cursor:pointer;transition:all .15s}
+.btn-blue{background:#3b82f6;color:#fff}.btn-blue:hover{background:#2563eb}
+.btn-green{background:#10b981;color:#fff}.btn-green:hover{background:#059669}
+.btn-red{background:#ef4444;color:#fff}.btn-red:hover{background:#dc2626}
+.btn-ghost{background:#f1f5f9;color:#475569;border:1.5px solid #e2e8f0}.btn-ghost:hover{background:#e2e8f0}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn-wa{background:#25d366;color:#fff}.btn-wa:hover{background:#128c7e}
+
+/* Table */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{background:#f8fafc;color:#475569;font-weight:700;text-align:left;padding:10px 14px;border-bottom:2px solid #e2e8f0;font-size:12px;text-transform:uppercase;letter-spacing:.5px}
+td{padding:11px 14px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+tr:hover td{background:#f8fafc}
+.badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:700;letter-spacing:.3px}
+.badge-blue{background:#dbeafe;color:#1d4ed8}
+.badge-green{background:#d1fae5;color:#065f46}
+.badge-yellow{background:#fef9c3;color:#92400e}
+.badge-red{background:#fee2e2;color:#991b1b}
+.badge-gray{background:#f1f5f9;color:#475569}
+.badge-purple{background:#ede9fe;color:#5b21b6}
+
+/* Search bar */
+.search-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+.search-bar input,.search-bar select{border:1.5px solid #e2e8f0;border-radius:8px;padding:8px 12px;font-size:13.5px;outline:none;background:#fff}
+.search-bar input:focus,.search-bar select:focus{border-color:#3b82f6}
+.search-bar input[type=text]{min-width:180px}
+
+/* AI Box */
+.ai-box{background:linear-gradient(135deg,#1e3a5f,#0f172a);border-radius:16px;padding:28px;color:#fff;margin-bottom:24px}
+.ai-box h2{font-size:20px;font-weight:700;margin-bottom:6px}
+.ai-box p{font-size:14px;color:#94a3b8;margin-bottom:18px}
+.ai-input-row{display:flex;gap:10px}
+.ai-input-row input{flex:1;border:1.5px solid rgba(255,255,255,.15);border-radius:10px;padding:12px 16px;font-size:14px;outline:none;background:rgba(255,255,255,.1);color:#fff}
+.ai-input-row input::placeholder{color:#64748b}
+.ai-input-row input:focus{border-color:#3b82f6;background:rgba(255,255,255,.15)}
+.ai-input-row button{background:#3b82f6;color:#fff;border:none;border-radius:10px;padding:12px 20px;font-size:14px;font-weight:600;cursor:pointer}
+.ai-input-row button:hover{background:#2563eb}
+.ai-response{margin-top:16px;padding:16px;background:rgba(255,255,255,.07);border-radius:10px;font-size:14px;line-height:1.7;color:#e2e8f0;white-space:pre-wrap;display:none}
+
+/* Result cards */
+.result-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-top:16px}
+.result-card{background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 8px rgba(0,0,0,.08);border:1.5px solid #f1f5f9;transition:box-shadow .2s}
+.result-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.12)}
+.rc-avatar{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#fff;overflow:hidden;flex-shrink:0}
+.rc-avatar img{width:100%;height:100%;object-fit:cover}
+.rc-name{font-size:16px;font-weight:700;color:#0f172a}
+.rc-meta{font-size:12.5px;color:#64748b;margin:4px 0 10px}
+.rc-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px}
+.rc-tag{background:#f1f5f9;color:#475569;font-size:11px;padding:3px 9px;border-radius:10px;font-weight:600}
+.rc-actions{display:flex;gap:6px;flex-wrap:wrap}
+.match-score{display:inline-block;background:linear-gradient(135deg,#10b981,#3b82f6);color:#fff;border-radius:20px;padding:4px 12px;font-size:12px;font-weight:700;margin-bottom:8px}
+
+/* Modal */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:16px;padding:32px;width:90%;max-width:620px;max-height:90vh;overflow-y:auto;position:relative}
+.modal h2{font-size:20px;font-weight:700;margin-bottom:20px}
+.modal-close{position:absolute;top:16px;right:20px;font-size:22px;cursor:pointer;color:#94a3b8;background:none;border:none;line-height:1}
+.modal-close:hover{color:#ef4444}
+
+/* Tabs */
+.tab-bar{display:flex;gap:4px;background:#f1f5f9;padding:4px;border-radius:10px;margin-bottom:20px;width:fit-content}
+.tab-btn{padding:8px 18px;border-radius:8px;border:none;font-size:13px;font-weight:600;cursor:pointer;background:transparent;color:#64748b;transition:all .15s}
+.tab-btn.active{background:#fff;color:#3b82f6;box-shadow:0 1px 4px rgba(0,0,0,.1)}
+
+/* Period toggle */
+.period-toggle{display:flex;gap:6px;margin-bottom:20px}
+.period-btn{padding:6px 16px;border-radius:8px;border:1.5px solid #e2e8f0;font-size:13px;font-weight:600;cursor:pointer;background:#fff;color:#64748b;transition:all .15s}
+.period-btn.active{background:#3b82f6;border-color:#3b82f6;color:#fff}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;right:24px;background:#1e293b;color:#fff;padding:14px 20px;border-radius:10px;font-size:14px;z-index:9999;transform:translateY(100px);opacity:0;transition:all .3s;max-width:340px}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.success{border-left:4px solid #10b981}
+.toast.error{border-left:4px solid #ef4444}
+
+.empty-state{text-align:center;padding:48px 24px;color:#94a3b8;font-size:14px}
+.spinner{display:inline-block;width:18px;height:18px;border:2.5px solid #e2e8f0;border-top-color:#3b82f6;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.dl-bar{display:flex;align-items:center;justify-content:space-between;background:#f8fafc;border-radius:10px;padding:12px 16px;margin-bottom:12px;border:1.5px solid #e2e8f0;flex-wrap:wrap;gap:8px}
+.dl-bar span{font-size:13px;color:#475569;font-weight:600}
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN ══ -->
+<div id="loginView">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="brand">Care<span>OS</span></div>
+      <div class="sub">OutdoorSeniors Operations</div>
+    </div>
+    <h2>Sign in to continue</h2>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="loginEmail" placeholder="you@outdoorseniors.com" autocomplete="username">
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="btn-primary" onclick="doLogin()">Sign In</button>
+    <div id="loginError"></div>
+  </div>
+</div>
+
+<!-- ══ APP ══ -->
+<div id="appView" style="display:none;height:100vh;flex-direction:row">
+  <nav class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="brand">Care<span>OS</span></div>
+      <div class="sub">OutdoorSeniors</div>
+    </div>
+    <div class="sidebar-user">
+      <div class="name" id="sidebarName">—</div>
+      <div class="role" id="sidebarRole">—</div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Main</div>
+      <div class="nav-item active" onclick="showSection('home')" id="nav-home"><span class="icon">🏠</span> Home</div>
+    </div>
+    <div class="nav-section" id="navAdminSections" style="display:none">
+      <div class="nav-label">Admin</div>
+      <div class="nav-item" onclick="showSection('agentOps')" id="nav-agentOps"><span class="icon">👥</span> Agent Ops</div>
+      <div class="nav-item" onclick="showSection('analytics')" id="nav-analytics"><span class="icon">📊</span> Analytics</div>
+      <div class="nav-item" onclick="showSection('oms')" id="nav-oms"><span class="icon">📦</span> OMS</div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Operations</div>
+      <div class="nav-item" onclick="showSection('supplyOps')" id="nav-supplyOps"><span class="icon">🧑‍⚕️</span> Supply Ops</div>
+      <div class="nav-item" onclick="showSection('customerOps')" id="nav-customerOps"><span class="icon">🤝</span> Customer Ops</div>
+    </div>
+    <div class="sidebar-footer">
+      <button class="btn-signout" onclick="doSignOut()">Sign Out</button>
+    </div>
+  </nav>
+
+  <div class="main-content">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title" id="topbarTitle">Home</div>
+        <div class="topbar-sub" id="topbarSub"></div>
+      </div>
+      <div style="font-size:13px;color:#94a3b8" id="topbarDate"></div>
+    </div>
+    <div class="content-area" id="contentArea"></div>
+  </div>
+</div>
+
+<!-- ══ MODALS ══ -->
+<div class="modal-bg" id="ctModal"><div class="modal" id="ctModalInner"></div></div>
+
+<div class="modal-bg" id="agentModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('agentModal')">×</button>
+    <h2 id="agentModalTitle">Add Agent</h2>
+    <div class="form-grid">
+      <div class="field"><label>Full Name</label><input type="text" id="agName"></div>
+      <div class="field"><label>Email</label><input type="email" id="agEmail"></div>
+      <div class="field"><label>Password</label><input type="password" id="agPass" placeholder="min 6 chars"></div>
+      <div class="field"><label>Phone</label><input type="tel" id="agPhone"></div>
+    </div>
+    <div style="margin-top:20px;display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn btn-ghost" onclick="closeModal('agentModal')">Cancel</button>
+      <button class="btn btn-blue" onclick="saveAgent()">Save Agent</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="custModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('custModal')">×</button>
+    <h2 id="custModalTitle">Add Customer</h2>
+    <div class="form-grid">
+      <div class="field"><label>Full Name *</label><input type="text" id="cuName"></div>
+      <div class="field"><label>Phone</label><input type="tel" id="cuPhone"></div>
+      <div class="field form-full"><label>Email</label><input type="email" id="cuEmail"></div>
+      <div class="field form-full"><label>Address</label><input type="text" id="cuAddress"></div>
+      <div class="field"><label>Area / Locality</label><input type="text" id="cuArea"></div>
+      <div class="field"><label>Pincode</label><input type="text" id="cuPin"></div>
+      <div class="field form-full"><label>Notes</label><textarea id="cuNotes" rows="2"></textarea></div>
+    </div>
+    <div style="margin-top:20px;display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn btn-ghost" onclick="closeModal('custModal')">Cancel</button>
+      <button class="btn btn-blue" onclick="saveCustomer()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="orderModal">
+  <div class="modal" style="max-width:720px">
+    <button class="modal-close" onclick="closeModal('orderModal')">×</button>
+    <h2 id="orderModalTitle">Create Order</h2>
+    <input type="hidden" id="ordEditId">
+    <div class="form-grid cols3">
+      <div class="field"><label>Customer *</label><select id="ordCustomer" style="width:100%"></select></div>
+      <div class="field"><label>Patient Name *</label><input type="text" id="ordPatient"></div>
+      <div class="field"><label>Patient Age</label><input type="number" id="ordAge" min="0" max="120"></div>
+      <div class="field"><label>Weight (kg)</label><input type="number" id="ordWeight"></div>
+      <div class="field"><label>Caretaker Gender</label>
+        <select id="ordGender"><option value="">Any</option><option>Male</option><option>Female</option></select>
+      </div>
+      <div class="field"><label>Package Type</label><select id="ordPackage"></select></div>
+      <div class="field"><label>Preferred Start Date</label><input type="date" id="ordStart"></div>
+      <div class="field"><label>Duration</label><input type="text" id="ordDuration" placeholder="e.g. 3 months"></div>
+      <div class="field"><label>Location / Area</label><input type="text" id="ordLocation"></div>
+      <div class="field"><label>Pincode</label><input type="text" id="ordPincode"></div>
+      <div class="field form-full"><label>Medical Conditions</label><input type="text" id="ordMedical" placeholder="e.g. Diabetes, Hypertension (leave blank if none)"></div>
+      <div class="field form-full">
+        <label>Languages Preferred</label>
+        <div class="pill-group" id="langPills"></div>
+      </div>
+      <div class="field form-full">
+        <label>On Diapers?</label>
+        <div class="pill-group">
+          <label class="pill-label" id="pill-diapers-yes"><input type="radio" name="diapers" value="Yes" onchange="radioSync('diapers')"> Yes</label>
+          <label class="pill-label" id="pill-diapers-no"><input type="radio" name="diapers" value="No" onchange="radioSync('diapers')"> No</label>
+        </div>
+      </div>
+      <div class="field form-full">
+        <label>Care For</label>
+        <div class="pill-group">
+          <label class="pill-label"><input type="radio" name="forWhom" value="Self" onchange="radioSync('forWhom');toggleRel()"> Self</label>
+          <label class="pill-label"><input type="radio" name="forWhom" value="Someone else" onchange="radioSync('forWhom');toggleRel()"> Someone else</label>
+        </div>
+      </div>
+      <div class="field" id="relField" style="display:none"><label>Relationship</label><input type="text" id="ordRel" placeholder="e.g. Parent, Spouse"></div>
+      <div class="field form-full"><label>Additional Notes</label><textarea id="ordNotes" rows="2"></textarea></div>
+    </div>
+    <div style="margin-top:20px;display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn btn-ghost" onclick="closeModal('orderModal')">Cancel</button>
+      <button class="btn btn-blue" onclick="saveOrder()">Save Order</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="assignModal">
+  <div class="modal" style="max-width:500px">
+    <button class="modal-close" onclick="closeModal('assignModal')">×</button>
+    <h2>Assign Caretaker</h2>
+    <p style="font-size:13px;color:#64748b;margin-bottom:16px">Order: <strong id="assignOrderLabel"></strong></p>
+    <div class="field"><label>Select Caretaker</label><select id="assignCtSelect" style="width:100%"></select></div>
+    <div style="margin-top:20px;display:flex;gap:10px;justify-content:flex-end">
+      <button class="btn btn-ghost" onclick="closeModal('assignModal')">Cancel</button>
+      <button class="btn btn-green" onclick="confirmAssign()">Assign</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
 <script>
+// ── Init ──
 firebase.initializeApp(FIREBASE_CONFIG);
 const auth = firebase.auth();
 const db   = firebase.firestore();
 
-let currentUser       = null;
-let currentProfile    = null;
-let allCaretakers     = [];
-let importRows        = [];
-let periodMode        = 'daily';
-let lastSearchResults = [];
-let modalCaretaker    = null;
+let currentUser = null, currentProfile = null;
+let allCaretakers = [], allCustomers = [], allOrders = [], allAgents = [];
+let editingAgentId = null, editingCustomerId = null, editingOrderId = null;
+let assignOrderDoc = null, lastSearchResults = [], currentSection = 'home';
+let supplyTab = 'list', custTab = 'cust', periodMode = 'daily';
 
-// ── Auth ──────────────────────────────────────────────────────────
+const LANGUAGES = ['English','Hindi','Telugu','Tamil','Kannada','Malayalam','Marathi','Bengali','Gujarati','Odia','Punjabi','Urdu'];
+const CARE_PACKAGES = [
+  '12-Hour Day Shift','12-Hour Night Shift','24-Hour Live-in Care',
+  'Monthly Elder Care','Monthly Child Care','Monthly Patient Care',
+  '4-Hour Morning Visit','4-Hour Evening Visit','Post-Surgery Care',
+  'Dementia & Memory Care','Custom / Discuss'
+];
+
+// ── Auth ──
 auth.onAuthStateChanged(async user => {
-  if (!user) { showView('login'); return; }
-  try {
-    const doc = await db.collection('users').doc(user.uid).get();
-    if (doc.exists) {
-      const d = doc.data();
-      if (!d.active) { await auth.signOut(); showLoginErr('Account deactivated. Contact admin.'); return; }
-      currentUser    = user;
-      currentProfile = d;
-      if (d.role === 'admin') {
-        document.getElementById('adminUserName').textContent = d.name || user.email;
-        showView('admin');
-        loadDashboard();
-      } else {
-        document.getElementById('agentUserName').textContent = d.name || user.email;
-        showView('agent');
-      }
-      return;
-    }
-    // First login ever — bootstrap admin
-    const snap = await db.collection('users').limit(1).get();
-    if (snap.empty) {
-      await db.collection('users').doc(user.uid).set({
-        name: user.email.split('@')[0], email: user.email,
-        role: 'admin', active: true,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
-      location.reload();
-    } else {
-      await auth.signOut();
-      showLoginErr('Account not set up. Contact admin.');
-    }
-  } catch(e) { showLoginErr(e.message); }
+  if (!user) { showLogin(); return; }
+  currentUser = user;
+  const snap = await db.collection('users').doc(user.uid).get();
+  if (!snap.exists) {
+    const p = { name: user.email.split('@')[0], email: user.email, role: 'admin', phone: '', createdAt: firebase.firestore.FieldValue.serverTimestamp() };
+    await db.collection('users').doc(user.uid).set(p);
+    currentProfile = p;
+  } else {
+    currentProfile = snap.data();
+  }
+  showApp();
 });
 
-// ── View Control ──────────────────────────────────────────────────
-function showView(name) {
-  document.getElementById('view-login').style.display  = name === 'login'  ? 'flex'  : 'none';
-  document.getElementById('view-admin').style.display  = name === 'admin'  ? 'block' : 'none';
-  document.getElementById('view-agent').style.display  = name === 'agent'  ? 'block' : 'none';
-  if (name === 'login') document.getElementById('loginCard').style.opacity = '1';
+function showLogin() {
+  document.getElementById('loginView').style.display = 'flex';
+  document.getElementById('appView').style.display = 'none';
 }
 
-// ── Login ─────────────────────────────────────────────────────────
 async function doLogin() {
   const email = document.getElementById('loginEmail').value.trim();
-  const pw    = document.getElementById('loginPw').value;
-  if (!email || !pw) { showLoginErr('Please enter email and password.'); return; }
-  const btn = document.getElementById('loginBtn');
-  btn.disabled = true; btn.textContent = 'Signing in…';
-  document.getElementById('loginErr').style.display = 'none';
-  try {
-    await auth.signInWithEmailAndPassword(email, pw);
-  } catch(e) {
-    showLoginErr('Incorrect email or password.');
-    btn.disabled = false; btn.textContent = 'Sign In';
+  const pass  = document.getElementById('loginPass').value;
+  document.getElementById('loginError').textContent = '';
+  try { await auth.signInWithEmailAndPassword(email, pass); }
+  catch(e) { document.getElementById('loginError').textContent = e.message; }
+}
+document.getElementById('loginPass').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+function doSignOut() { auth.signOut(); }
+
+function showApp() {
+  document.getElementById('loginView').style.display = 'none';
+  const app = document.getElementById('appView');
+  app.style.display = 'flex';
+  document.getElementById('sidebarName').textContent = currentProfile?.name || currentUser.email;
+  document.getElementById('sidebarRole').textContent = currentProfile?.role === 'admin' ? 'Administrator' : 'Agent';
+  document.getElementById('topbarDate').textContent = new Date().toLocaleDateString('en-IN',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  if (currentProfile?.role === 'admin') document.getElementById('navAdminSections').style.display = 'block';
+  loadAllData();
+  showSection('home');
+}
+
+// ── Data Load ──
+async function loadAllData() {
+  const [ctSnap, cuSnap, ordSnap] = await Promise.all([
+    db.collection('caretakers').orderBy('createdAt','desc').get(),
+    db.collection('customers').orderBy('createdAt','desc').get(),
+    db.collection('orders').orderBy('createdAt','desc').get()
+  ]);
+  allCaretakers = ctSnap.docs.map(d => ({id:d.id,...d.data()}));
+  allCustomers  = cuSnap.docs.map(d => ({id:d.id,...d.data()}));
+  allOrders     = ordSnap.docs.map(d => ({id:d.id,...d.data()}));
+  if (currentProfile?.role === 'admin') {
+    const agSnap = await db.collection('users').where('role','==','agent').get();
+    allAgents = agSnap.docs.map(d => ({id:d.id,...d.data()}));
   }
 }
-function doLogout() { auth.signOut(); }
-function showLoginErr(msg) {
-  const el = document.getElementById('loginErr');
-  el.textContent = msg; el.style.display = 'block';
-}
-document.addEventListener('keydown', e => {
-  if (e.key === 'Enter' && document.getElementById('view-login').style.display !== 'none') doLogin();
-});
 
-// ── Admin Tab Switching ───────────────────────────────────────────
-function switchAdminTab(name, btn) {
-  ['dashboard','agents','database'].forEach(t => {
-    document.getElementById('admin-' + t).style.display    = t === name ? 'block' : 'none';
-    document.getElementById('atab-' + t).classList.toggle('active', t === name);
-  });
-  if (name === 'agents')   loadAgents();
-  if (name === 'dashboard') loadDashboard();
+// ── Section Routing ──
+const SECTION_META = {
+  home:       {title:'Home',         sub:'Welcome to CareOS'},
+  agentOps:   {title:'Agent Ops',    sub:'Manage your field agents'},
+  supplyOps:  {title:'Supply Ops',   sub:'Caretaker management & matching'},
+  customerOps:{title:'Customer Ops', sub:'Customers, orders & care matching'},
+  analytics:  {title:'Analytics',    sub:'KPI dashboards & performance metrics'},
+  oms:        {title:'OMS',          sub:'Order Management System'}
+};
+
+function showSection(name) {
+  currentSection = name;
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  document.getElementById('nav-'+name)?.classList.add('active');
+  document.getElementById('topbarTitle').textContent = SECTION_META[name]?.title || name;
+  document.getElementById('topbarSub').textContent   = SECTION_META[name]?.sub   || '';
+  const ca = document.getElementById('contentArea');
+  ca.innerHTML = '';
+  if      (name==='home')        renderHome(ca);
+  else if (name==='agentOps')    renderAgentOps(ca);
+  else if (name==='supplyOps')   renderSupplyOps(ca);
+  else if (name==='customerOps') renderCustomerOps(ca);
+  else if (name==='analytics')   renderAnalytics(ca);
+  else if (name==='oms')         renderOMS(ca);
 }
 
-// ── Agent Tab Switching ───────────────────────────────────────────
-function switchAgentTab(name, btn) {
-  ['add','search'].forEach(t => {
-    document.getElementById('agent-' + t).style.display    = t === name ? 'block' : 'none';
-    document.getElementById('agtab-' + t).classList.toggle('active', t === name);
-  });
+// ══ HOME ══
+function renderHome(ca) {
+  const isAdmin = currentProfile?.role === 'admin';
+  const open_ord = allOrders.filter(o => o.status==='pending'||o.status==='matched').length;
+  ca.innerHTML = `
+  <div class="ai-box">
+    <h2>👋 Hello, ${esc(currentProfile?.name||'there')}!</h2>
+    <p>What would you like to do today? Ask me anything about CareOS.</p>
+    <div class="ai-input-row">
+      <input type="text" id="aiQ" placeholder="e.g. How do I add a new caretaker? or Show open orders…" onkeydown="if(event.key==='Enter')askAI()">
+      <button onclick="askAI()">Ask</button>
+    </div>
+    <div class="ai-response" id="aiResp"></div>
+  </div>
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="label">Caretakers</div><div class="value">${allCaretakers.length}</div><div class="delta">in database</div></div>
+    <div class="kpi-card"><div class="label">Customers</div><div class="value">${allCustomers.length}</div><div class="delta">registered</div></div>
+    <div class="kpi-card"><div class="label">Total Orders</div><div class="value">${allOrders.length}</div><div class="delta">all time</div></div>
+    <div class="kpi-card"><div class="label">Open Orders</div><div class="value" style="color:#f59e0b">${open_ord}</div><div class="delta" style="color:#f59e0b">need assignment</div></div>
+    ${isAdmin?`<div class="kpi-card"><div class="label">Agents</div><div class="value">${allAgents.length}</div><div class="delta">active</div></div>`:''}
+  </div>
+  <div class="section-card">
+    <h2>Quick Actions</h2>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn btn-blue" onclick="showSection('supplyOps');supplyTab='add';setTimeout(()=>renderSupplyOps(document.getElementById('contentArea')),50)">+ Add Caretaker</button>
+      <button class="btn btn-blue" onclick="showSection('customerOps');custTab='cust';setTimeout(()=>openCustModal(),150)">+ Add Customer</button>
+      <button class="btn btn-green" onclick="showSection('customerOps');custTab='orders';setTimeout(()=>renderCustomerOps(document.getElementById('contentArea')),50)">📋 Orders</button>
+      <button class="btn btn-ghost" onclick="showSection('supplyOps');supplyTab='search';setTimeout(()=>renderSupplyOps(document.getElementById('contentArea')),50)">🔍 Search Caretakers</button>
+      ${isAdmin?`<button class="btn btn-ghost" onclick="showSection('oms')">📦 OMS</button>`:''}
+    </div>
+  </div>`;
 }
 
-// ── Dashboard ─────────────────────────────────────────────────────
-async function loadDashboard() {
+async function askAI() {
+  const q = document.getElementById('aiQ').value.trim();
+  if (!q) return;
+  const box = document.getElementById('aiResp');
+  box.style.display = 'block';
+  box.textContent = '⏳ Thinking…';
+  const sys = `You are CareOS Assistant for OutdoorSeniors care operations platform.
+Sections: Home, Supply Ops (caretaker management), Customer Ops (customers + orders + AI matching), Analytics, OMS (admin), Agent Ops (admin).
+Current user role: ${currentProfile?.role}. Stats: ${allCaretakers.length} caretakers, ${allCustomers.length} customers, ${allOrders.length} orders.
+Be concise and practical. Give step-by-step navigation guidance when asked.`;
   try {
-    const snap = await db.collection('caretakers').get();
-    allCaretakers = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderDashboard();
-  } catch(e) { console.error(e); }
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({contents:[{parts:[{text:sys+'\n\nUser: '+q}]}]})
+    });
+    const data = await res.json();
+    box.textContent = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response.';
+  } catch(e) { box.textContent = 'Error: '+e.message; }
 }
 
-function renderDashboard() {
-  const now   = new Date();
-  const today = dateStr(now);
-  const wkStart = new Date(now); wkStart.setDate(now.getDate() - now.getDay());
-  const moStart = new Date(now.getFullYear(), now.getMonth(), 1);
-
-  document.getElementById('dTotal').textContent = allCaretakers.length;
-  document.getElementById('dToday').textContent = allCaretakers.filter(c => dateStr(toDate(c.createdAt)) === today).length;
-  document.getElementById('dWeek').textContent  = allCaretakers.filter(c => toDate(c.createdAt) >= wkStart).length;
-  document.getElementById('dMonth').textContent = allCaretakers.filter(c => toDate(c.createdAt) >= moStart).length;
-
-  renderTrend();
-  renderLeaderboard();
+// ══ AGENT OPS ══
+function renderAgentOps(ca) {
+  ca.innerHTML = `
+  <div class="section-card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <h2 style="margin:0">All Agents</h2>
+      <button class="btn btn-blue" onclick="openAgentModal()">+ Add Agent</button>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody id="agentsTable">${buildAgentsTable()}</tbody>
+    </table></div>
+  </div>`;
 }
 
-function setPeriod(mode, btn) {
-  periodMode = mode;
-  document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  renderTrend();
+function buildAgentsTable() {
+  if (!allAgents.length) return `<tr><td colspan="5" class="empty-state">No agents yet. Add one above.</td></tr>`;
+  return allAgents.map(a=>`<tr>
+    <td><strong>${esc(a.name)}</strong></td>
+    <td>${esc(a.email)}</td>
+    <td>${esc(a.phone||'—')}</td>
+    <td><span class="badge ${a.active===false?'badge-red':'badge-green'}">${a.active===false?'Inactive':'Active'}</span></td>
+    <td><div style="display:flex;gap:6px">
+      <button class="btn btn-ghost btn-sm" onclick="openAgentModal('${a.id}')">Edit</button>
+      <button class="btn ${a.active===false?'btn-green':'btn-red'} btn-sm" onclick="toggleAgent('${a.id}',${a.active!==false})">${a.active===false?'Activate':'Deactivate'}</button>
+    </div></td>
+  </tr>`).join('');
 }
 
-function renderTrend() {
-  const now = new Date();
-  let buckets = [];
-
-  if (periodMode === 'daily') {
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date(now); d.setDate(now.getDate() - i);
-      buckets.push({
-        label: d.toLocaleDateString('en-IN', { weekday:'short', day:'numeric', month:'short' }),
-        count: allCaretakers.filter(c => dateStr(toDate(c.createdAt)) === dateStr(d)).length
-      });
-    }
-  } else if (periodMode === 'weekly') {
-    for (let i = 7; i >= 0; i--) {
-      const wEnd   = new Date(now); wEnd.setDate(now.getDate() - i * 7);
-      const wStart = new Date(wEnd); wStart.setDate(wEnd.getDate() - 6);
-      wStart.setHours(0,0,0,0); wEnd.setHours(23,59,59,999);
-      buckets.push({
-        label: `${wStart.getDate()}/${wStart.getMonth()+1} – ${wEnd.getDate()}/${wEnd.getMonth()+1}`,
-        count: allCaretakers.filter(c => { const d = toDate(c.createdAt); return d >= wStart && d <= wEnd; }).length
-      });
-    }
+function openAgentModal(id) {
+  editingAgentId = id || null;
+  document.getElementById('agentModalTitle').textContent = id ? 'Edit Agent' : 'Add Agent';
+  document.getElementById('agPass').placeholder = id ? 'Leave blank to keep password' : 'min 6 chars';
+  if (id) {
+    const a = allAgents.find(x=>x.id===id);
+    if (a) { document.getElementById('agName').value=a.name||''; document.getElementById('agEmail').value=a.email||''; document.getElementById('agPhone').value=a.phone||''; document.getElementById('agPass').value=''; }
   } else {
-    for (let i = 5; i >= 0; i--) {
-      const mStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const mEnd   = new Date(now.getFullYear(), now.getMonth() - i + 1, 0, 23, 59, 59);
-      buckets.push({
-        label: mStart.toLocaleDateString('en-IN', { month:'short', year:'2-digit' }),
-        count: allCaretakers.filter(c => { const d = toDate(c.createdAt); return d >= mStart && d <= mEnd; }).length
-      });
-    }
+    ['agName','agEmail','agPass','agPhone'].forEach(x=>document.getElementById(x).value='');
   }
-
-  const max = Math.max(...buckets.map(b => b.count), 1);
-  document.getElementById('trendBody').innerHTML = buckets.map(b => `
-    <tr>
-      <td style="color:#555">${b.label}</td>
-      <td style="font-weight:700">${b.count}</td>
-      <td><div class="bar-wrap"><div class="bar-fill" style="width:${Math.round(b.count/max*100)}%"></div></div></td>
-    </tr>`).join('');
+  openModal('agentModal');
 }
 
-function renderLeaderboard() {
-  const counts = {};
-  allCaretakers.forEach(c => {
-    const by = c.addedBy || 'Unknown';
-    counts[by] = (counts[by] || 0) + 1;
-  });
-  const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
-  const max = sorted[0] ? sorted[0][1] : 1;
-  document.getElementById('leaderBody').innerHTML = sorted.length
-    ? sorted.map(([name, cnt], i) => `
-        <tr>
-          <td style="font-weight:700;color:#888">${i + 1}</td>
-          <td style="font-weight:600">${name}</td>
-          <td style="font-weight:700">${cnt}</td>
-          <td><div class="bar-wrap"><div class="bar-fill blue" style="width:${Math.round(cnt/max*100)}%"></div></div></td>
-        </tr>`).join('')
-    : '<tr><td colspan="4" style="color:#aaa;text-align:center;padding:20px">No data yet</td></tr>';
-}
-
-// ── Agents ────────────────────────────────────────────────────────
-function loadAgents() {
-  db.collection('users').where('role', '==', 'agent').onSnapshot(snap => {
-    const agents  = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    const active  = agents.filter(a => a.active).length;
-    document.getElementById('agTotal').textContent   = agents.length;
-    document.getElementById('agActive').textContent  = active;
-    document.getElementById('agInactive').textContent = agents.length - active;
-
-    document.getElementById('agentList').innerHTML = agents.length
-      ? agents.map(a => `
-          <div class="agent-row">
-            <div class="agent-avatar">${(a.name || '?')[0].toUpperCase()}</div>
-            <div class="agent-info">
-              <div class="agent-name">${a.name}</div>
-              <div class="agent-email">${a.email}</div>
-            </div>
-            <div class="status-dot ${a.active ? 'on' : 'off'}"></div>
-            <button class="btn btn-sm ${a.active ? 'btn-danger' : 'btn-success'}"
-              onclick="toggleAgent('${a.id}',${a.active})">${a.active ? 'Deactivate' : 'Activate'}</button>
-          </div>`).join('')
-      : '<div style="padding:16px 22px;color:#888;font-size:13px">No agents yet.</div>';
-  });
-}
-
-async function addAgent() {
-  const name  = document.getElementById('newName').value.trim();
-  const email = document.getElementById('newEmail').value.trim();
-  const pw    = document.getElementById('newPw').value;
-  const err   = document.getElementById('agentErr');
-  const ok    = document.getElementById('agentOk');
-  err.style.display = 'none'; ok.style.display = 'none';
-  if (!name || !email || !pw) { err.textContent = 'All fields required.'; err.style.display = 'block'; return; }
-  const btn = document.getElementById('addAgentBtn');
-  btn.disabled = true; btn.textContent = 'Adding…';
+let _secondaryApp = null;
+async function saveAgent() {
+  const name=document.getElementById('agName').value.trim(), email=document.getElementById('agEmail').value.trim();
+  const pass=document.getElementById('agPass').value, phone=document.getElementById('agPhone').value.trim();
+  if (!name||!email) { toast('Name and email required','error'); return; }
   try {
-    const secondaryApp  = firebase.initializeApp(FIREBASE_CONFIG, 'sec-' + Date.now());
-    const secAuth       = secondaryApp.auth();
-    const cred          = await secAuth.createUserWithEmailAndPassword(email, pw);
-    await db.collection('users').doc(cred.user.uid).set({
-      name, email, role: 'agent', active: true,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
-    await secAuth.signOut();
-    await secondaryApp.delete();
-    ['newName','newEmail','newPw'].forEach(id => document.getElementById(id).value = '');
-    ok.textContent = `Agent "${name}" added successfully.`;
-    ok.style.display = 'block';
-  } catch(e) { err.textContent = e.message; err.style.display = 'block'; }
-  btn.disabled = false; btn.textContent = 'Add Agent';
-}
-
-async function toggleAgent(uid, isActive) {
-  await db.collection('users').doc(uid).update({ active: !isActive });
-}
-
-// ── Export ────────────────────────────────────────────────────────
-const CSV_COLS = ['name','phone','email','sex','age','address','pincode','area',
-                  'languages','workPreferences','experience','salaryExpectation',
-                  'experienceDetails','idType','referralName','referralPhone','notes','addedBy'];
-
-async function exportCSV() {
-  const snap = await db.collection('caretakers').get();
-  const rows = snap.docs.map(d => d.data());
-  if (!rows.length) { alert('No caretakers to export.'); return; }
-  triggerCSVDownload(rows, 'caretakers_' + dateStr(new Date()) + '.csv');
-}
-
-function downloadTemplate() {
-  triggerCSVDownload([{
-    name:'Sample Name', phone:'9876543210', email:'sample@email.com', sex:'Female',
-    age:35, address:'123 Main St', pincode:'560001', area:'Indiranagar Bangalore',
-    languages:'Kannada; Hindi', workPreferences:'Live-in; Elder Care',
-    experience:3, salaryExpectation:'18000', experienceDetails:'3 years elder care',
-    idType:'Aadhar Card', referralName:'', referralPhone:'', notes:'', addedBy:''
-  }], 'caretaker_template.csv');
-}
-
-function triggerCSVDownload(rows, filename) {
-  const lines = rows.map(r => CSV_COLS.map(h => {
-    let v = r[h];
-    if (Array.isArray(v)) v = v.join('; ');
-    if (v == null) v = '';
-    v = String(v).replace(/"/g, '""');
-    return (v.includes(',') || v.includes('"') || v.includes('\n')) ? `"${v}"` : v;
-  }).join(','));
-  const csv  = '﻿' + [CSV_COLS.join(','), ...lines].join('\n');
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href = url; a.download = filename; a.click();
-  URL.revokeObjectURL(url);
-}
-
-// ── Import ────────────────────────────────────────────────────────
-function handleImportFile(input) {
-  const file = input.files[0];
-  if (!file) return;
-  document.getElementById('csvFileName').textContent = file.name;
-  document.getElementById('importErr').style.display = 'none';
-  document.getElementById('importOk').style.display  = 'none';
-  const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      importRows = parseCSV(e.target.result);
-      if (!importRows.length) throw new Error('No data rows found.');
-      showImportPreview();
-    } catch(err) {
-      document.getElementById('importErr').textContent = 'Parse error: ' + err.message;
-      document.getElementById('importErr').style.display = 'block';
+    if (editingAgentId) {
+      await db.collection('users').doc(editingAgentId).update({name,phone});
+      const idx=allAgents.findIndex(a=>a.id===editingAgentId);
+      if(idx>=0){allAgents[idx].name=name;allAgents[idx].phone=phone;}
+      toast('Agent updated');
+    } else {
+      if (!pass||pass.length<6){toast('Password must be 6+ chars','error');return;}
+      if (!_secondaryApp) _secondaryApp=firebase.initializeApp(FIREBASE_CONFIG,'secondary');
+      const cred=await _secondaryApp.auth().createUserWithEmailAndPassword(email,pass);
+      await _secondaryApp.auth().signOut();
+      const profile={name,email,phone,role:'agent',active:true,createdAt:firebase.firestore.FieldValue.serverTimestamp()};
+      await db.collection('users').doc(cred.user.uid).set(profile);
+      allAgents.push({id:cred.user.uid,...profile});
+      toast('Agent created');
     }
-  };
-  reader.readAsText(file, 'UTF-8');
+    closeModal('agentModal');
+    const t=document.getElementById('agentsTable');if(t)t.innerHTML=buildAgentsTable();
+  } catch(e){toast(e.message,'error');}
 }
 
-function parseCSV(text) {
-  text = text.replace(/^﻿/, '');
-  const lines = text.split('\n').filter(l => l.trim());
-  if (lines.length < 2) return [];
-  const headers = splitCSVLine(lines[0]);
-  return lines.slice(1).map(line => {
-    const vals = splitCSVLine(line);
-    const obj  = {};
-    headers.forEach((h, i) => { obj[h.trim()] = (vals[i] || '').trim(); });
-    return obj;
-  });
+async function toggleAgent(id,deactivate) {
+  await db.collection('users').doc(id).update({active:!deactivate});
+  const a=allAgents.find(x=>x.id===id);if(a)a.active=!deactivate;
+  const t=document.getElementById('agentsTable');if(t)t.innerHTML=buildAgentsTable();
+  toast(deactivate?'Agent deactivated':'Agent activated');
 }
 
-function splitCSVLine(line) {
-  const result = []; let cur = ''; let inQ = false;
-  for (let i = 0; i < line.length; i++) {
-    const c = line[i];
-    if      (c === '"' && inQ && line[i+1] === '"') { cur += '"'; i++; }
-    else if (c === '"') { inQ = !inQ; }
-    else if (c === ',' && !inQ) { result.push(cur); cur = ''; }
-    else { cur += c; }
-  }
-  result.push(cur);
-  return result;
+// ══ SUPPLY OPS ══
+function renderSupplyOps(ca) {
+  ca.innerHTML = `
+  <div class="tab-bar">
+    <button class="tab-btn ${supplyTab==='add'?'active':''}" onclick="supplyTab='add';renderSupplyOps(document.getElementById('contentArea'))">+ Add Caretaker</button>
+    <button class="tab-btn ${supplyTab==='list'?'active':''}" onclick="supplyTab='list';renderSupplyOps(document.getElementById('contentArea'))">All Caretakers</button>
+    <button class="tab-btn ${supplyTab==='search'?'active':''}" onclick="supplyTab='search';renderSupplyOps(document.getElementById('contentArea'))">🔍 Search & Match</button>
+  </div>
+  <div id="supContent"></div>`;
+  const c=document.getElementById('supContent');
+  if(supplyTab==='add') renderAddCaretaker(c);
+  else if(supplyTab==='list') renderAllCaretakers(c);
+  else renderSearchMatch(c);
 }
 
-function showImportPreview() {
-  const cols = ['name','phone','sex','age','area','pincode','languages','workPreferences'];
-  const hdr  = cols.map(c => `<th>${c}</th>`).join('');
-  const body = importRows.slice(0, 10).map(r =>
-    `<tr>${cols.map(c => `<td>${r[c] || ''}</td>`).join('')}</tr>`).join('');
-  const more = importRows.length > 10
-    ? `<tr><td colspan="${cols.length}" style="color:#888;font-style:italic;padding:8px 10px">… and ${importRows.length - 10} more rows</td></tr>` : '';
-  document.getElementById('importPreview').innerHTML =
-    `<table><thead><tr>${hdr}</tr></thead><tbody>${body}${more}</tbody></table>`;
-  document.getElementById('importPreviewWrap').style.display = 'block';
-  document.getElementById('importCount').textContent = `${importRows.length} records ready to import`;
+// ─ Add Caretaker ─
+function renderAddCaretaker(c) {
+  c.innerHTML = `
+  <div class="section-card">
+    <h2>Add Caretaker</h2>
+    <div class="form-grid">
+      <div class="field"><label>Full Name *</label><input type="text" id="ctName"></div>
+      <div class="field"><label>Phone *</label><input type="tel" id="ctPhone"></div>
+      <div class="field"><label>Age</label><input type="number" id="ctAge" min="18" max="70"></div>
+      <div class="field"><label>Gender</label><select id="ctGender"><option>Female</option><option>Male</option></select></div>
+      <div class="field"><label>Email</label><input type="email" id="ctEmail"></div>
+      <div class="field"><label>Salary Expected (₹/mo)</label><input type="number" id="ctSalary"></div>
+      <div class="field"><label>Area / Locality</label><input type="text" id="ctArea"></div>
+      <div class="field"><label>Pincode</label><input type="text" id="ctPin"></div>
+      <div class="field form-full"><label>Full Address</label><input type="text" id="ctAddress"></div>
+      <div class="field form-full">
+        <label>Languages Known</label>
+        <div class="pill-group" id="ctLangPills">${LANGUAGES.map(l=>`<label class="pill-label"><input type="checkbox" value="${l}" onchange="syncPill(this)"> ${l}</label>`).join('')}</div>
+      </div>
+      <div class="field form-full">
+        <label>Work Preferences</label>
+        <div class="pill-group">${['Elder Care','Child Care','Patient Care','Post-Surgery','Dementia Care','Overnight','Live-in'].map(w=>`<label class="pill-label"><input type="checkbox" value="${w}" name="ctWork" onchange="syncPill(this)"> ${w}</label>`).join('')}</div>
+      </div>
+      <div class="field"><label>Experience (years)</label><input type="number" id="ctExp" min="0"></div>
+      <div class="field"><label>ID Type</label>
+        <select id="ctIdType"><option>Aadhar Card</option><option>PAN Card</option><option>Voter ID</option><option>Passport</option><option>Driving Licence</option></select>
+      </div>
+      <div class="field"><label>Photo URL</label><input type="url" id="ctPhotoURL" placeholder="Paste Google Drive or direct image link"></div>
+      <div class="field"><label>ID Document URL</label><input type="url" id="ctIdURL" placeholder="Paste Google Drive link to ID scan"></div>
+      <div class="field"><label>Referred By</label><input type="text" id="ctRef"></div>
+      <div class="field form-full"><label>Notes</label><textarea id="ctNotes"></textarea></div>
+    </div>
+    <div style="margin-top:20px;display:flex;gap:10px">
+      <button class="btn btn-blue" onclick="saveCaretaker()">Save Caretaker</button>
+      <button class="btn btn-ghost" onclick="clearCtForm()">Clear</button>
+    </div>
+  </div>`;
 }
 
-async function importCSV() {
-  if (!importRows.length) return;
-  const btn = document.getElementById('confirmImportBtn');
-  btn.disabled = true; btn.textContent = 'Importing…';
-  try {
-    const batch = db.batch();
-    importRows.forEach(row => {
-      const ref = db.collection('caretakers').doc();
-      batch.set(ref, {
-        name: row.name || '', phone: row.phone || '', email: row.email || '',
-        sex: row.sex || '', age: Number(row.age) || 0,
-        address: row.address || '', pincode: row.pincode || '', area: row.area || '',
-        languages:      row.languages      ? row.languages.split(';').map(s=>s.trim()).filter(Boolean) : [],
-        workPreferences:row.workPreferences ? row.workPreferences.split(';').map(s=>s.trim()).filter(Boolean) : [],
-        experience:        Number(row.experience) || 0,
-        salaryExpectation: row.salaryExpectation || '',
-        experienceDetails: row.experienceDetails || '',
-        idType: row.idType || '', referralName: row.referralName || '',
-        referralPhone: row.referralPhone || '', notes: row.notes || '',
-        addedBy:   row.addedBy || currentProfile?.name || 'Import',
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
-    });
-    await batch.commit();
-    document.getElementById('importOk').textContent = `${importRows.length} caretakers imported successfully.`;
-    document.getElementById('importOk').style.display = 'block';
-    document.getElementById('importPreviewWrap').style.display = 'none';
-    importRows = [];
-    document.getElementById('csvFile').value = '';
-    document.getElementById('csvFileName').textContent = '';
-  } catch(e) {
-    document.getElementById('importErr').textContent = 'Import failed: ' + e.message;
-    document.getElementById('importErr').style.display = 'block';
-  }
-  btn.disabled = false; btn.textContent = 'Import Records';
-}
-
-// ── Pill Checkboxes ───────────────────────────────────────────────
-function syncPill(cb) {
-  cb.parentElement.classList.toggle('on', cb.checked);
-}
-function getChecked(groupId) {
-  return [...document.getElementById(groupId).querySelectorAll('input[type=checkbox]:checked')].map(cb => cb.value);
-}
-
-// ── Save Caretaker ────────────────────────────────────────────────
 async function saveCaretaker() {
-  const name  = document.getElementById('ctName').value.trim();
-  const phone = document.getElementById('ctPhone').value.trim();
-  const sex   = document.getElementById('ctSex').value;
-  if (!name || !phone || !sex) { showMsg('ctErr','Name, Phone, and Sex are required.'); return; }
-  const btn = document.getElementById('saveCtBtn');
-  btn.disabled = true; btn.textContent = 'Saving…';
-  hideMsg('ctErr'); hideMsg('ctOk');
+  const name=document.getElementById('ctName').value.trim(), phone=document.getElementById('ctPhone').value.trim();
+  if(!name||!phone){toast('Name and phone are required','error');return;}
+  const langs=[...document.querySelectorAll('#ctLangPills input:checked')].map(x=>x.value);
+  const prefs=[...document.querySelectorAll('[name=ctWork]:checked')].map(x=>x.value);
   try {
     await db.collection('caretakers').add({
-      name, phone,
-      email:             document.getElementById('ctEmail').value.trim(),
-      sex,
-      age:               Number(document.getElementById('ctAge').value) || 0,
-      address:           document.getElementById('ctAddress').value.trim(),
-      pincode:           document.getElementById('ctPincode').value.trim(),
-      area:              document.getElementById('ctArea').value.trim(),
-      languages:         getChecked('langGroup'),
-      workPreferences:   getChecked('prefGroup'),
-      experience:        Number(document.getElementById('ctExp').value) || 0,
-      salaryExpectation: document.getElementById('ctSalary').value.trim(),
-      experienceDetails: document.getElementById('ctExpDetails').value.trim(),
-      photoURL:          document.getElementById('ctPhotoURL').value.trim(),
-      idType:            document.getElementById('ctIdType').value,
-      idURL:             document.getElementById('ctIdURL').value.trim(),
-      referralName:      document.getElementById('ctRefName').value.trim(),
-      referralPhone:     document.getElementById('ctRefPhone').value.trim(),
-      notes:             document.getElementById('ctNotes').value.trim(),
-      addedBy:           currentProfile?.name || currentUser?.email || 'Agent',
-      createdAt:         firebase.firestore.FieldValue.serverTimestamp()
+      name,phone,age:document.getElementById('ctAge').value||'',gender:document.getElementById('ctGender').value,
+      email:document.getElementById('ctEmail').value.trim(),salary:document.getElementById('ctSalary').value||'',
+      area:document.getElementById('ctArea').value.trim(),pincode:document.getElementById('ctPin').value.trim(),
+      address:document.getElementById('ctAddress').value.trim(),languages:langs,workPreferences:prefs,
+      experience:document.getElementById('ctExp').value||'0',idType:document.getElementById('ctIdType').value,
+      photoURL:document.getElementById('ctPhotoURL').value.trim(),idURL:document.getElementById('ctIdURL').value.trim(),
+      referredBy:document.getElementById('ctRef').value.trim(),notes:document.getElementById('ctNotes').value.trim(),
+      addedBy:currentProfile?.name||currentUser?.email||'Agent',active:true,
+      createdAt:firebase.firestore.FieldValue.serverTimestamp()
     });
-    showMsg('ctOk', `${name} saved successfully!`);
-    resetForm();
-  } catch(e) { showMsg('ctErr', e.message); }
-  btn.disabled = false; btn.textContent = 'Save Caretaker';
+    toast('Caretaker saved ✓','success');
+    clearCtForm();
+    const snap=await db.collection('caretakers').orderBy('createdAt','desc').get();
+    allCaretakers=snap.docs.map(d=>({id:d.id,...d.data()}));
+  } catch(e){toast(e.message,'error');}
 }
 
-function resetForm() {
-  ['ctName','ctPhone','ctEmail','ctAge','ctAddress','ctPincode','ctArea',
-   'ctExp','ctSalary','ctExpDetails','ctPhotoURL','ctIdURL','ctRefName','ctRefPhone','ctNotes'].forEach(id => {
-    document.getElementById(id).value = '';
+function clearCtForm() {
+  ['ctName','ctAge','ctPhone','ctEmail','ctSalary','ctArea','ctPin','ctAddress','ctExp','ctPhotoURL','ctIdURL','ctRef','ctNotes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.querySelectorAll('#ctLangPills input,[name=ctWork]').forEach(cb=>{cb.checked=false;cb.parentElement.classList.remove('on');});
+}
+
+// ─ All Caretakers ─
+let ctFilter={q:'',gender:'',area:'',lang:''};
+function renderAllCaretakers(c) {
+  c.innerHTML = `
+  <div class="section-card">
+    <div class="search-bar">
+      <input type="text" placeholder="Search name / phone…" oninput="ctFilter.q=this.value;renderCtTable()" style="flex:1">
+      <select onchange="ctFilter.gender=this.value;renderCtTable()"><option value="">Any Gender</option><option>Female</option><option>Male</option></select>
+      <input type="text" placeholder="Area…" oninput="ctFilter.area=this.value;renderCtTable()" style="width:130px">
+      <select onchange="ctFilter.lang=this.value;renderCtTable()"><option value="">Any Language</option>${LANGUAGES.map(l=>`<option>${l}</option>`).join('')}</select>
+      <button class="btn btn-ghost btn-sm" onclick="ctFilter={q:'',gender:'',area:'',lang:''};renderAllCaretakers(document.getElementById('supContent'))">Reset</button>
+    </div>
+    <div id="ctTableWrap" class="table-wrap"></div>
+  </div>`;
+  renderCtTable();
+}
+
+function renderCtTable() {
+  const data=allCaretakers.filter(c=>{
+    if(ctFilter.q&&!c.name?.toLowerCase().includes(ctFilter.q.toLowerCase())&&!c.phone?.includes(ctFilter.q))return false;
+    if(ctFilter.gender&&c.gender!==ctFilter.gender)return false;
+    if(ctFilter.area&&!c.area?.toLowerCase().includes(ctFilter.area.toLowerCase()))return false;
+    if(ctFilter.lang&&!c.languages?.includes(ctFilter.lang))return false;
+    return true;
   });
-  document.getElementById('ctSex').value = '';
-  document.getElementById('ctIdType').value = '';
-  document.querySelectorAll('#langGroup input[type=checkbox], #prefGroup input[type=checkbox]').forEach(cb => {
-    cb.checked = false;
-    cb.parentElement.classList.remove('on');
+  const wrap=document.getElementById('ctTableWrap');if(!wrap)return;
+  if(!data.length){wrap.innerHTML=`<div class="empty-state">No caretakers match your filters.</div>`;return;}
+  wrap.innerHTML=`<table>
+    <thead><tr><th>Name</th><th>Gender</th><th>Age</th><th>Area</th><th>Languages</th><th>Salary</th><th>Exp</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody>${data.map(c=>`<tr>
+      <td><strong>${esc(c.name)}</strong><br><span style="font-size:11px;color:#64748b">${esc(c.phone)}</span></td>
+      <td>${esc(c.gender||'—')}</td><td>${c.age||'—'}</td><td>${esc(c.area||'—')}</td>
+      <td>${(c.languages||[]).slice(0,2).join(', ')||'—'}</td>
+      <td>₹${c.salary||'—'}</td><td>${c.experience||'0'}y</td>
+      <td><span class="badge ${c.active===false?'badge-red':'badge-green'}">${c.active===false?'Inactive':'Active'}</span></td>
+      <td><div style="display:flex;gap:5px">
+        <button class="btn btn-ghost btn-sm" onclick="viewCaretaker('${c.id}')">View</button>
+        <button class="btn btn-red btn-sm" onclick="deleteCaretaker('${c.id}')">Del</button>
+      </div></td>
+    </tr>`).join('')}</tbody>
+  </table>`;
+}
+
+async function deleteCaretaker(id) {
+  if(!confirm('Delete this caretaker?'))return;
+  await db.collection('caretakers').doc(id).delete();
+  allCaretakers=allCaretakers.filter(c=>c.id!==id);
+  renderCtTable();toast('Deleted');
+}
+
+// ─ Search & Match ─
+function renderSearchMatch(c) {
+  c.innerHTML=`
+  <div class="section-card">
+    <h2>Search Caretakers</h2>
+    <div class="form-grid">
+      <div class="field"><label>Name / Phone</label><input type="text" id="smQ" placeholder="Search…"></div>
+      <div class="field"><label>Gender</label><select id="smGender"><option value="">Any</option><option>Female</option><option>Male</option></select></div>
+      <div class="field"><label>Area</label><input type="text" id="smArea"></div>
+      <div class="field"><label>Language</label><select id="smLang"><option value="">Any</option>${LANGUAGES.map(l=>`<option>${l}</option>`).join('')}</select></div>
+      <div class="field"><label>Max Salary (₹)</label><input type="number" id="smSalary"></div>
+      <div class="field"><label>Min Experience (yrs)</label><input type="number" id="smExp" min="0"></div>
+      <div class="field form-full"><label>AI Match Description</label>
+        <textarea id="smAiQ" rows="2" placeholder="Describe your ideal caretaker in plain English…"></textarea>
+      </div>
+    </div>
+    <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn btn-blue" onclick="doSearch(false)">🔍 Search</button>
+      <button class="btn btn-green" onclick="doSearch(true)">✨ AI Match</button>
+    </div>
+    <div id="searchResults" style="margin-top:20px"></div>
+  </div>`;
+}
+
+async function doSearch(useAI) {
+  const q=document.getElementById('smQ')?.value.trim().toLowerCase();
+  const gender=document.getElementById('smGender')?.value;
+  const area=document.getElementById('smArea')?.value.trim().toLowerCase();
+  const lang=document.getElementById('smLang')?.value;
+  const maxSal=parseFloat(document.getElementById('smSalary')?.value)||Infinity;
+  const minExp=parseFloat(document.getElementById('smExp')?.value)||0;
+  const aiQ=document.getElementById('smAiQ')?.value.trim();
+  const box=document.getElementById('searchResults');
+  box.innerHTML=`<div style="padding:24px;text-align:center"><span class="spinner"></span>${useAI?'AI matching…':'Searching…'}</div>`;
+  let results=allCaretakers.filter(c=>{
+    if(q&&!c.name?.toLowerCase().includes(q)&&!c.phone?.includes(q))return false;
+    if(gender&&c.gender!==gender)return false;
+    if(area&&!c.area?.toLowerCase().includes(area)&&!c.address?.toLowerCase().includes(area))return false;
+    if(lang&&!c.languages?.includes(lang))return false;
+    if(c.salary&&parseFloat(c.salary)>maxSal)return false;
+    if(c.experience&&parseFloat(c.experience)<minExp)return false;
+    return true;
   });
+  if(useAI&&aiQ&&results.length>0){
+    const prompt=`You are a caretaker-matching AI. Given requirement: "${aiQ}", rank these caretakers (score 0-100). Return ONLY JSON array: [{id,score,reason}] sorted by score desc.\nCaretakers:\n${JSON.stringify(results.map(c=>({id:c.id,name:c.name,gender:c.gender,age:c.age,area:c.area,languages:c.languages,workPreferences:c.workPreferences,experience:c.experience,salary:c.salary,notes:c.notes})))}`;
+    try {
+      const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})});
+      const data=await res.json();
+      const text=data.candidates?.[0]?.content?.parts?.[0]?.text||'[]';
+      const jsonStr=text.match(/\[[\s\S]*\]/)?.[0];
+      if(jsonStr){
+        const ranked=JSON.parse(jsonStr);
+        results=ranked.map(r=>{const c=results.find(x=>x.id===r.id);return c?{...c,_score:r.score,_reason:r.reason}:null;}).filter(Boolean).slice(0,10);
+      }
+    } catch(e){console.error(e);}
+  }
+  lastSearchResults=results;
+  showResultCards(results,useAI,box);
 }
 
-// ── AI Search ─────────────────────────────────────────────────────
-async function doAiSearch() {
-  const req = document.getElementById('aiReq').value.trim();
-  if (!req) { alert('Please describe the requirement.'); return; }
-  const btn = document.getElementById('aiSearchBtn');
-  btn.disabled = true; btn.textContent = 'Matching…';
-  document.getElementById('searchResults').innerHTML =
-    '<div style="color:#888;font-size:14px;padding:20px 0">Fetching profiles and running AI match…</div>';
-  try {
-    const snap     = await db.collection('caretakers').get();
-    const profiles = snap.docs.map(d => {
-      const c = d.data();
-      return { id: d.id, name: c.name, sex: c.sex, age: c.age, area: c.area, pincode: c.pincode,
-               languages: (c.languages||[]).join(', '), workPrefs: (c.workPreferences||[]).join(', '),
-               exp: c.experience, salary: c.salaryExpectation, notes: c.notes, details: c.experienceDetails };
-    });
-    const prompt = `You are a caretaker matching expert. Given this requirement and these caretaker profiles, return the top 10 best matches as a JSON array: [{"id":"...","score":0-100,"reason":"one sentence why this person fits"}]. Return only the JSON array, no markdown, no extra text.\n\nREQUIREMENT:\n${req}\n\nCAREATAKERS:\n${JSON.stringify(profiles)}`;
-    const resp = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
-      { method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ contents:[{ parts:[{ text: prompt }] }] }) }
-    );
-    const data    = await resp.json();
-    const raw     = data.candidates[0].content.parts[0].text;
-    const clean   = raw.replace(/```json\n?/g,'').replace(/```\n?/g,'').trim();
-    const matches = JSON.parse(clean);
-    const fullMap = {};
-    snap.docs.forEach(d => { fullMap[d.id] = { id: d.id, ...d.data() }; });
-    const results = matches.map(m => ({ ...fullMap[m.id], score: m.score, reason: m.reason })).filter(r => r.name);
-    showResults(results, true);
-  } catch(e) {
-    document.getElementById('searchResults').innerHTML =
-      `<div style="color:#CC0000;font-size:13px;padding:12px 0">Error: ${e.message}</div>`;
-  }
-  btn.disabled = false; btn.textContent = 'Find Best Matches (AI)';
-}
-
-// ── Filter Search ─────────────────────────────────────────────────
-async function doFilterSearch() {
-  const sex  = document.getElementById('fSex').value;
-  const pin  = document.getElementById('fPin').value.trim();
-  const exp  = Number(document.getElementById('fExp').value) || 0;
-  const lang = document.getElementById('fLang').value;
-  const pref = document.getElementById('fPref').value;
-  document.getElementById('searchResults').innerHTML =
-    '<div style="color:#888;font-size:14px;padding:20px 0">Filtering…</div>';
-  try {
-    const snap = await db.collection('caretakers').get();
-    let results = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    if (sex)  results = results.filter(c => c.sex === sex);
-    if (pin)  results = results.filter(c => (c.pincode||'').startsWith(pin));
-    if (exp)  results = results.filter(c => (c.experience||0) >= exp);
-    if (lang) results = results.filter(c => (c.languages||[]).includes(lang));
-    if (pref) results = results.filter(c => (c.workPreferences||[]).includes(pref));
-    showResults(results, false);
-  } catch(e) {
-    document.getElementById('searchResults').innerHTML =
-      `<div style="color:#CC0000;font-size:13px;padding:12px 0">Error: ${e.message}</div>`;
-  }
-}
-
-// ── Render Results ────────────────────────────────────────────────
-function showResults(results, isAi) {
-  lastSearchResults = results;
-  if (!results.length) {
-    document.getElementById('searchResults').innerHTML =
-      '<div style="color:#888;font-size:14px;padding:20px 0">No matches found.</div>';
-    return;
-  }
-  const cards = results.map(c => {
-    const ringClass  = isAi ? (c.score >= 70 ? 'ring-green' : c.score >= 40 ? 'ring-amber' : 'ring-grey') : '';
-    const ringHtml   = isAi ? `<div class="score-ring ${ringClass}">${c.score}</div>` : '';
-    const reasonHtml = isAi && c.reason ? `<div class="result-reason">${c.reason}</div>` : '';
-    const tags       = [...(c.languages||[]).slice(0,2), ...(c.workPreferences||[]).slice(0,2)];
-    const wa         = `https://wa.me/91${(c.phone||'').replace(/\D/g,'')}`;
-    const idx        = results.indexOf(c);
+function showResultCards(results,isAI,box) {
+  if(!results.length){box.innerHTML=`<div class="empty-state">No matching caretakers found.</div>`;return;}
+  const dlBar=`<div class="dl-bar"><span>${results.length} profile${results.length!==1?'s':''} found</span><div style="display:flex;gap:8px"><button class="btn btn-blue btn-sm" onclick="downloadAllProfiles(false)">↓ All Full PDF</button><button class="btn btn-ghost btn-sm" onclick="downloadAllProfiles(true)">↓ All Brief PDF</button></div></div>`;
+  const cards=results.map(c=>{
+    const initials=(c.name||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+    const cid=c.id;
     return `<div class="result-card">
-      ${ringHtml}
-      <div class="result-info">
-        <div class="result-name">${c.name}</div>
-        <div class="result-meta">${c.sex||''} · ${c.age ? c.age+'y' : ''} · ${c.area||c.pincode||'—'} · ${c.experience||0}yr exp · ₹${c.salaryExpectation||'?'}</div>
-        ${reasonHtml}
-        <div class="tags">${tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>
-        <div class="result-btns">
-          <a href="${wa}" target="_blank" class="btn btn-sm btn-outline">WhatsApp</a>
-          <button class="btn btn-sm btn-primary" onclick="viewDetails('${c.id}')">View</button>
-          <button class="btn btn-sm btn-outline" onclick="downloadProfile(lastSearchResults[${idx}],false)">Full PDF</button>
-          <button class="btn btn-sm btn-outline" onclick="downloadProfile(lastSearchResults[${idx}],true)">Brief PDF</button>
+      <div style="display:flex;gap:14px;align-items:flex-start">
+        <div class="rc-avatar">${c.photoURL?`<img src="${esc(c.photoURL)}" onerror="this.style.display='none'">`:initials}</div>
+        <div style="flex:1">
+          ${isAI&&c._score!==undefined?`<div class="match-score">⭐ ${c._score}% match</div>`:''}
+          <div class="rc-name">${esc(c.name)}</div>
+          <div class="rc-meta">${c.gender||''} · ${c.age?c.age+' yrs':''} · ₹${c.salary||'?'}/mo · ${c.experience||0}y exp</div>
+          ${c._reason?`<div style="font-size:12px;color:#64748b;font-style:italic;margin-bottom:6px">${esc(c._reason)}</div>`:''}
+          <div class="rc-tags">${(c.languages||[]).slice(0,3).map(l=>`<span class="rc-tag">${l}</span>`).join('')}${c.area?`<span class="rc-tag">📍${esc(c.area)}</span>`:''}</div>
         </div>
       </div>
+      <div class="rc-actions">
+        <button class="btn btn-ghost btn-sm" onclick="viewCaretaker('${cid}')">View</button>
+        <button class="btn btn-blue btn-sm" onclick="downloadProfile(allCaretakers.find(x=>x.id==='${cid}'),false)">Full PDF</button>
+        <button class="btn btn-ghost btn-sm" onclick="downloadProfile(allCaretakers.find(x=>x.id==='${cid}'),true)">Brief PDF</button>
+      </div>
     </div>`;
-  });
-
-  const dlBar = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
-    <div style="font-size:13px;font-weight:600;color:#555">${results.length} profile${results.length!==1?'s':''} found</div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button class="btn btn-sm btn-outline" onclick="downloadAllProfiles(false)">&#8659; All — Full PDF</button>
-      <button class="btn btn-sm btn-outline" onclick="downloadAllProfiles(true)">&#8659; All — Brief PDF</button>
-    </div>
-  </div>`;
-
-  document.getElementById('searchResults').innerHTML = dlBar + `<div class="results-grid">${cards.join('')}</div>`;
+  }).join('');
+  box.innerHTML=dlBar+`<div class="result-grid">${cards}</div>`;
 }
 
-// ── View Details Modal ────────────────────────────────────────────
-async function viewDetails(id) {
-  const doc = await db.collection('caretakers').doc(id).get();
-  if (!doc.exists) return;
-  modalCaretaker = { id, ...doc.data() };
-  const c  = modalCaretaker;
-  const wa = `https://wa.me/91${(c.phone||'').replace(/\D/g,'')}`;
+function downloadAllProfiles(redacted) {
+  if(!lastSearchResults.length)return;
+  lastSearchResults.forEach((c,i)=>setTimeout(()=>downloadProfile(c,redacted),i*1200));
+}
 
-  const photoHtml = c.photoURL
-    ? `<img src="${c.photoURL}" style="width:72px;height:72px;border-radius:50%;object-fit:cover;border:2px solid #E8E8E8;flex-shrink:0" onerror="this.style.display='none'">`
-    : `<div style="width:72px;height:72px;border-radius:50%;background:#E8E8E8;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;color:#999;flex-shrink:0">${(c.name||'?')[0].toUpperCase()}</div>`;
+// ─ Caretaker Detail Modal ─
+function viewCaretaker(id) {
+  const c=allCaretakers.find(x=>x.id===id);if(!c)return;
+  const initials=(c.name||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  document.getElementById('ctModalInner').innerHTML=`
+  <button class="modal-close" onclick="closeModal('ctModal')">×</button>
+  <div style="display:flex;gap:20px;align-items:flex-start;margin-bottom:20px">
+    <div class="rc-avatar" style="width:72px;height:72px;font-size:28px">${c.photoURL?`<img src="${esc(c.photoURL)}" onerror="this.style.display='none'">`:initials}</div>
+    <div>
+      <h2 style="margin:0 0 4px">${esc(c.name)}</h2>
+      <div style="font-size:13px;color:#64748b">${c.gender||''} · ${c.age?c.age+' yrs':''} · ${c.experience||0} yrs exp</div>
+      <div style="font-size:14px;color:#3b82f6;margin-top:4px;font-weight:700">₹${c.salary||'?'}/mo</div>
+    </div>
+  </div>
+  <div class="form-grid" style="font-size:13.5px;gap:10px">
+    <div><strong>Phone:</strong> ${esc(c.phone||'—')}</div>
+    <div><strong>Email:</strong> ${esc(c.email||'—')}</div>
+    <div><strong>Area:</strong> ${esc(c.area||'—')}</div>
+    <div><strong>Pincode:</strong> ${esc(c.pincode||'—')}</div>
+    <div class="form-full"><strong>Address:</strong> ${esc(c.address||'—')}</div>
+    <div class="form-full"><strong>Languages:</strong> ${(c.languages||[]).join(', ')||'—'}</div>
+    <div class="form-full"><strong>Work Preferences:</strong> ${(c.workPreferences||[]).join(', ')||'—'}</div>
+    <div><strong>ID Type:</strong> ${esc(c.idType||'—')}</div>
+    <div>${c.idURL?`<a href="${esc(c.idURL)}" target="_blank" style="color:#3b82f6">View ID Document →</a>`:'No ID document'}</div>
+    <div><strong>Referred By:</strong> ${esc(c.referredBy||'—')}</div>
+    <div><strong>Added By:</strong> ${esc(c.addedBy||'—')}</div>
+    ${c.notes?`<div class="form-full"><strong>Notes:</strong> ${esc(c.notes)}</div>`:''}
+  </div>
+  <div style="display:flex;gap:10px;margin-top:20px;flex-wrap:wrap">
+    ${c.phone?`<button class="btn btn-wa" onclick="window.open('https://wa.me/91'+('${c.phone}'.replace(/\\D/g,'')),'_blank')">💬 WhatsApp</button>`:''}
+    <button class="btn btn-blue" onclick="downloadProfile(allCaretakers.find(x=>x.id==='${c.id}'),false)">Full PDF</button>
+    <button class="btn btn-ghost" onclick="downloadProfile(allCaretakers.find(x=>x.id==='${c.id}'),true)">Brief PDF</button>
+  </div>`;
+  openModal('ctModal');
+}
 
-  document.getElementById('modalName').textContent = c.name;
-  document.getElementById('modalBody').innerHTML = `
-    <div style="display:flex;align-items:center;gap:16px;margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid #F0F0F0">
-      ${photoHtml}
-      <div>
-        <div style="font-size:18px;font-weight:700">${c.name}</div>
-        <div style="font-size:13px;color:#888;margin-top:3px">${c.sex||''}${c.age ? ' · '+c.age+' years' : ''} · ${c.area||c.pincode||'—'}</div>
-        <div style="font-size:13px;color:#555;margin-top:2px">${c.experience||0} yrs experience · ₹${c.salaryExpectation||'?'}/month</div>
+// ─ PDF ─
+function generateProfileHTML(c,redacted) {
+  const initials=(c.name||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  const photoBlock=c.photoURL&&!redacted?`<img src="${c.photoURL}" crossorigin="anonymous" style="width:96px;height:96px;border-radius:50%;object-fit:cover;border:3px solid #fff" onerror="this.outerHTML='<div style=&quot;width:96px;height:96px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:700;color:#fff&quot;>${initials}</div>'">`:`<div style="width:96px;height:96px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:700;color:#fff;border:3px solid #fff">${initials}</div>`;
+  return `<div style="width:720px;font-family:Segoe UI,system-ui,sans-serif;background:#fff;color:#1a1a2e">
+  <div style="background:linear-gradient(135deg,#0f172a,#1e3a5f);padding:28px 32px;color:#fff;display:flex;align-items:center;gap:24px">
+    ${photoBlock}
+    <div>
+      <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#94a3b8;margin-bottom:4px">OutdoorSeniors Caretaker Profile</div>
+      <div style="font-size:28px;font-weight:800">${c.name||''}</div>
+      <div style="font-size:14px;color:#94a3b8;margin-top:4px">${c.gender||''} · ${c.age?c.age+' yrs':''} · ${c.experience||0} yrs experience</div>
+    </div>
+    <div style="margin-left:auto;text-align:right">
+      <div style="font-size:24px;font-weight:800;color:#60a5fa">₹${c.salary||'?'}<span style="font-size:13px;font-weight:400">/mo</span></div>
+      <div style="font-size:11px;color:#94a3b8;margin-top:4px">${redacted?'Contact us to engage':'Expected Salary'}</div>
+    </div>
+  </div>
+  <div style="padding:28px 32px">
+    ${!redacted?`<div style="background:#f0fdf4;border-radius:10px;padding:16px 20px;margin-bottom:20px;border-left:4px solid #10b981">
+      <div style="font-size:12px;font-weight:700;color:#065f46;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Contact Information</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:14px">
+        <div>📞 ${c.phone||'—'}</div><div>✉️ ${c.email||'—'}</div>
+        <div style="grid-column:1/-1">📍 ${c.address||c.area||'—'}</div>
+        ${c.idType?`<div>🪪 ${c.idType}${c.idURL?' (Verified ✓)':''}</div>`:''}
+        ${c.referredBy?`<div>👤 Ref: ${c.referredBy}</div>`:''}
+      </div>
+    </div>`:`<div style="background:#eff6ff;border-radius:10px;padding:14px 20px;margin-bottom:20px;border-left:4px solid #3b82f6;font-size:13px;color:#1d4ed8">
+      📍 Area: <strong>${c.area||'—'}</strong> &nbsp;·&nbsp; Pincode: <strong>${c.pincode||'—'}</strong>
+    </div>`}
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+      <div style="background:#f8fafc;border-radius:10px;padding:16px">
+        <div style="font-size:12px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Languages</div>
+        <div>${(c.languages||[]).map(l=>`<span style="display:inline-block;background:#dbeafe;color:#1d4ed8;border-radius:12px;padding:3px 10px;font-size:12px;font-weight:600;margin:2px">${l}</span>`).join('')||'—'}</div>
+      </div>
+      <div style="background:#f8fafc;border-radius:10px;padding:16px">
+        <div style="font-size:12px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Work Preferences</div>
+        <div>${(c.workPreferences||[]).map(w=>`<span style="display:inline-block;background:#d1fae5;color:#065f46;border-radius:12px;padding:3px 10px;font-size:12px;font-weight:600;margin:2px">${w}</span>`).join('')||'—'}</div>
       </div>
     </div>
-    <div class="detail-grid">
-      <div class="detail-item"><label>Phone</label><p>${c.phone||'—'}</p></div>
-      <div class="detail-item"><label>Email</label><p>${c.email||'—'}</p></div>
-      <div class="detail-item" style="grid-column:1/-1"><label>Address</label><p>${c.address||'—'}${c.area ? ', '+c.area : ''}${c.pincode ? ' – '+c.pincode : ''}</p></div>
-      <div class="detail-item"><label>Languages</label><p>${(c.languages||[]).join(', ')||'—'}</p></div>
-      <div class="detail-item"><label>Work Preferences</label><p>${(c.workPreferences||[]).join(', ')||'—'}</p></div>
-      <div class="detail-item"><label>Experience</label><p>${c.experience||0} years</p></div>
-      <div class="detail-item"><label>Salary Expectation</label><p>₹${c.salaryExpectation||'—'}/month</p></div>
-      <div class="detail-item" style="grid-column:1/-1"><label>Experience Details</label><p>${c.experienceDetails||'—'}</p></div>
-      <div class="detail-item"><label>ID Verification</label><p>${c.idType ? '✓ '+c.idType : '—'}${c.idURL ? ` &nbsp;<a href="${c.idURL}" target="_blank" style="font-size:12px;color:#2563EB">View →</a>` : ''}</p></div>
-      <div class="detail-item"><label>Referral</label><p>${c.referralName||'—'}${c.referralPhone ? ' ('+c.referralPhone+')' : ''}</p></div>
-      <div class="detail-item" style="grid-column:1/-1"><label>Notes</label><p>${c.notes||'—'}</p></div>
-      <div class="detail-item"><label>Added By</label><p>${c.addedBy||'—'}</p></div>
-      <div class="detail-item"><label>Added On</label><p>${c.createdAt ? toDate(c.createdAt).toLocaleDateString('en-IN') : '—'}</p></div>
+    ${c.notes?`<div style="background:#fef9c3;border-radius:10px;padding:16px;margin-bottom:20px"><div style="font-size:12px;font-weight:700;color:#92400e;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Notes</div><div style="font-size:14px">${c.notes}</div></div>`:''}
+    <div style="border-top:1px solid #e2e8f0;padding-top:16px;display:flex;justify-content:space-between;font-size:11px;color:#94a3b8">
+      <div>OutdoorSeniors · ${redacted?'Brief Profile':'Full Profile'}</div>
+      <div>outdoorseniors.com</div>
     </div>
-    <div style="margin-top:20px;display:flex;gap:10px;flex-wrap:wrap">
-      <a href="${wa}" target="_blank" class="btn btn-success">Open WhatsApp</a>
-      <button class="btn btn-outline" onclick="downloadProfile(modalCaretaker,false)">Full Profile PDF</button>
-      <button class="btn btn-outline" onclick="downloadProfile(modalCaretaker,true)">Brief PDF</button>
-    </div>`;
-  document.getElementById('detailModal').style.display = 'flex';
+  </div>
+</div>`;
 }
 
-// ── PDF Profile Generation ────────────────────────────────────────
-function generateProfileHTML(c, redacted) {
-  const date     = new Date().toLocaleDateString('en-IN', { day:'numeric', month:'long', year:'numeric' });
-  const langs    = (c.languages||[]).join(', ') || '—';
-  const prefs    = (c.workPreferences||[]).join(' · ') || '—';
-  const initials = (c.name||'?')[0].toUpperCase();
-
-  const photoHtml = c.photoURL
-    ? `<img src="${c.photoURL}" width="72" height="72" style="border-radius:50%;object-fit:cover;border:3px solid #e0e0e0;display:block" crossorigin="anonymous">`
-    : `<div style="width:72px;height:72px;border-radius:50%;background:#e0e0e0;text-align:center;line-height:72px;font-size:26px;font-weight:bold;color:#777">${initials}</div>`;
-
-  const contactSection = !redacted ? `
-    <tr><td colspan="2" style="padding-top:0">
-      <div style="font-size:10px;font-weight:bold;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;border-top:1px solid #eee;padding-top:14px">Contact Information</div>
-      <table width="100%" cellpadding="0" cellspacing="4">
-        <tr><td style="font-size:11px;color:#888;width:110px">Phone</td><td style="font-size:13px;font-weight:600">${c.phone||'—'}</td></tr>
-        <tr><td style="font-size:11px;color:#888">Email</td><td style="font-size:13px">${c.email||'—'}</td></tr>
-        <tr><td style="font-size:11px;color:#888">Full Address</td><td style="font-size:13px">${c.address||'—'}</td></tr>
-        <tr><td style="font-size:11px;color:#888">Area</td><td style="font-size:13px">${c.area||'—'}</td></tr>
-        <tr><td style="font-size:11px;color:#888">Pincode</td><td style="font-size:13px">${c.pincode||'—'}</td></tr>
-      </table>
-    </td></tr>` : `
-    <tr><td colspan="2" style="padding-bottom:4px">
-      <span style="font-size:12px;color:#666">&#9679; Location: ${c.area || c.pincode || '—'}</span>
-    </td></tr>`;
-
-  const verifySection = !redacted && (c.idType || c.referralName) ? `
-    <tr><td colspan="2" style="padding-top:0">
-      <div style="font-size:10px;font-weight:bold;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;border-top:1px solid #eee;padding-top:14px">Verification &amp; Referral</div>
-      ${c.idType ? `<div style="font-size:12px;color:#166534;background:#f0fff4;padding:5px 10px;border-radius:4px;display:inline-block;margin-bottom:6px">&#10003; ${c.idType} provided</div>` : ''}
-      ${c.referralName ? `<div style="font-size:12px;color:#555">Referred by: ${c.referralName}${c.referralPhone ? ' &middot; '+c.referralPhone : ''}</div>` : ''}
-    </td></tr>` : '';
-
-  const footerMsg = redacted
-    ? 'To engage this caretaker, contact <b>OutdoorSeniors</b>. We handle verification, background checks &amp; placement.'
-    : `Managed by OutdoorSeniors &nbsp;&middot;&nbsp; Added by ${c.addedBy||'OutdoorSeniors'}`;
-
-  return `<div style="font-family:Arial,Helvetica,sans-serif;width:680px;background:#fff;color:#111;margin:0;padding:0">
-    <table width="100%" cellpadding="0" cellspacing="0" bgcolor="#111111">
-      <tr>
-        <td style="padding:18px 24px;color:#fff">
-          <div style="font-size:19px;font-weight:bold;letter-spacing:-0.5px">OutdoorSeniors</div>
-          <div style="font-size:10px;color:#aaa;margin-top:2px">Professional Caretaker Network</div>
-        </td>
-        <td align="right" style="padding:18px 24px;color:#fff">
-          <div style="font-size:11px;font-weight:bold">${redacted ? 'CARETAKER SUMMARY' : 'CARETAKER PROFILE'}</div>
-          <div style="font-size:10px;color:#aaa;margin-top:3px">${date}</div>
-        </td>
-      </tr>
-    </table>
-    <div style="padding:22px 24px 8px">
-      <table width="100%" cellpadding="0" cellspacing="0" style="border-bottom:1px solid #eee;padding-bottom:16px;margin-bottom:16px">
-        <tr>
-          <td width="88" valign="middle" style="padding-right:16px">${photoHtml}</td>
-          <td valign="middle">
-            <div style="font-size:22px;font-weight:bold">${c.name}</div>
-            <div style="font-size:12px;color:#666;margin-top:4px">Professional Caretaker &nbsp;&middot;&nbsp; ${c.experience||0} years experience</div>
-            <table cellpadding="0" cellspacing="0" style="margin-top:8px"><tr>
-              ${c.sex ? `<td style="background:#f5f5f5;padding:3px 9px;border-radius:10px;font-size:11px">${c.sex}</td><td width="6"></td>` : ''}
-              ${c.age  ? `<td style="background:#f5f5f5;padding:3px 9px;border-radius:10px;font-size:11px">${c.age} yrs old</td><td width="6"></td>` : ''}
-              ${c.salaryExpectation ? `<td style="background:#eff6ff;padding:3px 9px;border-radius:10px;font-size:11px;color:#1e40af">&#8377;${c.salaryExpectation}/month</td>` : ''}
-            </tr></table>
-          </td>
-        </tr>
-      </table>
-      <table width="100%" cellpadding="0" cellspacing="0">
-        ${contactSection}
-        <tr><td colspan="2" style="padding-top:0">
-          <div style="font-size:10px;font-weight:bold;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;border-top:1px solid #eee;padding-top:14px">Skills &amp; Availability</div>
-          <table width="100%" cellpadding="0" cellspacing="0">
-            <tr>
-              <td width="50%" valign="top" style="padding-right:12px">
-                <div style="font-size:11px;color:#888;margin-bottom:4px">Languages</div>
-                <div style="font-size:13px">${langs}</div>
-              </td>
-              <td width="50%" valign="top">
-                <div style="font-size:11px;color:#888;margin-bottom:4px">Work Preferences</div>
-                <div style="font-size:13px">${prefs}</div>
-              </td>
-            </tr>
-          </table>
-        </td></tr>
-        ${c.experienceDetails ? `
-        <tr><td colspan="2" style="padding-top:0">
-          <div style="font-size:10px;font-weight:bold;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;border-top:1px solid #eee;padding-top:14px">Experience</div>
-          <div style="font-size:13px;color:#333;line-height:1.6">${c.experienceDetails}</div>
-        </td></tr>` : ''}
-        ${c.notes ? `
-        <tr><td colspan="2" style="padding-top:0">
-          <div style="font-size:10px;font-weight:bold;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;border-top:1px solid #eee;padding-top:14px">Additional Notes</div>
-          <div style="font-size:13px;color:#333;line-height:1.6">${c.notes}</div>
-        </td></tr>` : ''}
-        ${verifySection}
-      </table>
-    </div>
-    <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8f8f8;border-top:2px solid #111;margin-top:16px">
-      <tr>
-        <td style="padding:12px 24px;font-size:11px;color:#555">${footerMsg}</td>
-        <td align="right" style="padding:12px 24px;font-size:11px;color:#aaa;white-space:nowrap">outdoorseniors.com</td>
-      </tr>
-    </table>
-  </div>`;
-}
-
-async function downloadProfile(c, redacted) {
-  if (!c) { alert('Profile data unavailable.'); return; }
-  const el = document.createElement('div');
-  el.style.cssText = 'position:fixed;top:0;left:-1400px;width:720px;z-index:-1;background:#fff';
-  el.innerHTML = generateProfileHTML(c, redacted);
+async function downloadProfile(c,redacted) {
+  if(!c)return;
+  const el=document.createElement('div');
+  el.style.cssText='position:fixed;top:0;left:-1600px;width:720px;z-index:-1;background:#fff';
+  el.innerHTML=generateProfileHTML(c,redacted);
   document.body.appendChild(el);
-  const safe = (c.name||'caretaker').replace(/[^a-zA-Z0-9]/g,'_');
-  await html2pdf().set({
-    margin:      [8, 8, 8, 8],
-    filename:    `${safe}_${redacted ? 'brief' : 'full'}.pdf`,
-    image:       { type:'jpeg', quality:0.95 },
-    html2canvas: { scale:2, useCORS:true, logging:false },
-    jsPDF:       { unit:'mm', format:'a4', orientation:'portrait' }
-  }).from(el).save();
+  const safe=(c.name||'caretaker').replace(/\s+/g,'_');
+  await html2pdf().set({margin:[8,8,8,8],filename:`${safe}_${redacted?'brief':'full'}.pdf`,image:{type:'jpeg',quality:0.95},html2canvas:{scale:2,useCORS:true,logging:false},jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}}).from(el).save();
   document.body.removeChild(el);
 }
 
-async function downloadAllProfiles(redacted) {
-  if (!lastSearchResults.length) return;
-  const wrapper = document.createElement('div');
-  wrapper.style.cssText = 'position:fixed;top:0;left:-1400px;width:720px;z-index:-1;background:#fff';
-  lastSearchResults.forEach((c, i) => {
-    const page = document.createElement('div');
-    if (i > 0) page.style.cssText = 'page-break-before:always;margin-top:0';
-    page.innerHTML = generateProfileHTML(c, redacted);
-    wrapper.appendChild(page);
+// ══ CUSTOMER OPS ══
+function renderCustomerOps(ca) {
+  ca.innerHTML=`
+  <div class="tab-bar">
+    <button class="tab-btn ${custTab==='cust'?'active':''}" onclick="custTab='cust';renderCustomerOps(document.getElementById('contentArea'))">👤 Customers</button>
+    <button class="tab-btn ${custTab==='orders'?'active':''}" onclick="custTab='orders';renderCustomerOps(document.getElementById('contentArea'))">📋 Orders</button>
+  </div>
+  <div id="custContent"></div>`;
+  const c=document.getElementById('custContent');
+  if(custTab==='cust') renderCustomerList(c);
+  else renderOrderList(c);
+}
+
+// ─ Customer List ─
+function renderCustomerList(c) {
+  c.innerHTML=`
+  <div class="section-card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <h2 style="margin:0">All Customers</h2>
+      <button class="btn btn-blue" onclick="openCustModal()">+ Add Customer</button>
+    </div>
+    <div class="search-bar"><input type="text" id="cuSearch" placeholder="Search name / phone…" oninput="renderCuTable(this.value)" style="flex:1"></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Name</th><th>Phone</th><th>Email</th><th>Area</th><th>Orders</th><th>Actions</th></tr></thead>
+      <tbody id="cuTable">${buildCuTable('')}</tbody>
+    </table></div>
+  </div>`;
+}
+
+function renderCuTable(q) { const t=document.getElementById('cuTable');if(t)t.innerHTML=buildCuTable(q||''); }
+
+function buildCuTable(q) {
+  let data=allCustomers;
+  if(q)data=data.filter(c=>c.name?.toLowerCase().includes(q.toLowerCase())||c.phone?.includes(q));
+  if(!data.length)return`<tr><td colspan="6" class="empty-state">No customers yet.</td></tr>`;
+  return data.map(c=>{
+    const cnt=allOrders.filter(o=>o.customerId===c.id).length;
+    return`<tr>
+      <td><strong>${esc(c.name)}</strong></td><td>${esc(c.phone||'—')}</td>
+      <td>${esc(c.email||'—')}</td><td>${esc(c.area||'—')}</td>
+      <td><span class="badge badge-blue">${cnt}</span></td>
+      <td><div style="display:flex;gap:6px">
+        <button class="btn btn-ghost btn-sm" onclick="openCustModal('${c.id}')">Edit</button>
+        <button class="btn btn-green btn-sm" onclick="openOrderModal(null,'${c.id}')">+ Order</button>
+        <button class="btn btn-red btn-sm" onclick="deleteCust('${c.id}')">Del</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+function openCustModal(id) {
+  editingCustomerId=id||null;
+  document.getElementById('custModalTitle').textContent=id?'Edit Customer':'Add Customer';
+  if(id){
+    const c=allCustomers.find(x=>x.id===id);
+    if(c){document.getElementById('cuName').value=c.name||'';document.getElementById('cuPhone').value=c.phone||'';document.getElementById('cuEmail').value=c.email||'';document.getElementById('cuAddress').value=c.address||'';document.getElementById('cuArea').value=c.area||'';document.getElementById('cuPin').value=c.pincode||'';document.getElementById('cuNotes').value=c.notes||'';}
+  }else['cuName','cuPhone','cuEmail','cuAddress','cuArea','cuPin','cuNotes'].forEach(x=>document.getElementById(x).value='');
+  openModal('custModal');
+}
+
+async function saveCustomer() {
+  const name=document.getElementById('cuName').value.trim();
+  if(!name){toast('Name required','error');return;}
+  const data={name,phone:document.getElementById('cuPhone').value.trim(),email:document.getElementById('cuEmail').value.trim(),address:document.getElementById('cuAddress').value.trim(),area:document.getElementById('cuArea').value.trim(),pincode:document.getElementById('cuPin').value.trim(),notes:document.getElementById('cuNotes').value.trim()};
+  try{
+    if(editingCustomerId){
+      await db.collection('customers').doc(editingCustomerId).update(data);
+      const idx=allCustomers.findIndex(c=>c.id===editingCustomerId);if(idx>=0)allCustomers[idx]={...allCustomers[idx],...data};
+      toast('Customer updated');
+    }else{
+      data.createdBy=currentProfile?.name||currentUser?.email||'Agent';data.createdAt=firebase.firestore.FieldValue.serverTimestamp();
+      const ref=await db.collection('customers').add(data);allCustomers.unshift({id:ref.id,...data});
+      toast('Customer added');
+    }
+    closeModal('custModal');renderCuTable(document.getElementById('cuSearch')?.value||'');
+  }catch(e){toast(e.message,'error');}
+}
+
+async function deleteCust(id) {
+  if(!confirm('Delete this customer?'))return;
+  await db.collection('customers').doc(id).delete();
+  allCustomers=allCustomers.filter(c=>c.id!==id);renderCuTable('');toast('Deleted');
+}
+
+// ─ Order List ─
+function renderOrderList(c) {
+  c.innerHTML=`
+  <div class="section-card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <h2 style="margin:0">All Orders</h2>
+      <button class="btn btn-blue" onclick="openOrderModal()">+ Create Order</button>
+    </div>
+    <div class="search-bar">
+      <input type="text" id="ordSearch" placeholder="Order ID / patient…" oninput="renderOrdTable(this.value)" style="flex:1">
+      <select onchange="renderOrdTable(document.getElementById('ordSearch').value,this.value)" id="ordStatusFilter">
+        <option value="">All Status</option><option>pending</option><option>matched</option><option>assigned</option><option>active</option><option>closed</option>
+      </select>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Order ID</th><th>Customer</th><th>Patient</th><th>Package</th><th>Status</th><th>Assigned To</th><th>Date</th><th>Actions</th></tr></thead>
+      <tbody id="ordTable">${buildOrdTable('','')}</tbody>
+    </table></div>
+  </div>
+  <div id="matchBox"></div>`;
+}
+
+function renderOrdTable(q,status){if(status===undefined)status=document.getElementById('ordStatusFilter')?.value||'';const t=document.getElementById('ordTable');if(t)t.innerHTML=buildOrdTable(q||'',status);}
+
+function buildOrdTable(q,status){
+  let data=allOrders;
+  if(q)data=data.filter(o=>o.orderId?.toLowerCase().includes(q.toLowerCase())||o.patientName?.toLowerCase().includes(q.toLowerCase()));
+  if(status)data=data.filter(o=>o.status===status);
+  if(!data.length)return`<tr><td colspan="8" class="empty-state">No orders found.</td></tr>`;
+  const sb={pending:'badge-yellow',matched:'badge-blue',assigned:'badge-purple',active:'badge-green',closed:'badge-gray'};
+  return data.map(o=>`<tr>
+    <td><strong style="font-family:monospace;font-size:12px">${esc(o.orderId)}</strong></td>
+    <td>${esc(o.customerName||'—')}</td>
+    <td>${esc(o.patientName||'—')} ${o.patientAge?`<span style="font-size:11px;color:#64748b">(${o.patientAge}y)</span>`:''}</td>
+    <td style="font-size:12px">${esc(o.packageType||'—')}</td>
+    <td><span class="badge ${sb[o.status]||'badge-gray'}">${o.status||'—'}</span></td>
+    <td>${esc(o.assignedCaretakerName||'—')}</td>
+    <td style="font-size:12px">${o.createdAt?.toDate?o.createdAt.toDate().toLocaleDateString('en-IN'):''}</td>
+    <td><div style="display:flex;gap:5px;flex-wrap:wrap">
+      <button class="btn btn-ghost btn-sm" onclick="viewOrder('${o.id}')">View</button>
+      ${!o.assignedCaretakerId?`<button class="btn btn-green btn-sm" onclick="findMatches('${o.id}')">✨ Match</button>`:''}
+      ${!o.assignedCaretakerId?`<button class="btn btn-blue btn-sm" onclick="openAssign('${o.id}')">Assign</button>`:''}
+    </div></td>
+  </tr>`).join('');
+}
+
+// ─ Create / Edit Order ─
+function openOrderModal(orderId,prefillCustomerId) {
+  editingOrderId=orderId||null;
+  document.getElementById('orderModalTitle').textContent=orderId?'Edit Order':'Create Order';
+  document.getElementById('ordEditId').value=orderId||'';
+  const sel=document.getElementById('ordCustomer');
+  sel.innerHTML=`<option value="">— Select Customer —</option>`+allCustomers.map(c=>`<option value="${c.id}"${c.id===prefillCustomerId?' selected':''}>${esc(c.name)} (${esc(c.phone||'')})</option>`).join('');
+  document.getElementById('ordPackage').innerHTML=CARE_PACKAGES.map(p=>`<option>${p}</option>`).join('');
+  document.getElementById('langPills').innerHTML=LANGUAGES.map(l=>`<label class="pill-label"><input type="checkbox" value="${l}" onchange="syncPill(this)"> ${l}</label>`).join('');
+  ['ordPatient','ordAge','ordWeight','ordDuration','ordLocation','ordPincode','ordMedical','ordNotes','ordRel'].forEach(x=>{const el=document.getElementById(x);if(el)el.value='';});
+  document.getElementById('ordStart').value='';document.getElementById('ordGender').value='';document.getElementById('relField').style.display='none';
+  document.querySelectorAll('[name=diapers],[name=forWhom]').forEach(r=>{r.checked=false;r.parentElement.classList.remove('on');});
+  if(orderId){
+    const o=allOrders.find(x=>x.id===orderId);
+    if(o){
+      sel.value=o.customerId||'';
+      document.getElementById('ordPatient').value=o.patientName||'';document.getElementById('ordAge').value=o.patientAge||'';document.getElementById('ordWeight').value=o.patientWeight||'';
+      document.getElementById('ordGender').value=o.caretakerGender||'';document.getElementById('ordPackage').value=o.packageType||CARE_PACKAGES[0];
+      document.getElementById('ordStart').value=o.preferredStartDate||'';document.getElementById('ordDuration').value=o.duration||'';
+      document.getElementById('ordLocation').value=o.location||'';document.getElementById('ordPincode').value=o.pincode||'';
+      document.getElementById('ordMedical').value=o.medicalConditions||'';document.getElementById('ordNotes').value=o.notes||'';
+      (o.languagesPreferred||[]).forEach(l=>{const cb=[...document.querySelectorAll('#langPills input')].find(x=>x.value===l);if(cb){cb.checked=true;cb.parentElement.classList.add('on');}});
+      if(o.onDiapers){const r=[...document.querySelectorAll('[name=diapers]')].find(x=>x.value===o.onDiapers);if(r){r.checked=true;r.parentElement.classList.add('on');}}
+      if(o.forSelf){const r=[...document.querySelectorAll('[name=forWhom]')].find(x=>x.value===o.forSelf);if(r){r.checked=true;r.parentElement.classList.add('on');}}
+      if(o.forSelf&&o.forSelf!=='Self'){document.getElementById('relField').style.display='block';document.getElementById('ordRel').value=o.relationship||'';}
+    }
+  }
+  openModal('orderModal');
+}
+
+function toggleRel(){const s=[...document.querySelectorAll('[name=forWhom]')].find(r=>r.checked);document.getElementById('relField').style.display=(s&&s.value==='Someone else')?'block':'none';}
+function radioSync(name){document.querySelectorAll(`[name=${name}]`).forEach(r=>r.parentElement.classList.toggle('on',r.checked));}
+
+function genOrderId(){
+  const d=new Date(),dt=d.getFullYear().toString()+(d.getMonth()+1).toString().padStart(2,'0')+d.getDate().toString().padStart(2,'0');
+  const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  return`ORD-${dt}-${Array.from({length:4},()=>chars[Math.floor(Math.random()*chars.length)]).join('')}`;
+}
+
+async function saveOrder(){
+  const custId=document.getElementById('ordCustomer').value,patientName=document.getElementById('ordPatient').value.trim();
+  if(!custId){toast('Select a customer','error');return;}if(!patientName){toast('Patient name required','error');return;}
+  const cust=allCustomers.find(c=>c.id===custId);
+  const langs=[...document.querySelectorAll('#langPills input:checked')].map(x=>x.value);
+  const diapers=[...document.querySelectorAll('[name=diapers]')].find(r=>r.checked)?.value||'No';
+  const forSel=[...document.querySelectorAll('[name=forWhom]')].find(r=>r.checked)?.value||'Self';
+  const data={customerId:custId,customerName:cust?.name||'',customerPhone:cust?.phone||'',patientName,patientAge:document.getElementById('ordAge').value||'',patientWeight:document.getElementById('ordWeight').value||'',caretakerGender:document.getElementById('ordGender').value,packageType:document.getElementById('ordPackage').value,preferredStartDate:document.getElementById('ordStart').value,duration:document.getElementById('ordDuration').value.trim(),location:document.getElementById('ordLocation').value.trim(),pincode:document.getElementById('ordPincode').value.trim(),medicalConditions:document.getElementById('ordMedical').value.trim(),languagesPreferred:langs,onDiapers:diapers,forSelf:forSel,relationship:forSel!=='Self'?document.getElementById('ordRel').value.trim():'',notes:document.getElementById('ordNotes').value.trim(),status:'pending'};
+  try{
+    if(editingOrderId){
+      await db.collection('orders').doc(editingOrderId).update(data);
+      const idx=allOrders.findIndex(o=>o.id===editingOrderId);if(idx>=0)allOrders[idx]={...allOrders[idx],...data};
+      toast('Order updated');
+    }else{
+      data.orderId=genOrderId();data.createdBy=currentProfile?.name||currentUser?.email||'Agent';data.createdAt=firebase.firestore.FieldValue.serverTimestamp();
+      const ref=await db.collection('orders').add(data);allOrders.unshift({id:ref.id,...data});
+      toast(`Order ${data.orderId} created ✓`,'success');
+    }
+    closeModal('orderModal');renderOrdTable(document.getElementById('ordSearch')?.value||'',document.getElementById('ordStatusFilter')?.value||'');
+  }catch(e){toast(e.message,'error');}
+}
+
+// ─ View Order ─
+function viewOrder(id){
+  const o=allOrders.find(x=>x.id===id);if(!o)return;
+  const sb={pending:'badge-yellow',matched:'badge-blue',assigned:'badge-purple',active:'badge-green',closed:'badge-gray'};
+  document.getElementById('ctModalInner').innerHTML=`
+  <button class="modal-close" onclick="closeModal('ctModal')">×</button>
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
+    <div><div style="font-size:11px;color:#64748b;font-weight:700;letter-spacing:1px;text-transform:uppercase">Order</div>
+      <h2 style="margin:4px 0;font-family:monospace">${esc(o.orderId)}</h2>
+      <span class="badge ${sb[o.status]||'badge-gray'}">${o.status}</span></div>
+    <div style="font-size:12px;color:#94a3b8">${o.createdAt?.toDate?o.createdAt.toDate().toLocaleDateString('en-IN'):''}</div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13.5px;margin-bottom:16px">
+    <div><strong>Customer:</strong> ${esc(o.customerName||'—')}</div><div><strong>Phone:</strong> ${esc(o.customerPhone||'—')}</div>
+    <div><strong>Patient:</strong> ${esc(o.patientName||'—')}</div><div><strong>Age/Weight:</strong> ${o.patientAge||'—'}y / ${o.patientWeight||'—'}kg</div>
+    <div><strong>Package:</strong> ${esc(o.packageType||'—')}</div><div><strong>Start:</strong> ${o.preferredStartDate||'—'}</div>
+    <div><strong>Duration:</strong> ${esc(o.duration||'—')}</div><div><strong>Location:</strong> ${esc(o.location||'—')} ${o.pincode?'('+o.pincode+')':''}</div>
+    <div><strong>Gender pref:</strong> ${o.caretakerGender||'Any'}</div><div><strong>Diapers:</strong> ${o.onDiapers||'No'}</div>
+    <div><strong>Medical:</strong> ${esc(o.medicalConditions||'None')}</div><div><strong>Languages:</strong> ${(o.languagesPreferred||[]).join(', ')||'Any'}</div>
+    <div style="grid-column:1/-1"><strong>For:</strong> ${o.forSelf||'Self'}${o.relationship?' ('+o.relationship+')':''}</div>
+    ${o.notes?`<div style="grid-column:1/-1"><strong>Notes:</strong> ${esc(o.notes)}</div>`:''}
+    ${o.assignedCaretakerName?`<div style="grid-column:1/-1;color:#10b981"><strong>✓ Assigned To:</strong> ${esc(o.assignedCaretakerName)}</div>`:''}
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    ${!o.assignedCaretakerId?`<button class="btn btn-green" onclick="closeModal('ctModal');findMatches('${o.id}')">✨ Find Matches</button>`:''}
+    ${!o.assignedCaretakerId?`<button class="btn btn-blue" onclick="closeModal('ctModal');openAssign('${o.id}')">Assign Caretaker</button>`:''}
+    <button class="btn btn-ghost" onclick="closeModal('ctModal');openOrderModal('${o.id}')">Edit</button>
+  </div>`;
+  openModal('ctModal');
+}
+
+// ─ Find Matches ─
+async function findMatches(orderId){
+  const o=allOrders.find(x=>x.id===orderId);if(!o)return;
+  if(custTab!=='orders'){custTab='orders';renderCustomerOps(document.getElementById('contentArea'));await new Promise(r=>setTimeout(r,300));}
+  let box=document.getElementById('matchBox');
+  if(!box){box=document.createElement('div');box.id='matchBox';document.getElementById('contentArea').appendChild(box);}
+  box.innerHTML=`<div class="section-card"><h2>✨ Finding Matches for ${esc(o.orderId)}</h2><div style="text-align:center;padding:24px"><span class="spinner"></span> Asking AI…</div></div>`;
+  const candidates=allCaretakers.filter(c=>{
+    if(o.caretakerGender&&c.gender!==o.caretakerGender)return false;
+    return true;
   });
-  document.body.appendChild(wrapper);
-  await html2pdf().set({
-    margin:      [8, 8, 8, 8],
-    filename:    `caretakers_${redacted ? 'brief' : 'full'}_${dateStr(new Date())}.pdf`,
-    image:       { type:'jpeg', quality:0.95 },
-    html2canvas: { scale:2, useCORS:true, logging:false },
-    jsPDF:       { unit:'mm', format:'a4', orientation:'portrait' }
-  }).from(wrapper).save();
-  document.body.removeChild(wrapper);
+  const prompt=`You are a caretaker-matching AI for a home-care agency in India. Match caretakers to this order:
+ORDER: Patient=${o.patientName}, Age=${o.patientAge}, Medical=${o.medicalConditions||'none'}, Package=${o.packageType}, Location=${o.location}, Languages preferred=${(o.languagesPreferred||[]).join(',')}, Caretaker gender=${o.caretakerGender||'any'}, On diapers=${o.onDiapers}, Duration=${o.duration}.
+CARETAKERS: ${JSON.stringify(candidates.slice(0,30).map(c=>({id:c.id,name:c.name,gender:c.gender,age:c.age,area:c.area,languages:c.languages,workPreferences:c.workPreferences,experience:c.experience,salary:c.salary})))}
+Return ONLY a JSON array of top 5 best matches: [{id,name,score,reason}] sorted by score descending.`;
+  try{
+    const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})});
+    const data=await res.json();
+    const text=data.candidates?.[0]?.content?.parts?.[0]?.text||'[]';
+    const jsonStr=text.match(/\[[\s\S]*\]/)?.[0];
+    let matches=[];
+    if(jsonStr){const ranked=JSON.parse(jsonStr);matches=ranked.map(r=>{const c=allCaretakers.find(x=>x.id===r.id);return c?{...c,_score:r.score,_reason:r.reason}:null;}).filter(Boolean);}
+    if(!matches.length){box.innerHTML=`<div class="section-card"><h2>No matches found</h2><p style="color:#64748b">Try adding more caretakers or adjusting order requirements.</p></div>`;return;}
+    const cards=matches.map(c=>{
+      const initials=(c.name||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+      return`<div class="result-card">
+        <div style="display:flex;gap:14px;align-items:flex-start">
+          <div class="rc-avatar">${c.photoURL?`<img src="${esc(c.photoURL)}" onerror="this.style.display='none'">`:initials}</div>
+          <div style="flex:1">
+            <div class="match-score">⭐ ${c._score}% match</div>
+            <div class="rc-name">${esc(c.name)}</div>
+            <div class="rc-meta">${c.gender||''} · ${c.age?c.age+'y':''} · ₹${c.salary||'?'}/mo · ${c.experience||0}y exp</div>
+            <div style="font-size:12px;color:#64748b;font-style:italic;margin:4px 0">${esc(c._reason||'')}</div>
+            <div class="rc-tags">${(c.languages||[]).slice(0,3).map(l=>`<span class="rc-tag">${l}</span>`).join('')}${c.area?`<span class="rc-tag">📍${esc(c.area)}</span>`:''}</div>
+          </div>
+        </div>
+        <div class="rc-actions" style="margin-top:12px">
+          <button class="btn btn-ghost btn-sm" onclick="viewCaretaker('${c.id}')">View</button>
+          <button class="btn btn-green btn-sm" onclick="assignFromMatch('${orderId}','${c.id}','${esc(c.name).replace(/'/g,"\\'")}')">Assign</button>
+          <button class="btn btn-blue btn-sm" onclick="downloadProfile(allCaretakers.find(x=>x.id==='${c.id}'),false)">Full PDF</button>
+          <button class="btn btn-ghost btn-sm" onclick="downloadProfile(allCaretakers.find(x=>x.id==='${c.id}'),true)">Brief PDF</button>
+          ${c.phone?`<button class="btn btn-wa btn-sm" onclick="shareWhatsApp('${c.id}','${orderId}')">📱 Share</button>`:''}
+        </div>
+      </div>`;
+    }).join('');
+    box.innerHTML=`<div class="section-card"><h2>✨ Top ${matches.length} Matches — ${esc(o.orderId)}</h2><div class="result-grid">${cards}</div></div>`;
+  }catch(e){box.innerHTML=`<div class="section-card"><p style="color:#ef4444">Error: ${e.message}</p></div>`;}
 }
 
-function closeModalOnBg(e) {
-  if (e.target.id === 'detailModal') document.getElementById('detailModal').style.display = 'none';
+async function assignFromMatch(orderId,ctId,ctName){
+  await db.collection('orders').doc(orderId).update({assignedCaretakerId:ctId,assignedCaretakerName:ctName,status:'assigned'});
+  const idx=allOrders.findIndex(o=>o.id===orderId);if(idx>=0){allOrders[idx].assignedCaretakerId=ctId;allOrders[idx].assignedCaretakerName=ctName;allOrders[idx].status='assigned';}
+  toast(`Assigned ${ctName} ✓`,'success');
+  const box=document.getElementById('matchBox');if(box)box.innerHTML='';
+  renderOrdTable(document.getElementById('ordSearch')?.value||'',document.getElementById('ordStatusFilter')?.value||'');
 }
 
-// ── Filter Toggle ─────────────────────────────────────────────────
-function toggleFilters() {
-  const body = document.getElementById('filterBody');
-  const icon = document.getElementById('filterIcon');
-  const open = body.style.display === 'none';
-  body.style.display = open ? 'block' : 'none';
-  icon.textContent   = open ? '▲ hide filters' : '▼ show filters';
+function shareWhatsApp(ctId,orderId){
+  const c=allCaretakers.find(x=>x.id===ctId),o=allOrders.find(x=>x.id===orderId);if(!c)return;
+  const msg=`Hi! Here is a caretaker profile from OutdoorSeniors:\n\n*${c.name}*\nGender: ${c.gender||'—'} | Age: ${c.age||'—'} | Experience: ${c.experience||0} yrs\nLanguages: ${(c.languages||[]).join(', ')||'—'}\nArea: ${c.area||'—'}\nExpected Salary: ₹${c.salary||'?'}/month\n\nFor: ${o?.patientName||'Patient'} (Order: ${o?.orderId||''})\n\nTo engage this caretaker, contact OutdoorSeniors.`;
+  const num=c.phone?`91${c.phone.replace(/\D/g,'')}`:''
+  window.open(`https://wa.me/${num}?text=${encodeURIComponent(msg)}`,'_blank');
 }
 
-// ── Utilities ─────────────────────────────────────────────────────
-function toDate(v) {
-  if (!v) return new Date(0);
-  if (v.toDate) return v.toDate();
-  if (v.seconds) return new Date(v.seconds * 1000);
-  return new Date(v);
+// ─ Assign Modal ─
+let assignOrderRef=null;
+function openAssign(orderId){
+  const o=allOrders.find(x=>x.id===orderId);assignOrderRef=o;
+  document.getElementById('assignOrderLabel').textContent=o?.orderId||orderId;
+  const sel=document.getElementById('assignCtSelect');
+  sel.innerHTML=`<option value="">— Select Caretaker —</option>`+allCaretakers.map(c=>`<option value="${c.id}">${esc(c.name)} (${c.gender||''}, ${c.area||''})</option>`).join('');
+  openModal('assignModal');
 }
-function dateStr(d) { return d.toISOString().slice(0, 10); }
-function showMsg(id, msg) { const el = document.getElementById(id); el.textContent = msg; el.style.display = 'block'; }
-function hideMsg(id)       { document.getElementById(id).style.display = 'none'; }
+async function confirmAssign(){
+  const ctId=document.getElementById('assignCtSelect').value;if(!ctId||!assignOrderRef){toast('Select a caretaker','error');return;}
+  const ct=allCaretakers.find(x=>x.id===ctId);
+  await db.collection('orders').doc(assignOrderRef.id).update({assignedCaretakerId:ctId,assignedCaretakerName:ct?.name||'',status:'assigned'});
+  const idx=allOrders.findIndex(o=>o.id===assignOrderRef.id);if(idx>=0){allOrders[idx].assignedCaretakerId=ctId;allOrders[idx].assignedCaretakerName=ct?.name||'';allOrders[idx].status='assigned';}
+  toast('Caretaker assigned ✓','success');closeModal('assignModal');
+  renderOrdTable(document.getElementById('ordSearch')?.value||'',document.getElementById('ordStatusFilter')?.value||'');
+}
+
+// ══ ANALYTICS ══
+function renderAnalytics(ca){
+  const now=new Date();
+  const getStart=(mode)=>{
+    if(mode==='daily')return new Date(now.getFullYear(),now.getMonth(),now.getDate());
+    if(mode==='weekly'){const d=new Date(now);d.setDate(d.getDate()-d.getDay());d.setHours(0,0,0,0);return d;}
+    return new Date(now.getFullYear(),now.getMonth(),1);
+  };
+  const start=getStart(periodMode);
+  const byPeriod=arr=>arr.filter(x=>x.createdAt?.toDate?.()>=start);
+  const op=byPeriod(allOrders),cp=byPeriod(allCustomers),ctp=byPeriod(allCaretakers);
+  const assigned=allOrders.filter(o=>o.status==='assigned'||o.status==='active');
+  const pending=allOrders.filter(o=>o.status==='pending');
+  const rate=allOrders.length?Math.round(assigned.length/allOrders.length*100):0;
+  ca.innerHTML=`
+  <div class="period-toggle">
+    <button class="period-btn ${periodMode==='daily'?'active':''}" onclick="periodMode='daily';renderAnalytics(document.getElementById('contentArea'))">Daily</button>
+    <button class="period-btn ${periodMode==='weekly'?'active':''}" onclick="periodMode='weekly';renderAnalytics(document.getElementById('contentArea'))">Weekly</button>
+    <button class="period-btn ${periodMode==='monthly'?'active':''}" onclick="periodMode='monthly';renderAnalytics(document.getElementById('contentArea'))">Monthly</button>
+  </div>
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="label">New Orders (${periodMode})</div><div class="value">${op.length}</div><div class="delta">${allOrders.length} total</div></div>
+    <div class="kpi-card"><div class="label">New Customers (${periodMode})</div><div class="value">${cp.length}</div><div class="delta">${allCustomers.length} total</div></div>
+    <div class="kpi-card"><div class="label">New Caretakers (${periodMode})</div><div class="value">${ctp.length}</div><div class="delta">${allCaretakers.length} total</div></div>
+    <div class="kpi-card"><div class="label">Assigned Orders</div><div class="value">${assigned.length}</div><div class="delta">${rate}% assignment rate</div></div>
+    <div class="kpi-card"><div class="label">Pending Orders</div><div class="value" style="color:#f59e0b">${pending.length}</div><div class="delta" style="color:#f59e0b">need action</div></div>
+    <div class="kpi-card"><div class="label">Agents</div><div class="value">${allAgents.length}</div><div class="delta">field staff</div></div>
+  </div>
+  <div class="section-card"><h2>Orders by Status</h2>
+    <div style="display:flex;gap:16px;flex-wrap:wrap">
+      ${['pending','matched','assigned','active','closed'].map(s=>{
+        const n=allOrders.filter(o=>o.status===s).length,pct=allOrders.length?Math.round(n/allOrders.length*100):0;
+        const col={pending:'#f59e0b',matched:'#3b82f6',assigned:'#8b5cf6',active:'#10b981',closed:'#94a3b8'};
+        return`<div style="flex:1;min-width:100px;background:#f8fafc;border-radius:10px;padding:16px;text-align:center"><div style="font-size:28px;font-weight:800;color:${col[s]}">${n}</div><div style="font-size:12px;color:#64748b;text-transform:capitalize;font-weight:600">${s}</div><div style="font-size:11px;color:#94a3b8">${pct}%</div></div>`;
+      }).join('')}
+    </div>
+  </div>
+  <div class="section-card"><h2>Package Distribution</h2>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      ${CARE_PACKAGES.map(p=>{
+        const n=allOrders.filter(o=>o.packageType===p).length;if(!n)return'';
+        const pct=allOrders.length?Math.round(n/allOrders.length*100):0;
+        return`<div style="display:flex;align-items:center;gap:12px"><div style="width:190px;font-size:13px;color:#475569;flex-shrink:0">${p}</div><div style="flex:1;background:#f1f5f9;border-radius:6px;height:20px;overflow:hidden"><div style="width:${pct}%;background:linear-gradient(90deg,#3b82f6,#8b5cf6);height:100%;border-radius:6px;transition:width .5s"></div></div><div style="width:40px;font-size:13px;font-weight:700;text-align:right">${n}</div></div>`;
+      }).join('')||'<div class="empty-state">No orders yet to analyze.</div>'}
+    </div>
+  </div>`;
+}
+
+// ══ OMS ══
+function renderOMS(ca){
+  const now=new Date();
+  const todayStart=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  const weekStart=new Date(now);weekStart.setDate(weekStart.getDate()-weekStart.getDay());weekStart.setHours(0,0,0,0);
+  const monthStart=new Date(now.getFullYear(),now.getMonth(),1);
+  const byDate=start=>allOrders.filter(o=>o.createdAt?.toDate?.()>=start);
+  const todayOrds=byDate(todayStart),weekOrds=byDate(weekStart),monthOrds=byDate(monthStart);
+  const unassigned=allOrders.filter(o=>!o.assignedCaretakerId&&o.status!=='closed');
+  ca.innerHTML=`
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="label">Today</div><div class="value">${todayOrds.length}</div><div class="delta">new orders</div></div>
+    <div class="kpi-card"><div class="label">This Week</div><div class="value">${weekOrds.length}</div><div class="delta">new orders</div></div>
+    <div class="kpi-card"><div class="label">This Month</div><div class="value">${monthOrds.length}</div><div class="delta">new orders</div></div>
+    <div class="kpi-card"><div class="label">Unassigned</div><div class="value" style="color:#ef4444">${unassigned.length}</div><div class="delta" style="color:#ef4444">need action</div></div>
+    <div class="kpi-card"><div class="label">Total Orders</div><div class="value">${allOrders.length}</div></div>
+  </div>
+  <div class="section-card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <h2 style="margin:0">All Orders</h2>
+      <select onchange="omsFilter(this.value)" id="omsStatusF" style="border:1.5px solid #e2e8f0;border-radius:8px;padding:8px 12px;font-size:13px;outline:none;background:#fff">
+        <option value="">All Status</option><option>pending</option><option>matched</option><option>assigned</option><option>active</option><option>closed</option>
+      </select>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Order ID</th><th>Customer</th><th>Patient</th><th>Package</th><th>Status</th><th>Agent</th><th>Assigned To</th><th>Date</th><th>Change Status</th></tr></thead>
+      <tbody id="omsTable">${buildOmsTable('')}</tbody>
+    </table></div>
+  </div>`;
+}
+
+function omsFilter(s){const t=document.getElementById('omsTable');if(t)t.innerHTML=buildOmsTable(s);}
+function buildOmsTable(status){
+  let data=status?allOrders.filter(o=>o.status===status):allOrders;
+  if(!data.length)return`<tr><td colspan="9" class="empty-state">No orders.</td></tr>`;
+  const sb={pending:'badge-yellow',matched:'badge-blue',assigned:'badge-purple',active:'badge-green',closed:'badge-gray'};
+  return data.map(o=>`<tr>
+    <td><strong style="font-family:monospace;font-size:12px">${esc(o.orderId)}</strong></td>
+    <td>${esc(o.customerName||'—')}</td><td>${esc(o.patientName||'—')}</td>
+    <td style="font-size:12px">${esc(o.packageType||'—')}</td>
+    <td><span class="badge ${sb[o.status]||'badge-gray'}">${o.status}</span></td>
+    <td style="font-size:12px">${esc(o.createdBy||'—')}</td>
+    <td>${esc(o.assignedCaretakerName||'—')}</td>
+    <td style="font-size:12px">${o.createdAt?.toDate?o.createdAt.toDate().toLocaleDateString('en-IN'):''}</td>
+    <td><select onchange="updateOrdStatus('${o.id}',this.value)" style="border:1.5px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;outline:none">
+      ${['pending','matched','assigned','active','closed'].map(s=>`<option${o.status===s?' selected':''}>${s}</option>`).join('')}
+    </select></td>
+  </tr>`).join('');
+}
+async function updateOrdStatus(id,status){
+  await db.collection('orders').doc(id).update({status});
+  const idx=allOrders.findIndex(o=>o.id===id);if(idx>=0)allOrders[idx].status=status;
+  toast(`Status → ${status}`);
+}
+
+// ══ UTILS ══
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function syncPill(cb){cb.parentElement.classList.toggle('on',cb.checked);}
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-bg').forEach(bg=>bg.addEventListener('click',e=>{if(e.target===bg)bg.classList.remove('open');}));
+let _tt=null;
+function toast(msg,type='success'){const t=document.getElementById('toast');t.textContent=msg;t.className=`toast ${type} show`;clearTimeout(_tt);_tt=setTimeout(()=>t.classList.remove('show'),3500);}
 </script>
 </body>
 </html>
