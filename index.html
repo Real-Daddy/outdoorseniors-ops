@@ -604,7 +604,7 @@ Order Detail Popup (click any Order ID):
 
 Answer the user's question using only the guide above. Be concise and specific. If they ask how to do something, give numbered steps. If something is admin-only and they are an agent, tell them they don't have access.`;
   try {
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`,{
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${GEMINI_API_KEY}`,{
       method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({contents:[{parts:[{text:sys+'\n\nUser: '+q}]}]})
     });
@@ -861,7 +861,7 @@ ${history}
 
 Respond now:`;
   try{
-    const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})});
+    const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${GEMINI_API_KEY}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})});
     const data=await res.json();
     const raw=data.candidates?.[0]?.content?.parts?.[0]?.text||'';
     const m=raw.match(/\[[\s\S]*?\]/);
@@ -916,7 +916,7 @@ Return ONLY a valid JSON array, no markdown, no code blocks: [{"id":"...","score
 Sort by score descending.
 Caretakers: ${JSON.stringify(results.slice(0,30).map(c=>({id:c.id,name:c.name,gender:c.gender,age:c.age,area:c.area,languages:c.languages||[],workPreferences:c.workPreferences||[],experience:c.experience,salary:c.salary,notes:c.notes||''})))}`;
     try{
-      const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})});
+      const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${GEMINI_API_KEY}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})});
       const data=await res.json();
       const raw=data.candidates?.[0]?.content?.parts?.[0]?.text||'';
       const m=raw.match(/\[[\s\S]*\]/);
@@ -1328,7 +1328,7 @@ CARETAKERS: ${ctData}
 
 Respond:`;
   try{
-    const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})});
+    const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${GEMINI_API_KEY}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})});
     const data=await res.json();
     const raw=data.candidates?.[0]?.content?.parts?.[0]?.text||'';
     const m=raw.match(/\[[\s\S]*?\]/);
@@ -1468,7 +1468,7 @@ ORDER: Patient=${o.patientName||'?'}, Age=${o.patientAge||'?'}, Medical=${o.medi
 CARETAKERS: ${JSON.stringify(candidates.slice(0,25).map(c=>({id:c.id,name:c.name,gender:c.gender,age:c.age,area:c.area,languages:c.languages||[],workPreferences:c.workPreferences||[],experience:c.experience,salary:c.salary})))}
 Return ONLY a valid JSON array (no markdown): [{"id":"...","name":"...","score":85,"reason":"..."}] sorted by score descending.`;
   try{
-    const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})});
+    const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${GEMINI_API_KEY}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})});
     const data=await res.json();
     const raw=data.candidates?.[0]?.content?.parts?.[0]?.text||'';
     const m=raw.match(/\[[\s\S]*?\]/);
