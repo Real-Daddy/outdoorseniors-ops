@@ -367,7 +367,7 @@ let allCaretakers = [], allCustomers = [], allOrders = [], allAgents = [];
 let editingAgentId = null, editingCustomerId = null, editingOrderId = null;
 let assignOrderRef = null, lastSearchResults = [], currentSection = 'home';
 let supplyTab = 'list', custTab = 'cust', periodMode = 'daily';
-let aiChatHistory = [];
+let aiChatHistory = [], orderAiChatHistory = [];
 
 const LANGUAGES = ['English','Hindi','Telugu','Tamil','Kannada','Malayalam','Marathi','Bengali','Gujarati','Odia','Punjabi','Urdu'];
 const CARE_PACKAGES = [
@@ -495,7 +495,114 @@ async function askAI() {
   const box = document.getElementById('aiResp');
   box.style.display = 'block';
   box.textContent = 'Thinking…';
-  const sys = `You are CareOS Assistant for OutdoorSeniors care operations. Sections: Home, Supply Ops (caretaker management & search), Customer Ops (customers + orders + AI matching), Analytics (admin), OMS (admin), Agent Ops (admin). Current role: ${currentProfile?.role}. Stats: ${allCaretakers.length} caretakers, ${allCustomers.length} customers, ${allOrders.length} orders. Be concise, give step-by-step navigation guidance.`;
+  const sys = `You are CareOS Assistant — the built-in training and navigation guide for OutdoorSeniors' internal operations platform. Answer questions accurately based on this exact system description. Current user role: ${currentProfile?.role}. Live stats: ${allCaretakers.length} caretakers, ${allCustomers.length} customers, ${allOrders.length} orders.
+
+=== CAREOS SYSTEM GUIDE ===
+
+SIDEBAR NAVIGATION:
+- Home: Dashboard with KPI cards and this AI assistant.
+- Supply Ops: Everything related to caretakers (add, view, search, AI match).
+- Customer Ops: Everything related to customers and orders.
+- Analytics: KPI charts by daily/weekly/monthly period. Admin only.
+- OMS (Order Management System): Full order table with status update controls. Admin only.
+- Agent Ops: Manage agent accounts (add, edit, deactivate). Admin only.
+
+--- SUPPLY OPS ---
+Three tabs at the top: Add Caretaker | All Caretakers | Search & Match (AI Chat).
+
+Add Caretaker:
+- Fill in: Name, Phone (required), Age, Gender, Email, Salary, Area, Pincode, Address.
+- Select Languages Known (pill buttons) and Work Preferences (pill buttons).
+- Fill in Experience (years), ID Type, Photo URL, ID Document URL, Referred By, Notes.
+- Click "Save Caretaker". Form clears on success.
+
+All Caretakers:
+- Shows a table of all caretakers with filters: Name/Phone search, Gender, Area, Language.
+- Click "View" to open a caretaker detail popup showing all info, WhatsApp button, print profile buttons.
+- Click "Del" to delete a caretaker (asks confirmation).
+- Click "Full Profile" or "Brief Profile" to open a printable profile in a new tab. Browser print dialog opens automatically — choose "Save as PDF".
+
+Search & Match (AI Chat):
+- Type your requirement in plain language: e.g. "Female Telugu speaking caretaker in Whitefield, elder care, budget 16000".
+- AI responds with top matches ranked by score with reasons.
+- You can refine in the same chat: e.g. "show someone more experienced" or "I need someone closer to BTM Layout".
+- Results show as cards with match score, name, area, languages, experience, salary.
+- Click "View" to see full caretaker details, "Full Profile" / "Brief Profile" to print, WhatsApp button to share.
+- Manual Filters section (collapsed by default): filter by Name/Phone, Gender, Area, Language, Max Salary, Min Experience. Click "Search" for results.
+
+--- CUSTOMER OPS ---
+Two tabs: Customers | Orders.
+
+Customers tab:
+- Shows all customers in a table. Search by name or phone.
+- Click customer name (in blue) to open customer detail popup showing: contact info, current active order (highlighted in green), full order history.
+- Click "+ Add Customer" to open a form: Name (required), Phone, Email, Address, Area, Pincode, Notes. Click Save.
+- Click "Edit" to update a customer's details.
+- Click "+ Order" next to a customer to create an order pre-filled with that customer.
+- Click "Del" to delete a customer.
+
+Orders tab:
+- Shows all orders in a table. Search by Order ID or patient name. Filter by status.
+- Click Order ID (in blue/underlined) to open the full order detail popup.
+- Click customer name (in blue) to open the customer detail popup.
+- Click "View + Match" to open the order and trigger AI matching.
+- Click "+ Create Order" to open the order form.
+
+Creating an Order:
+- Select Customer (required), fill Patient Name (required), Age, Weight.
+- Select Caretaker Gender preference, Package Type, Start Date, Duration.
+- Fill Location/Area, Pincode, Medical Conditions, Languages Preferred (pill buttons).
+- Select On Diapers (Yes/No), Care For (Self or Someone else — if someone else, enter Relationship).
+- Add Notes. Click "Save Order".
+- After saving, the order detail popup opens automatically and AI starts finding matches immediately.
+
+Order Detail Popup (click any Order ID):
+- Shows order summary as chips: package, location, gender, languages, duration, start date.
+- Customer panel: click customer name to go to customer profile.
+- Patient panel: name, age, weight, medical conditions.
+- If unassigned: AI Match section auto-runs and shows top 5 caretaker matches with scores.
+  - Each match card shows: score %, name, gender, age, salary, reason, area, languages, experience.
+  - Click "Assign" to assign that caretaker to the order immediately.
+  - Click "View" to see full caretaker profile.
+  - Click "WA" to share caretaker profile via WhatsApp.
+  - Type in the chat input to refine: e.g. "show me a female only", "budget under 15000", "more experience".
+- If already assigned: shows assigned caretaker name in green with a "Reassign" button.
+- Status dropdown: change order status (pending → matched → assigned → active → closed).
+- Edit button: reopen the order form to change any field.
+- Comments section: type a comment and click Post (or Ctrl+Enter). All comments show agent name and timestamp. Visible to all agents and admin.
+
+--- ANALYTICS (Admin only) ---
+- Toggle between Daily / Weekly / Monthly at the top.
+- KPI cards: New Orders, New Customers, New Caretakers, Assigned orders, Pending orders, Agents.
+- Orders by Status: bar showing count and % for each status (pending, matched, assigned, active, closed).
+- Package Distribution: horizontal bar chart showing which care packages are most ordered.
+
+--- OMS — Order Management System (Admin only) ---
+- KPI cards: Today's orders, This Week, This Month, Unassigned count, Total.
+- Full order table with all fields visible.
+- Status column has a dropdown — admin can change any order's status directly from this table.
+- Filter by status using the dropdown at the top right.
+
+--- AGENT OPS (Admin only) ---
+- Shows all agents in a table: Name, Email, Phone, Status (Active/Inactive).
+- Click "+ Add Agent": fill Name, Email, Password (min 6 chars), Phone. Click Save. Agent account is created in Firebase Auth automatically.
+- Click "Edit" to update agent name and phone.
+- Click "Deactivate" to disable an agent (they cannot log in). Click "Activate" to re-enable.
+
+--- ORDER STATUSES ---
+- pending: Order created, no caretaker matched yet.
+- matched: AI has suggested matches, agent is reviewing.
+- assigned: A specific caretaker has been assigned.
+- active: Care has started.
+- closed: Order completed or cancelled.
+
+--- ROLES ---
+- Admin: sees all sections (Home, Supply Ops, Customer Ops, Analytics, OMS, Agent Ops).
+- Agent: sees only Home, Supply Ops, Customer Ops.
+
+=== END OF GUIDE ===
+
+Answer the user's question using only the guide above. Be concise and specific. If they ask how to do something, give numbered steps. If something is admin-only and they are an agent, tell them they don't have access.`;
   try {
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`,{
       method:'POST',headers:{'Content-Type':'application/json'},
@@ -513,7 +620,6 @@ function renderAgentOps(ca) {
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
       <h2 style="margin:0">All Agents</h2>
       <div style="display:flex;gap:6px">
-        <button class="btn btn-ghost btn-sm" onclick="seedDemoData()">⬇ Seed Demo Data</button>
         <button class="btn btn-primary btn-sm" onclick="openAgentModal()">+ Add Agent</button>
       </div>
     </div>
@@ -1036,7 +1142,7 @@ function renderOrderList(c){
     <div class="search-bar">
       <input type="text" id="ordSearch" placeholder="Order ID or patient…" oninput="renderOrdTable(this.value)" style="flex:1;min-width:140px">
       <select onchange="renderOrdTable(document.getElementById('ordSearch').value,this.value)" id="ordStatusFilter">
-        <option value="">All Status</option><option>pending</option><option>matched</option><option>assigned</option><option>active</option><option>closed</option>
+        <option value="">All Status</option><option>pending</option><option>matched</option><option>assigned</option><option>active</option><option>closed</option><option>cancelled</option>
       </select>
     </div>
     <div class="table-wrap"><table>
@@ -1062,9 +1168,7 @@ function buildOrdTable(q,status){
     <td>${esc(o.assignedCaretakerName||'—')}</td>
     <td style="font-size:12px">${o.createdAt?.toDate?o.createdAt.toDate().toLocaleDateString('en-IN'):''}</td>
     <td><div style="display:flex;gap:4px;flex-wrap:wrap">
-      <button class="btn btn-ghost btn-sm" onclick="viewOrder('${o.id}')">View</button>
-      ${!o.assignedCaretakerId?`<button class="btn btn-secondary btn-sm" onclick="findMatches('${o.id}')">Match</button>`:''}
-      ${!o.assignedCaretakerId?`<button class="btn btn-ghost btn-sm" onclick="openAssign('${o.id}')">Assign</button>`:''}
+      <button class="btn btn-ghost btn-sm" onclick="viewOrder('${o.id}')">${!o.assignedCaretakerId?'View + Match':'View'}</button>
     </div></td>
   </tr>`).join('');
 }
@@ -1105,7 +1209,7 @@ async function saveOrder(){
   const data={customerId:custId,customerName:cust?.name||'',customerPhone:cust?.phone||'',patientName,patientAge:document.getElementById('ordAge').value||'',patientWeight:document.getElementById('ordWeight').value||'',caretakerGender:document.getElementById('ordGender').value,packageType:document.getElementById('ordPackage').value,preferredStartDate:document.getElementById('ordStart').value,duration:document.getElementById('ordDuration').value.trim(),location:document.getElementById('ordLocation').value.trim(),pincode:document.getElementById('ordPincode').value.trim(),medicalConditions:document.getElementById('ordMedical').value.trim(),languagesPreferred:langs,onDiapers:diapers,forSelf:forSel,relationship:forSel!=='Self'?document.getElementById('ordRel').value.trim():'',notes:document.getElementById('ordNotes').value.trim(),status:'pending'};
   try{
     if(editingOrderId){await db.collection('orders').doc(editingOrderId).update(data);const idx=allOrders.findIndex(o=>o.id===editingOrderId);if(idx>=0)allOrders[idx]={...allOrders[idx],...data};toast('Order updated');}
-    else{data.orderId=genOrderId();data.createdBy=currentProfile?.name||currentUser?.email||'Agent';data.createdAt=firebase.firestore.FieldValue.serverTimestamp();const ref=await db.collection('orders').add(data);allOrders.unshift({id:ref.id,...data});toast(`Order ${data.orderId} created`,'success');}
+    else{data.orderId=genOrderId();data.createdBy=currentProfile?.name||currentUser?.email||'Agent';data.createdAt=firebase.firestore.FieldValue.serverTimestamp();const ref=await db.collection('orders').add(data);allOrders.unshift({id:ref.id,...data});toast(`Order ${data.orderId} created — finding matches…`,'success');closeModal('orderModal');renderOrdTable(document.getElementById('ordSearch')?.value||'',document.getElementById('ordStatusFilter')?.value||'');setTimeout(()=>viewOrder(ref.id),200);return;}
     closeModal('orderModal');renderOrdTable(document.getElementById('ordSearch')?.value||'',document.getElementById('ordStatusFilter')?.value||'');
   }catch(e){toast(e.message,'error');}
 }
@@ -1114,72 +1218,157 @@ async function viewOrder(id){
   const o=allOrders.find(x=>x.id===id);if(!o)return;
   const cust=allCustomers.find(c=>c.id===o.customerId);
   const sb={pending:'badge-warn',matched:'badge-info',assigned:'badge-purple',active:'badge-ok',closed:'badge-default'};
-  const inner=document.getElementById('ctModalInner');inner.style.maxWidth='740px';
+  const inner=document.getElementById('ctModalInner');inner.style.maxWidth='760px';
+  const unassigned=!o.assignedCaretakerId;
+  const chips=[o.packageType,o.location?'📍 '+o.location+(o.pincode?' '+o.pincode:''):'',o.caretakerGender?o.caretakerGender+' caretaker':'',(o.languagesPreferred||[]).join('/'),o.duration,o.preferredStartDate?'Starts '+o.preferredStartDate:''].filter(Boolean);
   inner.innerHTML=`
   <button class="modal-close" onclick="closeModal('ctModal')">×</button>
-  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">
+
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
     <div>
       <div style="font-size:10px;color:var(--muted);font-weight:700;letter-spacing:1px;text-transform:uppercase">Order</div>
       <h2 style="margin:4px 0;font-family:monospace;text-transform:none;font-size:18px;letter-spacing:0">${esc(o.orderId)}</h2>
       <span class="badge ${sb[o.status]||'badge-default'}">${o.status}</span>
     </div>
-    <div style="text-align:right;font-size:11px;color:var(--muted)">${o.createdAt?.toDate?o.createdAt.toDate().toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}):''}<br>By: ${esc(o.createdBy||'—')}</div>
-  </div>
-
-  <div style="background:var(--bg);border:1px solid var(--border);padding:12px 14px;margin-bottom:14px">
-    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px">Customer</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px">
-      <div><span style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase">Name</span><br>
-        <span style="cursor:pointer;color:var(--accent);font-weight:700" onclick="closeModal('ctModal');viewCustomer('${o.customerId}')">${esc(o.customerName||'—')} →</span>
-      </div>
-      <div><span style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase">Phone</span><br>${esc(o.customerPhone||cust?.phone||'—')}</div>
-      ${cust?.area?`<div><span style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase">Area</span><br>${esc(cust.area)}</div>`:''}
-      ${cust?.email?`<div><span style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase">Email</span><br>${esc(cust.email)}</div>`:''}
-    </div>
-  </div>
-
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px;margin-bottom:14px">
-    <div><strong>Patient:</strong> ${esc(o.patientName||'—')}</div>
-    <div><strong>Age / Weight:</strong> ${o.patientAge||'—'}y / ${o.patientWeight||'—'}kg</div>
-    <div><strong>Package:</strong> ${esc(o.packageType||'—')}</div>
-    <div><strong>Start:</strong> ${o.preferredStartDate||'—'}</div>
-    <div><strong>Duration:</strong> ${esc(o.duration||'—')}</div>
-    <div><strong>Location:</strong> ${esc(o.location||'—')}${o.pincode?' ('+o.pincode+')':''}</div>
-    <div><strong>Gender pref:</strong> ${o.caretakerGender||'Any'}</div>
-    <div><strong>Diapers:</strong> ${o.onDiapers||'No'}</div>
-    <div><strong>Medical:</strong> ${esc(o.medicalConditions||'None')}</div>
-    <div><strong>Languages:</strong> ${(o.languagesPreferred||[]).join(', ')||'Any'}</div>
-    <div style="grid-column:1/-1"><strong>For:</strong> ${o.forSelf||'Self'}${o.relationship?' ('+o.relationship+')':''}</div>
-    ${o.notes?`<div style="grid-column:1/-1"><strong>Notes:</strong> ${esc(o.notes)}</div>`:''}
-  </div>
-
-  <div style="background:var(--bg);border:1px solid var(--border);padding:12px 14px;margin-bottom:14px">
-    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px">Caretaker Assignment</div>
-    <div style="font-size:13px;margin-bottom:10px">
-      ${o.assignedCaretakerName?`<span style="color:var(--ok-fg);font-weight:700">✓ ${esc(o.assignedCaretakerName)}</span>`:'<span style="color:var(--muted)">Not yet assigned</span>'}
-    </div>
-    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
-      ${!o.assignedCaretakerId?`<button class="btn btn-primary btn-sm" onclick="closeModal('ctModal');findMatches('${o.id}')">Find AI Matches</button>`:''}
-      <button class="btn btn-secondary btn-sm" onclick="closeModal('ctModal');openAssign('${o.id}')">${o.assignedCaretakerId?'Reassign Caretaker':'Assign Caretaker'}</button>
-      <button class="btn btn-ghost btn-sm" onclick="closeModal('ctModal');openOrderModal('${o.id}')">Edit Order</button>
-      <select onchange="updateOrdStatus('${o.id}',this.value)" style="margin-left:auto;border:1px solid var(--border);padding:5px 8px;font-size:11px;outline:none;background:var(--bg);cursor:pointer">
+    <div style="display:flex;gap:6px;align-items:center">
+      <select onchange="updateOrdStatus('${o.id}',this.value)" style="border:1px solid var(--border);padding:5px 8px;font-size:11px;outline:none;background:var(--bg);cursor:pointer">
         ${['pending','matched','assigned','active','closed'].map(s=>`<option${o.status===s?' selected':''}>${s}</option>`).join('')}
       </select>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('ctModal');openOrderModal('${o.id}')">Edit</button>
     </div>
   </div>
 
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+    <div style="background:var(--bg);border:1px solid var(--border);padding:10px 12px">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:5px">Customer</div>
+      <span style="cursor:pointer;color:var(--accent);font-weight:700;font-size:13px" onclick="closeModal('ctModal');viewCustomer('${o.customerId}')">${esc(o.customerName||'—')} →</span>
+      <div style="font-size:12px;color:var(--muted);margin-top:2px">${esc(o.customerPhone||cust?.phone||'—')}</div>
+    </div>
+    <div style="background:var(--bg);border:1px solid var(--border);padding:10px 12px">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:5px">Patient</div>
+      <div style="font-size:13px;font-weight:700">${esc(o.patientName||'—')}</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:2px">${[o.patientAge?o.patientAge+'y':'',o.patientWeight?o.patientWeight+'kg':'',o.medicalConditions||''].filter(Boolean).join(' · ')||'—'}</div>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px">
+    ${chips.map(t=>`<span style="background:var(--bg);border:1px solid var(--border);padding:3px 9px;font-size:11px;color:var(--muted)">${esc(t)}</span>`).join('')}
+    ${o.notes?`<span style="background:var(--bg);border:1px solid var(--border);padding:3px 9px;font-size:11px;color:var(--muted);font-style:italic">Note: ${esc(o.notes)}</span>`:''}
+  </div>
+
+  ${o.assignedCaretakerName?`
+  <div style="background:var(--ok-bg);border:1px solid #b5dab5;padding:10px 14px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center">
+    <span style="color:var(--ok-fg);font-weight:700;font-size:13px">✓ Assigned: ${esc(o.assignedCaretakerName)}</span>
+    <button class="btn btn-ghost btn-sm" onclick="closeModal('ctModal');openAssign('${o.id}')">Reassign</button>
+  </div>`:''}
+
+  ${unassigned?`
+  <div style="margin-bottom:14px">
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px">AI Match</div>
+    <div id="orderAiBox" style="min-height:100px;max-height:300px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:12px;background:var(--bg);border:1px solid var(--border);margin-bottom:8px"></div>
+    <div id="orderAiResults" style="margin-bottom:8px"></div>
+    <div style="display:flex;gap:8px">
+      <input type="text" id="orderAiInput" placeholder="Refine… e.g. show someone with more experience, closer to Koramangala…" style="flex:1;border:1px solid var(--border);padding:8px 10px;font-size:13px;outline:none;background:var(--surface);color:var(--text)" onkeydown="if(event.key==='Enter')sendOrderAIChat('${o.id}')">
+      <button class="btn btn-primary btn-sm" onclick="sendOrderAIChat('${o.id}')">Send →</button>
+    </div>
+  </div>`:''}
+
   <div>
-    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:10px">Comments</div>
-    <div style="display:flex;gap:8px;margin-bottom:12px">
+    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px">Comments</div>
+    <div style="display:flex;gap:8px;margin-bottom:10px">
       <textarea id="newCommentText" rows="2" placeholder="Add a comment… (Ctrl+Enter to post)" onkeydown="if(event.ctrlKey&&event.key==='Enter')addComment('${o.id}')" style="flex:1;border:1px solid var(--border);padding:8px 10px;font-size:13px;outline:none;background:var(--bg);color:var(--text);resize:vertical;font-family:inherit"></textarea>
       <button class="btn btn-primary btn-sm" onclick="addComment('${o.id}')" style="align-self:flex-end">Post</button>
     </div>
-    <div id="commentsList" style="display:flex;flex-direction:column;gap:8px">
-      <div style="color:var(--muted);font-size:12px">Loading…</div>
-    </div>
+    <div id="commentsList" style="display:flex;flex-direction:column;gap:8px"><div style="color:var(--muted);font-size:12px">Loading…</div></div>
   </div>`;
   openModal('ctModal');
   loadComments(id);
+  if(unassigned){orderAiChatHistory=[];autoMatchOrder(o);}
+}
+
+async function autoMatchOrder(o){
+  const box=document.getElementById('orderAiBox');if(!box)return;
+  appendOrderChatMsg(box,`Reading order ${esc(o.orderId)} and finding best matches…`,'bot');
+  await runOrderAIMatch(o,null);
+}
+async function sendOrderAIChat(orderId){
+  const o=allOrders.find(x=>x.id===orderId);if(!o)return;
+  const input=document.getElementById('orderAiInput');
+  const text=(input?.value||'').trim();if(!text)return;
+  input.value='';
+  const box=document.getElementById('orderAiBox');if(!box)return;
+  appendOrderChatMsg(box,text,'user');
+  box.scrollTop=box.scrollHeight;
+  orderAiChatHistory.push({role:'user',text});
+  await runOrderAIMatch(o,text);
+}
+async function runOrderAIMatch(o,userMessage){
+  const box=document.getElementById('orderAiBox');if(!box)return;
+  const loadId='om_'+Date.now();
+  const loadDiv=document.createElement('div');
+  loadDiv.id=loadId;loadDiv.className='ai-chat-msg ai-chat-bot';
+  loadDiv.innerHTML=`<div class="ai-chat-name">CareOS AI</div><div class="ai-chat-text"><span class="spinner"></span> Matching…</div>`;
+  box.appendChild(loadDiv);box.scrollTop=box.scrollHeight;
+  const ctData=JSON.stringify(allCaretakers.slice(0,50).map(c=>({id:c.id,name:c.name,gender:c.gender,age:c.age,area:c.area,pincode:c.pincode,languages:c.languages||[],workPreferences:c.workPreferences||[],experience:c.experience,salary:c.salary,notes:c.notes||''})));
+  const orderCtx=`Patient: ${o.patientName||'?'}, Age: ${o.patientAge||'?'}, Medical: ${o.medicalConditions||'none'}, Package: ${o.packageType||'?'}, Location: ${o.location||'?'} ${o.pincode||''}, Caretaker gender: ${o.caretakerGender||'any'}, Languages: ${(o.languagesPreferred||[]).join(',')||'any'}, Diapers: ${o.onDiapers||'No'}, Duration: ${o.duration||'?'}, Start: ${o.preferredStartDate||'?'}.`;
+  const history=orderAiChatHistory.map(m=>`${m.role==='user'?'Agent':'Assistant'}: ${m.text}`).join('\n');
+  const prompt=`You are an AI caretaker-matching assistant for OutdoorSeniors, Bangalore home-care agency.
+
+ORDER: ${orderCtx}
+${history?`\nCONVERSATION:\n${history}\n`:''}
+${userMessage?`Agent says: "${userMessage}"\n`:''}
+RULES:
+- Match based on order requirements (location, gender, languages, care type, experience)
+- One short sentence on your approach, then results
+- If agent refines, re-rank immediately
+- Always end with raw JSON (no markdown): [{"id":"...","score":85,"reason":"brief reason"}]
+- Top 5 max, score descending
+
+CARETAKERS: ${ctData}
+
+Respond:`;
+  try{
+    const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${GEMINI_API_KEY}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})});
+    const data=await res.json();
+    const raw=data.candidates?.[0]?.content?.parts?.[0]?.text||'';
+    const m=raw.match(/\[[\s\S]*?\]/);
+    let msg=raw,results=[];
+    if(m){msg=raw.replace(m[0],'').replace(/```json?/g,'').replace(/```/g,'').trim();try{const ranked=JSON.parse(m[0]);results=ranked.map(r=>{const ct=allCaretakers.find(x=>x.id===r.id);return ct?{...ct,_score:r.score,_reason:r.reason||''}:null;}).filter(Boolean);}catch(e){}}
+    const ld=document.getElementById(loadId);if(ld)ld.remove();
+    const displayMsg=msg||raw;
+    orderAiChatHistory.push({role:'assistant',text:displayMsg});
+    appendOrderChatMsg(box,displayMsg,'bot');
+    box.scrollTop=box.scrollHeight;
+    if(results.length){const rb=document.getElementById('orderAiResults');if(rb)showOrderMatchCards(results,o.id,rb);}
+  }catch(e){const ld=document.getElementById(loadId);if(ld)ld.innerHTML=`<div class="ai-chat-name">CareOS AI</div><div class="ai-chat-text" style="color:var(--danger)">Error: ${e.message}</div>`;}
+}
+function appendOrderChatMsg(box,text,role){
+  const div=document.createElement('div');
+  div.className=`ai-chat-msg ai-chat-${role==='user'?'user':'bot'}`;
+  div.innerHTML=`${role!=='user'?'<div class="ai-chat-name">CareOS AI</div>':''}<div class="ai-chat-text">${esc(text)}</div>`;
+  box.appendChild(div);
+}
+function showOrderMatchCards(results,orderId,box){
+  box.innerHTML=`<div style="display:flex;flex-direction:column;gap:6px">`+results.map(c=>{
+    const initials=(c.name||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+    return`<div style="background:var(--surface);border:1px solid var(--border);padding:10px 12px;display:flex;align-items:center;gap:10px">
+      <div class="rc-avatar" style="width:38px;height:38px;font-size:13px;flex-shrink:0">${c.photoURL?`<img src="${esc(c.photoURL)}" onerror="this.style.display='none'">`:initials}</div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          <span class="match-score" style="font-size:10px;padding:2px 7px">${c._score}%</span>
+          <strong style="font-size:13px">${esc(c.name)}</strong>
+          <span style="font-size:11px;color:var(--muted)">${[c.gender,c.age?c.age+'y':'',c.salary?'₹'+c.salary+'/mo':''].filter(Boolean).join(' · ')}</span>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">${esc(c._reason)}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:1px">📍 ${esc(c.area||'—')} · ${(c.languages||[]).slice(0,3).join(', ')||'—'} · ${c.experience||0}y exp</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">
+        <button class="btn btn-primary btn-sm" onclick="assignFromMatch('${orderId}','${c.id}','${c.name.replace(/'/g,"\\'")}');document.getElementById('orderAiResults').innerHTML='';document.getElementById('orderAiBox').innerHTML=''">Assign</button>
+        <button class="btn btn-ghost btn-sm" onclick="viewCaretaker('${c.id}')">View</button>
+        ${c.phone?`<button class="btn btn-wa btn-sm" onclick="shareWhatsApp('${c.id}','${orderId}')">WA</button>`:''}
+      </div>
+    </div>`;
+  }).join('')+`</div>`;
 }
 
 function viewCustomer(id){
@@ -1398,11 +1587,11 @@ function renderOMS(ca){
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
       <h2 style="margin:0">All Orders</h2>
       <select onchange="omsFilter(this.value)" style="border:1px solid var(--border);padding:6px 10px;font-size:12px;outline:none;background:var(--bg)">
-        <option value="">All Status</option><option>pending</option><option>matched</option><option>assigned</option><option>active</option><option>closed</option>
+        <option value="">All Status</option><option>pending</option><option>matched</option><option>assigned</option><option>active</option><option>closed</option><option>cancelled</option>
       </select>
     </div>
     <div class="table-wrap"><table>
-      <thead><tr><th>Order ID</th><th>Customer</th><th>Patient</th><th>Package</th><th>Status</th><th>Agent</th><th>Assigned To</th><th>Date</th><th>Update</th></tr></thead>
+      <thead><tr><th>Order ID</th><th>Customer</th><th>Patient</th><th>Package</th><th>Status</th><th>Agent</th><th>Assigned To</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
       <tbody id="omsTable">${buildOmsTable('')}</tbody>
     </table></div>
   </div>`;
@@ -1410,23 +1599,50 @@ function renderOMS(ca){
 function omsFilter(s){const t=document.getElementById('omsTable');if(t)t.innerHTML=buildOmsTable(s);}
 function buildOmsTable(status){
   const data=status?allOrders.filter(o=>o.status===status):allOrders;
-  if(!data.length)return`<tr><td colspan="9" class="empty-state">No orders.</td></tr>`;
-  const sb={pending:'badge-warn',matched:'badge-info',assigned:'badge-purple',active:'badge-ok',closed:'badge-default'};
+  if(!data.length)return`<tr><td colspan="10" class="empty-state">No orders.</td></tr>`;
+  const sb={pending:'badge-warn',matched:'badge-info',assigned:'badge-purple',active:'badge-ok',closed:'badge-default',cancelled:'badge-err'};
   return data.map(o=>`<tr>
     <td><strong style="font-family:monospace;font-size:11px;cursor:pointer;color:var(--accent);text-decoration:underline" onclick="viewOrder('${o.id}')">${esc(o.orderId)}</strong></td>
-    <td><span style="cursor:pointer;color:var(--accent)" onclick="viewCustomer('${o.customerId}')">${esc(o.customerName||'—')}</span></td><td>${esc(o.patientName||'—')}</td>
+    <td><span style="cursor:pointer;color:var(--accent)" onclick="viewCustomer('${o.customerId}')">${esc(o.customerName||'—')}</span></td>
+    <td>${esc(o.patientName||'—')}</td>
     <td style="font-size:12px">${esc(o.packageType||'—')}</td>
     <td><span class="badge ${sb[o.status]||'badge-default'}">${o.status}</span></td>
     <td style="font-size:12px">${esc(o.createdBy||'—')}</td>
-    <td>${esc(o.assignedCaretakerName||'—')}</td>
+    <td style="font-size:12px">${o.assignedCaretakerName?`<span style="color:var(--ok-fg);font-weight:700">${esc(o.assignedCaretakerName)}</span>`:'<span style="color:var(--muted)">—</span>'}</td>
     <td style="font-size:12px">${o.createdAt?.toDate?o.createdAt.toDate().toLocaleDateString('en-IN'):''}</td>
-    <td><select onchange="updateOrdStatus('${o.id}',this.value)" style="border:1px solid var(--border);padding:4px 6px;font-size:11px;outline:none;background:var(--bg)">
-      ${['pending','matched','assigned','active','closed'].map(s=>`<option${o.status===s?' selected':''}>${s}</option>`).join('')}
-    </select></td>
+    <td>
+      <select onchange="updateOrdStatus('${o.id}',this.value);this.closest('tr').querySelector('.oms-status-badge').className='badge ${sb[this.value]||'badge-default'}';this.closest('tr').querySelector('.oms-status-badge').textContent=this.value" style="border:1px solid var(--border);padding:4px 6px;font-size:11px;outline:none;background:var(--bg)">
+        ${['pending','matched','assigned','active','closed','cancelled'].map(s=>`<option${o.status===s?' selected':''}>${s}</option>`).join('')}
+      </select>
+    </td>
+    <td>
+      <div style="display:flex;gap:4px;flex-wrap:wrap">
+        <button class="btn btn-secondary btn-sm" onclick="openAssign('${o.id}')">${o.assignedCaretakerId?'Reassign':'Assign'}</button>
+        ${o.assignedCaretakerId?`<button class="btn btn-ghost btn-sm" onclick="omsRemoveCaretaker('${o.id}')">Remove</button>`:''}
+        ${o.status!=='cancelled'&&o.status!=='closed'?`<button class="btn btn-danger btn-sm" onclick="omsCancelOrder('${o.id}')">Cancel</button>`:''}
+      </div>
+    </td>
   </tr>`).join('');
 }
 async function updateOrdStatus(id,status){
-  await db.collection('orders').doc(id).update({status});const idx=allOrders.findIndex(o=>o.id===id);if(idx>=0)allOrders[idx].status=status;toast(`Status → ${status}`);
+  await db.collection('orders').doc(id).update({status});
+  const idx=allOrders.findIndex(o=>o.id===id);if(idx>=0)allOrders[idx].status=status;
+  toast(`Status → ${status}`);
+}
+async function omsRemoveCaretaker(id){
+  if(!confirm('Remove the assigned caretaker from this order? Status will return to pending.'))return;
+  await db.collection('orders').doc(id).update({assignedCaretakerId:'',assignedCaretakerName:'',status:'pending'});
+  const idx=allOrders.findIndex(o=>o.id===id);
+  if(idx>=0){allOrders[idx].assignedCaretakerId='';allOrders[idx].assignedCaretakerName='';allOrders[idx].status='pending';}
+  toast('Caretaker removed — order set to pending');
+  omsFilter(document.querySelector('#contentArea select')?.value||'');
+}
+async function omsCancelOrder(id){
+  if(!confirm('Cancel this order? This cannot be undone easily.'))return;
+  await db.collection('orders').doc(id).update({status:'cancelled'});
+  const idx=allOrders.findIndex(o=>o.id===id);if(idx>=0)allOrders[idx].status='cancelled';
+  toast('Order cancelled','error');
+  omsFilter(document.querySelector('#contentArea select')?.value||'');
 }
 
 // ── Utils ──
