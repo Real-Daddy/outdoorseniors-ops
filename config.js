@@ -10,4 +10,4 @@ const firebaseConfig = {
 };
 
 // Gemini API key
-const GEMINI_API_KEY = "AIzaSyBatwMJkioSfCrKIpoeoKbLaRph6vRUFBE";
+const GEMINI_API_KEY = "AIzaSyC7XEP7gMtV4idZU5P44QPw8gEIx23zlOk";
