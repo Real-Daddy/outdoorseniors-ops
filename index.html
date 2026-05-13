@@ -367,7 +367,6 @@ let allCaretakers = [], allCustomers = [], allOrders = [], allAgents = [];
 let editingAgentId = null, editingCustomerId = null, editingOrderId = null;
 let assignOrderRef = null, lastSearchResults = [], currentSection = 'home';
 let supplyTab = 'list', custTab = 'cust', periodMode = 'daily';
-let aiChatHistory = [], orderAiChatHistory = [];
 
 const LANGUAGES = ['English','Hindi','Telugu','Tamil','Kannada','Malayalam','Marathi','Bengali','Gujarati','Odia','Punjabi','Urdu'];
 const CARE_PACKAGES = [
@@ -461,15 +460,6 @@ function renderHome(ca) {
   const isAdmin = currentProfile?.role === 'admin';
   const open_ord = allOrders.filter(o => o.status==='pending'||o.status==='matched').length;
   ca.innerHTML = `
-  <div class="ai-box">
-    <h2>Hello, ${esc(currentProfile?.name||'there')} —</h2>
-    <p>What would you like to do today?</p>
-    <div class="ai-input-row">
-      <input type="text" id="aiQ" placeholder="Ask anything… e.g. how do I add a caretaker?" onkeydown="if(event.key==='Enter')askAI()">
-      <button onclick="askAI()">Ask →</button>
-    </div>
-    <div class="ai-response" id="aiResp"></div>
-  </div>
   <div class="kpi-grid">
     <div class="kpi-card"><div class="label">Caretakers</div><div class="value">${allCaretakers.length}</div><div class="delta">in database</div></div>
     <div class="kpi-card"><div class="label">Customers</div><div class="value">${allCustomers.length}</div><div class="delta">registered</div></div>
@@ -489,10 +479,11 @@ function renderHome(ca) {
   </div>`;
 }
 
-async function askAI() {
-  const q = document.getElementById('aiQ').value.trim();
+async function askAI_DISABLED() {
+  const q = document.getElementById('aiQ')?.value.trim();
   if (!q) return;
   const box = document.getElementById('aiResp');
+  if(!box)return;
   box.style.display = 'block';
   box.textContent = 'Thinking…';
   const sys = `You are CareOS Assistant — the built-in training and navigation guide for OutdoorSeniors' internal operations platform. Answer questions accurately based on this exact system description. Current user role: ${currentProfile?.role}. Live stats: ${allCaretakers.length} caretakers, ${allCustomers.length} customers, ${allOrders.length} orders.
@@ -781,24 +772,10 @@ async function deleteCaretaker(id){
 }
 
 function renderSearchMatch(c){
-  aiChatHistory=[];
   c.innerHTML=`
   <div class="section-card">
-    <h2>AI Caretaker Match</h2>
-    <div id="aiChatBox" style="min-height:220px;max-height:380px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:12px;background:var(--bg);border:1px solid var(--border);margin-bottom:10px"></div>
-    <div style="display:flex;gap:8px">
-      <input type="text" id="aiChatInput" placeholder="e.g. Female caretaker, Telugu speaking, Whitefield, budget ₹16000…" style="flex:1;border:1px solid var(--border);padding:9px 12px;font-size:13px;outline:none;background:var(--surface);color:var(--text)" onkeydown="if(event.key==='Enter')sendAIChat()">
-      <button class="btn btn-primary" onclick="sendAIChat()">Send →</button>
-      <button class="btn btn-ghost btn-sm" onclick="resetAIChat()" title="Start new conversation">↺</button>
-    </div>
-    <div id="aiSearchResults" style="margin-top:12px"></div>
-  </div>
-  <div class="section-card">
-    <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="toggleManualFilters()">
-      <h2 style="margin:0">Manual Filters</h2>
-      <span style="font-size:11px;color:var(--muted)" id="filterToggleLabel">Show ▾</span>
-    </div>
-    <div id="manualFilterBody" style="display:none;margin-top:14px">
+    <h2>Search & Match</h2>
+    <div style="margin-top:14px">
       <div class="form-grid">
         <div class="field"><label>Name / Phone</label><input type="text" id="smQ"></div>
         <div class="field"><label>Gender</label><select id="smGender"><option value="">Any</option><option>Female</option><option>Male</option></select></div>
@@ -807,97 +784,24 @@ function renderSearchMatch(c){
         <div class="field"><label>Max Salary (₹)</label><input type="number" id="smSalary"></div>
         <div class="field"><label>Min Experience (yrs)</label><input type="number" id="smExp" min="0"></div>
       </div>
-      <div style="margin-top:14px"><button class="btn btn-primary" onclick="doSearch(false)">Search</button></div>
+      <div style="margin-top:14px"><button class="btn btn-primary" onclick="doSearch()">Search</button></div>
       <div id="searchResults" style="margin-top:16px"></div>
     </div>
   </div>`;
-  initAIChat();
 }
 
-function toggleManualFilters(){
-  const b=document.getElementById('manualFilterBody'),l=document.getElementById('filterToggleLabel');if(!b)return;
-  const show=b.style.display==='none';b.style.display=show?'block':'none';if(l)l.textContent=show?'Hide ▴':'Show ▾';
-}
-function initAIChat(){
-  const box=document.getElementById('aiChatBox');if(!box)return;
-  appendChatMsg(box,`Hi! I'm your AI matching assistant. Tell me what you're looking for — area in Bangalore, type of care, budget, gender preference, languages needed, or anything else. The more you share, the better I can match.`,'bot');
-}
-function resetAIChat(){
-  aiChatHistory=[];
-  const box=document.getElementById('aiChatBox');if(box)box.innerHTML='';
-  const res=document.getElementById('aiSearchResults');if(res)res.innerHTML='';
-  initAIChat();
-}
-async function sendAIChat(){
-  const input=document.getElementById('aiChatInput');
-  const text=(input?.value||'').trim();if(!text)return;
-  input.value='';
-  const box=document.getElementById('aiChatBox');if(!box)return;
-  aiChatHistory.push({role:'user',text});
-  appendChatMsg(box,text,'user');
-  box.scrollTop=box.scrollHeight;
-  const loadId='ld_'+Date.now();
-  const loadDiv=document.createElement('div');
-  loadDiv.id=loadId;loadDiv.className='ai-chat-msg ai-chat-bot';
-  loadDiv.innerHTML=`<div class="ai-chat-name">CareOS AI</div><div class="ai-chat-text"><span class="spinner"></span> Thinking…</div>`;
-  box.appendChild(loadDiv);box.scrollTop=box.scrollHeight;
-  const ctData=JSON.stringify(allCaretakers.slice(0,50).map(c=>({id:c.id,name:c.name,gender:c.gender,age:c.age,area:c.area,pincode:c.pincode,languages:c.languages||[],workPreferences:c.workPreferences||[],experience:c.experience,salary:c.salary,notes:c.notes||''})));
-  const history=aiChatHistory.map(m=>`${m.role==='user'?'User':'Assistant'}: ${m.text}`).join('\n');
-  const prompt=`You are an AI caretaker-matching assistant for OutdoorSeniors, a home-care agency in Bangalore.
-
-RULES:
-- If the user gives ANY useful criteria (area, budget, care type, gender, language), perform a match immediately — do NOT wait for more info before trying
-- Briefly tell the user what criteria you matched on
-- If results are poor, suggest what they could change to improve
-- If the user wants to refine, re-rank with updated criteria
-- Keep responses short and conversational
-- When matching: end your reply with a raw JSON array on a new line (no markdown code fences): [{"id":"...","score":85,"reason":"brief reason"}]
-- Top 5 max, sorted by score descending
-
-DATABASE (${allCaretakers.length} caretakers): ${ctData}
-
-CONVERSATION SO FAR:
-${history}
-
-Respond now:`;
-  try{
-    const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})});
-    const data=await res.json();
-    const raw=data.candidates?.[0]?.content?.parts?.[0]?.text||'';
-    const m=raw.match(/\[[\s\S]*?\]/);
-    let msg=raw,results=[];
-    if(m){
-      msg=raw.replace(m[0],'').replace(/```json?/g,'').replace(/```/g,'').trim();
-      try{const ranked=JSON.parse(m[0]);results=ranked.map(r=>{const ct=allCaretakers.find(x=>x.id===r.id);return ct?{...ct,_score:r.score,_reason:r.reason||''}:null;}).filter(Boolean);}catch(e){}
-    }
-    const ld=document.getElementById(loadId);if(ld)ld.remove();
-    const displayMsg=msg||raw;
-    aiChatHistory.push({role:'assistant',text:displayMsg});
-    appendChatMsg(box,displayMsg,'bot');
-    box.scrollTop=box.scrollHeight;
-    if(results.length){lastSearchResults=results;const rb=document.getElementById('aiSearchResults');if(rb)showResultCards(results,true,rb);}
-  }catch(e){const ld=document.getElementById(loadId);if(ld)ld.innerHTML=`<div class="ai-chat-name">CareOS AI</div><div class="ai-chat-text" style="color:var(--danger)">Error: ${e.message}</div>`;}
-}
-function appendChatMsg(box,text,role){
-  const div=document.createElement('div');
-  div.className=`ai-chat-msg ai-chat-${role==='user'?'user':'bot'}`;
-  div.innerHTML=`${role!=='user'?'<div class="ai-chat-name">CareOS AI</div>':''}<div class="ai-chat-text">${esc(text)}</div>`;
-  box.appendChild(div);
-}
-
-async function doSearch(useAI){
+function doSearch(){
   const q=(document.getElementById('smQ')?.value||'').trim().toLowerCase();
   const gender=document.getElementById('smGender')?.value||'';
   const area=(document.getElementById('smArea')?.value||'').trim().toLowerCase();
   const lang=document.getElementById('smLang')?.value||'';
   const maxSal=parseFloat(document.getElementById('smSalary')?.value)||Infinity;
   const minExp=parseFloat(document.getElementById('smExp')?.value)||0;
-  const aiQ=(document.getElementById('smAiQ')?.value||'').trim();
   const box=document.getElementById('searchResults');
   if(!box)return;
-  box.innerHTML=`<div style="padding:20px;color:var(--muted)"><span class="spinner"></span>${useAI?'AI is matching…':'Searching…'}</div>`;
+  box.innerHTML=`<div style="padding:20px;color:var(--muted)"><span class="spinner"></span> Searching…</div>`;
 
-  let results=allCaretakers.filter(c=>{
+  const results=allCaretakers.filter(c=>{
     if(q&&!( (c.name||'').toLowerCase().includes(q)||(c.phone||'').includes(q) ))return false;
     if(gender&&c.gender!==gender)return false;
     if(area&&!( (c.area||'').toLowerCase().includes(area)||(c.address||'').toLowerCase().includes(area) ))return false;
@@ -907,29 +811,8 @@ async function doSearch(useAI){
     return true;
   });
 
-  if(useAI){
-    if(results.length===0){box.innerHTML=`<div class="empty-state">No caretakers match your filters. Try removing some filters first.</div>`;return;}
-    const prompt=`You are a caretaker-matching AI for a home-care agency in India.
-Requirement: "${aiQ||'Best available caretakers'}"
-Score each caretaker 0-100 based on fit.
-Return ONLY a valid JSON array, no markdown, no code blocks: [{"id":"...","score":85,"reason":"..."}]
-Sort by score descending.
-Caretakers: ${JSON.stringify(results.slice(0,30).map(c=>({id:c.id,name:c.name,gender:c.gender,age:c.age,area:c.area,languages:c.languages||[],workPreferences:c.workPreferences||[],experience:c.experience,salary:c.salary,notes:c.notes||''})))}`;
-    try{
-      const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})});
-      const data=await res.json();
-      const raw=data.candidates?.[0]?.content?.parts?.[0]?.text||'';
-      const m=raw.match(/\[[\s\S]*\]/);
-      if(m){
-        const ranked=JSON.parse(m[0]);
-        const out=ranked.map(r=>{const c=results.find(x=>x.id===r.id);return c?{...c,_score:r.score,_reason:r.reason||''}:null;}).filter(Boolean);
-        if(out.length>0)results=out.slice(0,10);
-      }
-    }catch(err){console.error('AI match:',err);toast('AI ranking failed — showing unranked results','error');}
-  }
-
   lastSearchResults=results;
-  showResultCards(results,useAI,box);
+  showResultCards(results,false,box);
 }
 
 function showResultCards(results,isAI,box){
@@ -1209,7 +1092,7 @@ async function saveOrder(){
   const data={customerId:custId,customerName:cust?.name||'',customerPhone:cust?.phone||'',patientName,patientAge:document.getElementById('ordAge').value||'',patientWeight:document.getElementById('ordWeight').value||'',caretakerGender:document.getElementById('ordGender').value,packageType:document.getElementById('ordPackage').value,preferredStartDate:document.getElementById('ordStart').value,duration:document.getElementById('ordDuration').value.trim(),location:document.getElementById('ordLocation').value.trim(),pincode:document.getElementById('ordPincode').value.trim(),medicalConditions:document.getElementById('ordMedical').value.trim(),languagesPreferred:langs,onDiapers:diapers,forSelf:forSel,relationship:forSel!=='Self'?document.getElementById('ordRel').value.trim():'',notes:document.getElementById('ordNotes').value.trim(),status:'pending'};
   try{
     if(editingOrderId){await db.collection('orders').doc(editingOrderId).update(data);const idx=allOrders.findIndex(o=>o.id===editingOrderId);if(idx>=0)allOrders[idx]={...allOrders[idx],...data};toast('Order updated');}
-    else{data.orderId=genOrderId();data.createdBy=currentProfile?.name||currentUser?.email||'Agent';data.createdAt=firebase.firestore.FieldValue.serverTimestamp();const ref=await db.collection('orders').add(data);allOrders.unshift({id:ref.id,...data});toast(`Order ${data.orderId} created — finding matches…`,'success');closeModal('orderModal');renderOrdTable(document.getElementById('ordSearch')?.value||'',document.getElementById('ordStatusFilter')?.value||'');setTimeout(()=>viewOrder(ref.id),200);return;}
+    else{data.orderId=genOrderId();data.createdBy=currentProfile?.name||currentUser?.email||'Agent';data.createdAt=firebase.firestore.FieldValue.serverTimestamp();const ref=await db.collection('orders').add(data);allOrders.unshift({id:ref.id,...data});toast(`Order ${data.orderId} created`,'success');}
     closeModal('orderModal');renderOrdTable(document.getElementById('ordSearch')?.value||'',document.getElementById('ordStatusFilter')?.value||'');
   }catch(e){toast(e.message,'error');}
 }
@@ -1262,17 +1145,6 @@ async function viewOrder(id){
     <button class="btn btn-ghost btn-sm" onclick="closeModal('ctModal');openAssign('${o.id}')">Reassign</button>
   </div>`:''}
 
-  ${unassigned?`
-  <div style="margin-bottom:14px">
-    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px">AI Match</div>
-    <div id="orderAiBox" style="min-height:100px;max-height:300px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:12px;background:var(--bg);border:1px solid var(--border);margin-bottom:8px"></div>
-    <div id="orderAiResults" style="margin-bottom:8px"></div>
-    <div style="display:flex;gap:8px">
-      <input type="text" id="orderAiInput" placeholder="Refine… e.g. show someone with more experience, closer to Koramangala…" style="flex:1;border:1px solid var(--border);padding:8px 10px;font-size:13px;outline:none;background:var(--surface);color:var(--text)" onkeydown="if(event.key==='Enter')sendOrderAIChat('${o.id}')">
-      <button class="btn btn-primary btn-sm" onclick="sendOrderAIChat('${o.id}')">Send →</button>
-    </div>
-  </div>`:''}
-
   <div>
     <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:8px">Comments</div>
     <div style="display:flex;gap:8px;margin-bottom:10px">
@@ -1283,93 +1155,8 @@ async function viewOrder(id){
   </div>`;
   openModal('ctModal');
   loadComments(id);
-  if(unassigned){orderAiChatHistory=[];autoMatchOrder(o);}
 }
 
-async function autoMatchOrder(o){
-  const box=document.getElementById('orderAiBox');if(!box)return;
-  appendOrderChatMsg(box,`Reading order ${esc(o.orderId)} and finding best matches…`,'bot');
-  await runOrderAIMatch(o,null);
-}
-async function sendOrderAIChat(orderId){
-  const o=allOrders.find(x=>x.id===orderId);if(!o)return;
-  const input=document.getElementById('orderAiInput');
-  const text=(input?.value||'').trim();if(!text)return;
-  input.value='';
-  const box=document.getElementById('orderAiBox');if(!box)return;
-  appendOrderChatMsg(box,text,'user');
-  box.scrollTop=box.scrollHeight;
-  orderAiChatHistory.push({role:'user',text});
-  await runOrderAIMatch(o,text);
-}
-async function runOrderAIMatch(o,userMessage){
-  const box=document.getElementById('orderAiBox');if(!box)return;
-  const loadId='om_'+Date.now();
-  const loadDiv=document.createElement('div');
-  loadDiv.id=loadId;loadDiv.className='ai-chat-msg ai-chat-bot';
-  loadDiv.innerHTML=`<div class="ai-chat-name">CareOS AI</div><div class="ai-chat-text"><span class="spinner"></span> Matching…</div>`;
-  box.appendChild(loadDiv);box.scrollTop=box.scrollHeight;
-  const ctData=JSON.stringify(allCaretakers.slice(0,50).map(c=>({id:c.id,name:c.name,gender:c.gender,age:c.age,area:c.area,pincode:c.pincode,languages:c.languages||[],workPreferences:c.workPreferences||[],experience:c.experience,salary:c.salary,notes:c.notes||''})));
-  const orderCtx=`Patient: ${o.patientName||'?'}, Age: ${o.patientAge||'?'}, Medical: ${o.medicalConditions||'none'}, Package: ${o.packageType||'?'}, Location: ${o.location||'?'} ${o.pincode||''}, Caretaker gender: ${o.caretakerGender||'any'}, Languages: ${(o.languagesPreferred||[]).join(',')||'any'}, Diapers: ${o.onDiapers||'No'}, Duration: ${o.duration||'?'}, Start: ${o.preferredStartDate||'?'}.`;
-  const history=orderAiChatHistory.map(m=>`${m.role==='user'?'Agent':'Assistant'}: ${m.text}`).join('\n');
-  const prompt=`You are an AI caretaker-matching assistant for OutdoorSeniors, Bangalore home-care agency.
-
-ORDER: ${orderCtx}
-${history?`\nCONVERSATION:\n${history}\n`:''}
-${userMessage?`Agent says: "${userMessage}"\n`:''}
-RULES:
-- Match based on order requirements (location, gender, languages, care type, experience)
-- One short sentence on your approach, then results
-- If agent refines, re-rank immediately
-- Always end with raw JSON (no markdown): [{"id":"...","score":85,"reason":"brief reason"}]
-- Top 5 max, score descending
-
-CARETAKERS: ${ctData}
-
-Respond:`;
-  try{
-    const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:prompt}]}]})});
-    const data=await res.json();
-    const raw=data.candidates?.[0]?.content?.parts?.[0]?.text||'';
-    const m=raw.match(/\[[\s\S]*?\]/);
-    let msg=raw,results=[];
-    if(m){msg=raw.replace(m[0],'').replace(/```json?/g,'').replace(/```/g,'').trim();try{const ranked=JSON.parse(m[0]);results=ranked.map(r=>{const ct=allCaretakers.find(x=>x.id===r.id);return ct?{...ct,_score:r.score,_reason:r.reason||''}:null;}).filter(Boolean);}catch(e){}}
-    const ld=document.getElementById(loadId);if(ld)ld.remove();
-    const displayMsg=msg||raw;
-    orderAiChatHistory.push({role:'assistant',text:displayMsg});
-    appendOrderChatMsg(box,displayMsg,'bot');
-    box.scrollTop=box.scrollHeight;
-    if(results.length){const rb=document.getElementById('orderAiResults');if(rb)showOrderMatchCards(results,o.id,rb);}
-  }catch(e){const ld=document.getElementById(loadId);if(ld)ld.innerHTML=`<div class="ai-chat-name">CareOS AI</div><div class="ai-chat-text" style="color:var(--danger)">Error: ${e.message}</div>`;}
-}
-function appendOrderChatMsg(box,text,role){
-  const div=document.createElement('div');
-  div.className=`ai-chat-msg ai-chat-${role==='user'?'user':'bot'}`;
-  div.innerHTML=`${role!=='user'?'<div class="ai-chat-name">CareOS AI</div>':''}<div class="ai-chat-text">${esc(text)}</div>`;
-  box.appendChild(div);
-}
-function showOrderMatchCards(results,orderId,box){
-  box.innerHTML=`<div style="display:flex;flex-direction:column;gap:6px">`+results.map(c=>{
-    const initials=(c.name||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
-    return`<div style="background:var(--surface);border:1px solid var(--border);padding:10px 12px;display:flex;align-items:center;gap:10px">
-      <div class="rc-avatar" style="width:38px;height:38px;font-size:13px;flex-shrink:0">${c.photoURL?`<img src="${esc(c.photoURL)}" onerror="this.style.display='none'">`:initials}</div>
-      <div style="flex:1;min-width:0">
-        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-          <span class="match-score" style="font-size:10px;padding:2px 7px">${c._score}%</span>
-          <strong style="font-size:13px">${esc(c.name)}</strong>
-          <span style="font-size:11px;color:var(--muted)">${[c.gender,c.age?c.age+'y':'',c.salary?'₹'+c.salary+'/mo':''].filter(Boolean).join(' · ')}</span>
-        </div>
-        <div style="font-size:11px;color:var(--muted);margin-top:2px">${esc(c._reason)}</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:1px">📍 ${esc(c.area||'—')} · ${(c.languages||[]).slice(0,3).join(', ')||'—'} · ${c.experience||0}y exp</div>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">
-        <button class="btn btn-primary btn-sm" onclick="assignFromMatch('${orderId}','${c.id}','${c.name.replace(/'/g,"\\'")}');document.getElementById('orderAiResults').innerHTML='';document.getElementById('orderAiBox').innerHTML=''">Assign</button>
-        <button class="btn btn-ghost btn-sm" onclick="viewCaretaker('${c.id}')">View</button>
-        ${c.phone?`<button class="btn btn-wa btn-sm" onclick="shareWhatsApp('${c.id}','${orderId}')">WA</button>`:''}
-      </div>
-    </div>`;
-  }).join('')+`</div>`;
-}
 
 function viewCustomer(id){
   const c=allCustomers.find(x=>x.id===id);if(!c)return;
